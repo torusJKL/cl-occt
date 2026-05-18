@@ -123,7 +123,7 @@ Three layers:
  SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
 ```
 
-- `wrap/occt_wrap.cpp` — 30 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 31 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, 2D geometry, face construction.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
@@ -154,6 +154,7 @@ Returns `nil` on invalid dimensions or degenerate parameters.
 | `(cut a &rest others)` | Subtract shapes, left-to-right chaining |
 | `(fuse a &rest others)` | Union shapes |
 | `(common a &rest others)` | Intersect shapes |
+| `(section a &rest others)` | Intersection curves/edges between shapes |
 
 All propagate nil: if any argument is nil, result is nil.
 
@@ -219,7 +220,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (30 functions)
+│   ├── occt_wrap.h       C header (31 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -232,7 +233,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── primitives.lisp make-shape, make-box, make-cylinder, make-cone, make-torus, make-prism, make-revol
 │   │   ├── geom2d.lisp    geom2d class, make-pnt2d, make-vec2d, make-dir2d, make-line2d, make-circle2d
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
-│   │   ├── booleans.lisp cut, fuse, common
+│   │   ├── booleans.lisp cut, fuse, common, section
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── io.lisp       write-step, read-step
 │   │   └── api.lisp      set-param!, set-params!
@@ -246,7 +247,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  43 smoke tests
+│   └── smoke-tests.lisp  55 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

@@ -11,6 +11,7 @@
    :%boolean-cut
    :%boolean-fuse
    :%boolean-common
+   :%boolean-section
    :%translate
    :%rotate
    :%write-step
@@ -81,6 +82,7 @@
    :cut
    :fuse
    :common
+   :section
    :translate
    :rotate
    :write-step
