@@ -1,6 +1,10 @@
-# clocct — Common Lisp + OCCT Parametric CAD
+# cl-occt — Common Lisp OCCT Library
 
-A REPL-driven parametric CAD system using [SBCL](https://www.sbcl.org/) and [OCCT 8.0](https://dev.opencascade.org/).
+A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
+Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O,
+a reactive DAG engine, and a parametric DSL (`defmodel`, `param`, `model-ref`).
+
+This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
 ## Prerequisites
 
