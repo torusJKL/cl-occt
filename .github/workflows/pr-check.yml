@@ -1,0 +1,55 @@
+name: PR-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ sbcl curl just libfreetype-dev libx11-dev libfontconfig-dev
+
+      - name: Install Quicklisp
+        run: |
+          curl -O https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --load quicklisp.lisp \
+               --eval "(quicklisp-quickstart:install)" \
+               --eval "(ql:add-to-init-file)" \
+               --quit
+
+      - name: Get OCCT version
+        run: |
+          echo "OCCT_VERSION=$(grep -oP '(?<=occt-version := ")[^"]+' justfile)" >> $GITHUB_ENV
+
+      - name: Cache OCCT build
+        id: cache-occt
+        uses: actions/cache@v4
+        with:
+          path: .local
+          key: occt-${{ env.OCCT_VERSION }}
+
+      - name: Build OCCT (cache miss)
+        if: steps.cache-occt.outputs.cache-hit != 'true'
+        run: |
+          just setup 2>&1 | tail -500
+          exit ${PIPESTATUS[0]}
+
+      - name: Build C wrapper
+        run: just wrap
+
+      - name: Run tests
+        run: |
+          LD_LIBRARY_PATH=$PWD/lib:$PWD/.local/lib \
+          sbcl --load $HOME/quicklisp/setup.lisp \
+               --eval "(push \"$PWD/\" asdf:*central-registry*)" \
+               --eval "(asdf:load-system :cl-occt)" \
+               --eval "(asdf:test-system :cl-occt)" \
+               --quit
