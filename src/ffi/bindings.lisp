@@ -46,6 +46,10 @@
   (a :pointer)
   (b :pointer))
 
+(defcfun (%boolean-section "boolean_section") :pointer
+  (a :pointer)
+  (b :pointer))
+
 (defcfun (%translate "translate") :pointer
   (shape :pointer)
   (dx :double)

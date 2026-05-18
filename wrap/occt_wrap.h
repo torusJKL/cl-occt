@@ -20,6 +20,7 @@ occt_shape make_revol(occt_shape shape, double ax, double ay, double az, double 
 occt_shape boolean_cut(occt_shape a, occt_shape b);
 occt_shape boolean_fuse(occt_shape a, occt_shape b);
 occt_shape boolean_common(occt_shape a, occt_shape b);
+occt_shape boolean_section(occt_shape a, occt_shape b);
 
 occt_shape translate(occt_shape shape, double dx, double dy, double dz);
 occt_shape rotate(occt_shape shape, double ax, double ay, double az, double angle_deg);

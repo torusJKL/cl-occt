@@ -32,3 +32,14 @@
                                                  (when b (%ptr b))))))
               others
               :initial-value shape)))
+
+(defun section (shape &rest others)
+  (if (null shape)
+      nil
+      (reduce (lambda (a b)
+                (if (null b)
+                    nil
+                    (make-shape (%boolean-section (when a (%ptr a))
+                                                  (when b (%ptr b))))))
+              others
+              :initial-value shape)))
