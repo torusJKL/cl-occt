@@ -262,3 +262,13 @@ C-level errors can be inspected:
 ```lisp
 (get-error-message)
 ```
+
+## License
+
+**cl-occt** — MIT License (see `LICENSE`).
+
+This project uses [Open CASCADE Technology](https://dev.opencascade.org/) v8.0.0,
+which is licensed under **LGPL 2.1 with the Open CASCADE Exception v1.0**.
+OCCT is dynamically linked via `lib/libocctwrap.so`; end users can relink
+with modified OCCT builds. See `NOTICE` for details and attribution of other
+dependencies.

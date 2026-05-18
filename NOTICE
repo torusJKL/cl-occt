@@ -1,0 +1,29 @@
+cl-occt — Common Lisp OCCT Library
+Copyright (c) 2026 clocct
+Licensed under the MIT License (see LICENSE).
+
+---
+
+This project uses Open CASCADE Technology (OCCT) v8.0.0,
+copyright (c) Open Cascade SAS and contributors.
+
+OCCT is licensed under the GNU Lesser General Public License v2.1
+with the Open CASCADE Exception v1.0.
+
+Full license texts are included in this repository:
+  licenses/LICENSE_LGPL_21.txt
+  licenses/OCCT_LGPL_EXCEPTION.txt
+
+---
+
+This project dynamically links to OCCT shared libraries. End users may
+relink with modified OCCT builds by replacing the shared libraries under
+.local/lib/ or by setting the appropriate library search path.
+
+---
+
+This project makes use of the following third-party libraries:
+
+  CFFI            MIT License
+  trivial-garbage Public Domain
+  alexandria      Public Domain
