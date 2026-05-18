@@ -123,9 +123,9 @@ Three layers:
  SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
 ```
 
-- `wrap/occt_wrap.cpp` — 14 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 30 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` class with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O.
+- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, 2D geometry, face construction.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -141,8 +141,11 @@ Design decisions documented in `openspec/changes/v1-core/design.md`.
 | `(make-cylinder radius height)` | Cylinder |
 | `(make-sphere radius)` | Sphere |
 | `(make-cone r1 r2 height)` | Cone (r1=bottom, r2=top radius) |
+| `(make-torus major-radius minor-radius)` | Torus (donut) |
+| `(make-prism shape dx dy dz)` | Linear extrusion of a shape along a vector |
+| `(make-revol shape ax ay az deg)` | Rotational extrusion of a shape around an axis |
 
-Returns `nil` on invalid dimensions (non-positive).
+Returns `nil` on invalid dimensions or degenerate parameters.
 
 ### Booleans
 
@@ -182,13 +185,33 @@ Original shape is unchanged. Nil in → nil out.
 | `(with-params (&rest kv) body...)` | Local parameter scope |
 | `(name :key val ...)` | Call model function with local overrides |
 
-### Introspection
+### 2D Geometry (Geom2d)
 
 | Function | Description |
 |----------|-------------|
-| `(help)` | Print available forms |
-| `*params*` | Global parameter plist |
-| `*model-registry*` | Registered models |
+| `(make-pnt2d x y)` | 2D point |
+| `(make-vec2d x y)` | 2D vector |
+| `(make-dir2d x y)` | 2D direction (unit vector; nil on zero input) |
+| `(make-line2d x y dx dy)` | 2D infinite line through point with direction |
+| `(make-circle2d x y radius)` | 2D circle curve (nil on non-positive radius) |
+
+Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
+
+### Face Construction
+
+| Function | Description |
+|----------|-------------|
+| `(make-edge x1 y1 x2 y2)` | Linear edge between two 2D points |
+| `(make-edge-3d x1 y1 z1 x2 y2 z2)` | Linear edge between two 3D points |
+| `(make-circle-edge x y radius)` | Full circle edge from 2D center and radius |
+| `(make-circular-arc x1 y1 x2 y2 x3 y3)` | Circular arc through three 2D points |
+| `(make-wire &rest edges)` | Connect edges into a wire |
+| `(make-face wire)` | Planar face from a closed wire (auto-detects plane) |
+| `(make-face-on-plane wire ox oy oz nx ny nz)` | Planar face on an explicit plane |
+
+Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`/`make-revol` to create solids from 2D profiles.
+
+### Introspection
 
 ## Project structure
 
@@ -196,7 +219,7 @@ Original shape is unchanged. Nil in → nil out.
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (14 functions)
+│   ├── occt_wrap.h       C header (30 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -206,7 +229,9 @@ Original shape is unchanged. Nil in → nil out.
 │   ├── core/
 │   │   ├── shape.lisp    CLOS shape class
 │   │   ├── errors.lisp   OCCT error condition
-│   │   ├── primitives.lisp make-shape, make-box, make-cylinder, etc.
+│   │   ├── primitives.lisp make-shape, make-box, make-cylinder, make-cone, make-torus, make-prism, make-revol
+│   │   ├── geom2d.lisp    geom2d class, make-pnt2d, make-vec2d, make-dir2d, make-line2d, make-circle2d
+│   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── io.lisp       write-step, read-step
@@ -221,7 +246,7 @@ Original shape is unchanged. Nil in → nil out.
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  27 smoke tests
+│   └── smoke-tests.lisp  43 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

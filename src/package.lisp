@@ -5,6 +5,9 @@
    :%make-cylinder
    :%make-sphere
    :%make-cone
+   :%make-torus
+   :%make-prism
+   :%make-revol
    :%boolean-cut
    :%boolean-fuse
    :%boolean-common
@@ -13,10 +16,24 @@
    :%write-step
    :%read-step
    :%free-shape
+   :%free-geom2d
+   :%make-pnt2d
+   :%make-vec2d
+   :%make-dir2d
+   :%make-line-2d
+   :%make-circle-2d
+   :%make-edge-line-2d
+   :%make-edge-line-3d
+   :%make-edge-circle-2d
+   :%make-edge-arc-2d
+   :%make-wire
+   :%make-face
+   :%make-face-on-plane
    :%get-error-code
    :%get-error-message
-   :make-shape
-   :*params*
+    :make-shape
+    :make-geom2d
+    :*params*
    :model
    :make-model
    :model-name
@@ -40,10 +57,27 @@
   (:export
    :shape
    :shape-p
+   :geom2d
+   :geom2d-p
+   :make-pnt2d
+   :make-vec2d
+   :make-dir2d
+   :make-line2d
+   :make-circle2d
+   :make-edge
+   :make-edge-3d
+   :make-circle-edge
+   :make-circular-arc
+   :make-wire
+   :make-face
+   :make-face-on-plane
    :make-box
    :make-cylinder
    :make-sphere
    :make-cone
+   :make-torus
+   :make-prism
+   :make-revol
    :cut
    :fuse
    :common
