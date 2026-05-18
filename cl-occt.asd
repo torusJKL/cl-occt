@@ -12,14 +12,16 @@
       :components
       ((:file "loader")
        (:file "bindings")))
-     (:module "core"
-      :components
-      ((:file "shape")
-       (:file "errors")
-       (:file "primitives")
-       (:file "booleans")
-       (:file "transforms")
-       (:file "io")))
+      (:module "core"
+       :components
+       ((:file "shape")
+        (:file "errors")
+        (:file "primitives")
+        (:file "geom2d")
+        (:file "faces")
+        (:file "booleans")
+        (:file "transforms")
+        (:file "io")))
      (:module "dag"
       :components
       ((:file "params")

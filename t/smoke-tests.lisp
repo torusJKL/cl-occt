@@ -30,6 +30,9 @@
 (defun assert-shape (val &optional msg)
   (assert-true (shape-p val) (or msg "expected shape")))
 
+(defun assert-geom2d (val &optional msg)
+  (assert-true (geom2d-p val) (or msg "expected geom2d")))
+
 ;; --- Primitives ---
 
 (deftest make-box-valid
@@ -50,10 +53,98 @@
 (deftest make-cone-valid
   (assert-shape (make-cone 5 10 15)))
 
+(deftest make-torus-valid
+  (assert-shape (make-torus 10 3)))
+
+(deftest make-torus-zero-major
+  (assert-nil (make-torus 0 3)))
+
+(deftest make-torus-zero-minor
+  (assert-nil (make-torus 10 0)))
+
+(deftest make-prism-zero-vector
+  (assert-nil (make-prism (make-box 5 5 1) 0 0 0)))
+
+(deftest make-prism-nil-shape
+  (assert-nil (make-prism nil 0 0 10)))
+
+(deftest make-revol-zero-angle
+  (assert-nil (make-revol (make-box 5 5 1) 0 0 1 0)))
+
+(deftest make-revol-nil-shape
+  (assert-nil (make-revol nil 0 0 1 360)))
+
 (deftest shape-distinct
   (let ((a (make-box 1 2 3))
         (b (make-box 1 2 3)))
     (assert-true (not (eq a b)) "shapes should be distinct")))
+
+;; --- 2D Geometry ---
+
+(deftest make-pnt2d-valid
+  (assert-geom2d (make-pnt2d 10 20)))
+
+(deftest make-vec2d-valid
+  (assert-geom2d (make-vec2d 3 4)))
+
+(deftest make-dir2d-valid
+  (assert-geom2d (make-dir2d 1 0)))
+
+(deftest make-dir2d-zero
+  (assert-nil (make-dir2d 0 0)))
+
+;; --- 2D Curves ---
+
+(deftest make-line2d-valid
+  (assert-geom2d (make-line2d 0 0 1 0)))
+
+(deftest make-circle2d-valid
+  (assert-geom2d (make-circle2d 5 5 10)))
+
+(deftest make-circle2d-zero-radius
+  (assert-nil (make-circle2d 0 0 0)))
+
+;; --- Face Construction ---
+
+(deftest make-edge-valid
+  (assert-shape (make-edge 0 0 10 0)))
+
+(deftest make-edge-3d-valid
+  (assert-shape (make-edge-3d 0 0 0 10 0 0)))
+
+(deftest make-circle-edge-valid
+  (assert-shape (make-circle-edge 0 0 10)))
+
+(deftest make-circular-arc-valid
+  (assert-shape (make-circular-arc 0 0 5 5 10 0)))
+
+(deftest make-circular-arc-collinear
+  (assert-nil (make-circular-arc 0 0 5 5 10 10)))
+
+(deftest make-wire-two-edges
+  (assert-shape (make-wire (make-edge 0 0 10 0) (make-edge 10 0 10 10))))
+
+(deftest make-wire-empty
+  (assert-nil (make-wire)))
+
+(deftest make-face-square
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (w (make-wire e1 e2 e3 e4)))
+    (assert-shape (make-face w))))
+
+(deftest make-face-nil
+  (assert-nil (make-face nil)))
+
+(deftest make-face-on-plane-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (w (make-wire e1 e2 e3 e4)))
+    (assert-shape (make-face-on-plane w 0 0 0 0 0 1))))
 
 ;; --- Booleans ---
 
@@ -156,7 +247,16 @@
     (dolist (test-sym
              '(make-box-valid make-box-zero-dim make-box-negative
                make-cylinder-valid make-sphere-valid make-cone-valid
+               make-torus-valid make-torus-zero-major make-torus-zero-minor
+               make-prism-zero-vector make-prism-nil-shape
+               make-revol-zero-angle make-revol-nil-shape
                shape-distinct
+               make-pnt2d-valid make-vec2d-valid make-dir2d-valid make-dir2d-zero
+               make-line2d-valid make-circle2d-valid make-circle2d-zero-radius
+               make-edge-valid make-edge-3d-valid make-circle-edge-valid
+               make-circular-arc-valid make-circular-arc-collinear
+               make-wire-two-edges make-wire-empty
+               make-face-square make-face-nil make-face-on-plane-valid
                cut-two-boxes cut-nil-first cut-nil-second
                fuse-two-boxes common-overlap common-no-overlap
                boolean-variadic
