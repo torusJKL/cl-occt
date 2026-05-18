@@ -32,6 +32,21 @@ User SHALL be able to construct a cone by specifying bottom radius, top radius, 
 - **WHEN** user calls `(make-cone 5 10 15)`
 - **THEN** system returns a shape object representing a cone with r1=5, r2=10, height=15
 
+### Requirement: Torus construction
+User SHALL be able to construct a torus by specifying major radius (sweep radius) and minor radius (section radius). The system SHALL use OCCT BRepPrimAPI_MakeTorus. Both radii MUST be positive (> Precision::Confusion).
+
+#### Scenario: Construct a torus
+- **WHEN** user calls `(make-torus 10 3)`
+- **THEN** system returns a shape object representing a torus with major radius 10 and minor radius 3
+
+#### Scenario: Construct a torus with zero major radius
+- **WHEN** user calls `(make-torus 0 3)`
+- **THEN** system returns nil
+
+#### Scenario: Construct a torus with zero minor radius
+- **WHEN** user calls `(make-torus 10 0)`
+- **THEN** system returns nil
+
 ### Requirement: Shape identity
 Each constructed shape MUST be a distinct CLOS instance of type `shape`.
 
