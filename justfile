@@ -20,6 +20,7 @@ default:
     @echo "  clean   Remove build artifacts"
 
 setup:
+    # Download and build OCCT 8.0.0
     mkdir -p {{root-dir}}/.local
     curl -Lo {{occt-tarball}} {{occt-url}}
     mkdir -p {{occt-src}}
@@ -35,7 +36,7 @@ setup:
         -DBUILD_MODULE_FoundationClass=ON \
         -DBUILD_MODULE_ModelingAlgorithms=ON \
         -DBUILD_MODULE_ModelingData=ON \
-        -DBUILD_MODULE_Visualization=OFF \
+        -DBUILD_MODULE_Visualization=ON \
         {{occt-src}}
     cmake --build {{occt-build}} -- -j$(nproc)
     cmake --install {{occt-build}}
@@ -48,6 +49,7 @@ wrap:
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
         -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
+        -lTKV3d -lTKOpenGl -lTKService \
         -Wl,-rpath,{{occt-install}}/lib
 
 start:
