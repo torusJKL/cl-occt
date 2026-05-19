@@ -19,8 +19,9 @@
         (:file "primitives")
         (:file "geom2d")
         (:file "faces")
-        (:file "booleans")
-         (:file "transforms")
+         (:file "booleans")
+          (:file "compounds")
+          (:file "transforms")
          (:file "assembly")
          (:file "io")))
      (:module "dag"

@@ -29,8 +29,12 @@
    :%make-edge-line-3d
    :%make-edge-circle-2d
    :%make-edge-arc-2d
-   :%make-wire
-   :%make-face
+     :%make-compound
+     :%add-to-compound
+     :%compound-is-empty
+     :%shape-is-compound
+     :%make-wire
+     :%make-face
    :%make-face-on-plane
     :%get-error-code
     :%get-error-message
@@ -107,8 +111,11 @@
    :write-step
    :read-step
    :write-stl
-   :read-stl
-   :read-step-assembly
+    :read-stl
+    :make-compound
+    :add-to-compound
+    :compound-shape-p
+    :read-step-assembly
    :write-step-assembly
    :write-dag-models-to-step
    :read-step-into-dag

@@ -49,7 +49,9 @@
 #include <Standard_ErrorHandler.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Wire.hxx>
+#include <TopoDS_Compound.hxx>
 #include <TopoDS.hxx>
+#include <BRep_Builder.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <Precision.hxx>
@@ -918,6 +920,70 @@ occt_shape make_face_on_plane(occt_shape wire, double ox, double oy, double oz, 
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return nullptr;
+    }
+}
+
+// --- Compound ---
+
+occt_shape make_compound(occt_shape* shapes, int count) {
+    clear_error();
+    try {
+        TopoDS_Compound compound;
+        BRep_Builder builder;
+        builder.MakeCompound(compound);
+        for (int i = 0; i < count; i++) {
+            if (shapes[i]) {
+                builder.Add(compound, *to_shape(shapes[i]));
+            }
+        }
+        return from_shape(compound);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape add_to_compound(occt_shape compound_shape, occt_shape shape) {
+    clear_error();
+    if (!compound_shape) { set_error("null compound argument", 2); return nullptr; }
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Compound compound;
+        BRep_Builder builder;
+        builder.MakeCompound(compound);
+        // Copy existing sub-shapes into new compound
+        TopExp_Explorer exp(*to_shape(compound_shape), TopAbs_SHAPE);
+        for (; exp.More(); exp.Next()) {
+            builder.Add(compound, exp.Current());
+        }
+        builder.Add(compound, *to_shape(shape));
+        return from_shape(compound);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int compound_is_empty(occt_shape shape) {
+    clear_error();
+    if (!shape) return 1;
+    try {
+        TopExp_Explorer exp(*to_shape(shape), TopAbs_SHAPE);
+        return exp.More() ? 0 : 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 1;
+    }
+}
+
+int shape_is_compound(occt_shape shape) {
+    clear_error();
+    if (!shape) return 0;
+    try {
+        return to_shape(shape)->ShapeType() == TopAbs_COMPOUND ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
     }
 }
 
