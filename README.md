@@ -35,10 +35,10 @@ Linux x86-64 is actively tested. macOS/Windows should work with equivalent tooli
 just setup
 ```
 
-This configures a minimal OCCT build:
+This configures an OCCT build with:
 - Shared libraries only
 - No Visualization (TKV3d, TKOpenGl)
-- No ApplicationFramework (TKCAF)
+- ApplicationFramework (TKCAF) enabled for XDE color/assembly support
 - Installs to `.local/`
 
 ### Compile the C wrapper library
@@ -118,6 +118,30 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
 (read-step "existing-model.step")
 ```
 
+### Read/write colored assemblies
+
+```lisp
+;; Read a multi-part STEP file preserving colors and hierarchy
+(let ((assy (read-step-assembly "colored-assembly.step")))
+  ;; Inspect parts
+  (dolist (part (assembly-children assy))
+    (format t "Part: ~A, Color: ~A~%"
+            (assembly-name part)
+            (assembly-color part))))
+
+;; Create and write a colored assembly
+(let* ((red-box (make-part (make-box 10 20 30)
+                           :name "red-box"
+                           :color '(:generic 1.0 0.0 0.0 1.0)))
+       (blue-cyl (make-part (make-cylinder 5 20)
+                            :name "blue-cyl"
+                            :color '(:generic 0.0 0.0 1.0 1.0)
+                            :location #(1 0 0 0 0 1 0 0 0 0 1 0 15 0 0 1)))
+       (assy (make-assembly :name "demo"
+                            :children (list red-box blue-cyl))))
+  (write-step-assembly assy "demo.step"))
+```
+
 ## Architecture
 
 Three layers:
@@ -126,7 +150,7 @@ Three layers:
  SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
 ```
 
-- `wrap/occt_wrap.cpp` — 33 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 53 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
@@ -184,6 +208,27 @@ Original shape is unchanged. Nil in → nil out.
 | `(write-stl shape path &key deflection)` | Export to binary STL file (deflection=0.1) |
 | `(read-stl path)` | Import from STL file |
 
+### Assembly Tree (Colored STEP I/O)
+
+| Function | Description |
+|----------|-------------|
+| `(make-part shape &key name color location)` | Create a leaf node with geometry and optional metadata |
+| `(make-assembly &key name children)` | Create a branch node with children and optional name |
+| `(assembly-shape node)` | Get the shape of a node (nil for pure assemblies) |
+| `(assembly-name node)` | Get the name string (nil if unset) |
+| `(assembly-color node)` | Get color plist `(:type r g b a)` or nil |
+| `(assembly-location node)` | Get 4×4 transformation matrix or nil |
+| `(assembly-children node)` | Get list of child nodes (nil for leaves) |
+| `(setf (assembly-name node) val)` | Set the name |
+| `(setf (assembly-color node) val)` | Set the color |
+| `(setf (assembly-children node) val)` | Set the children list |
+| `(assembly-leaf-p node)` | True if node has no children |
+| `(assembly-branch-p node)` | True if node has children |
+| `(read-step-assembly path)` | Read a STEP file with colors and assembly structure |
+| `(write-step-assembly assembly path)` | Write an assembly tree to STEP preserving colors |
+
+Colors are plists: `(:generic r g b a)`, `(:surf r g b a)`, `(:curv r g b a)` with components in [0,1]. Locations are row-major 4×4 matrices as `#(16 double-floats)` or nil for identity.
+
 ### Parametric DSL
 
 | Form | Description |
@@ -230,7 +275,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (31 functions)
+│   ├── occt_wrap.h       C header (44 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -245,7 +290,8 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common, section
 │   │   ├── transforms.lisp translate, rotate
-│   │   ├── io.lisp       write-step, read-step, write-stl, read-stl
+│   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
+│   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store

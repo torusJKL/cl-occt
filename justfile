@@ -29,7 +29,7 @@ setup:
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX={{occt-install}} \
         -DBUILD_LIBRARY_TYPE=Shared \
-        -DBUILD_MODULE_ApplicationFramework=OFF \
+        -DBUILD_MODULE_ApplicationFramework=ON \
         -DBUILD_MODULE_DataExchange=ON \
         -DBUILD_MODULE_Draw=OFF \
         -DBUILD_MODULE_FoundationClass=ON \
@@ -47,7 +47,7 @@ wrap:
         -I{{occt-install}}/include/opencascade \
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
-        -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh \
+        -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
         -Wl,-rpath,{{occt-install}}/lib
 
 start:

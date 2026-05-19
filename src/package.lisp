@@ -32,9 +32,22 @@
    :%make-wire
    :%make-face
    :%make-face-on-plane
-   :%get-error-code
-   :%get-error-message
-    :make-shape
+    :%get-error-code
+    :%get-error-message
+    :%xde-new-doc
+    :%xde-free-doc
+    :%xde-read-step
+    :%xde-write-step
+    :%xde-get-root-count
+    :%xde-get-root-path
+    :%xde-get-child-count
+    :%xde-get-child-path
+    :%xde-get-shape-at
+    :%xde-get-name-at
+    :%xde-get-color-at
+    :%xde-get-location-at
+    :%xde-add-part
+     :make-shape
     :make-geom2d
     :*params*
    :model
@@ -91,6 +104,18 @@
    :read-step
    :write-stl
    :read-stl
+   :read-step-assembly
+   :write-step-assembly
+   :assembly
+   :make-part
+   :make-assembly
+   :assembly-shape
+   :assembly-name
+   :assembly-color
+   :assembly-location
+   :assembly-children
+   :assembly-leaf-p
+   :assembly-branch-p
    :defmodel
    :param
    :model-ref
