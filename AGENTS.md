@@ -2,48 +2,47 @@
 
 ## Project state
 
-The initial implementation (v1-core, 44/44 tasks) is committed at `cfe2a0a` and archived at `openspec/changes/archive/2026-05-18-v1-core/`. No active changes.
+7 completed changes archived in `openspec/changes/archive/`. No active changes.
 
-## Workflow
+## Workflow (OpenCode slash commands)
 
-- **Propose**: `/opsx-propose <name>` — creates proposal, design, tasks, specs
-- **Implement**: `/opsx-apply <name>` — iterates through tasks, marks `[x]`
-- **Archive**: `/opsx-archive <name>` — moves to `openspec/changes/archive/`
-- **Explore**: `/opsx-explore` — thinking partner, no implementation
-- Run `openspec list --json` to see active changes
+- `/opsx-propose <name>` — create proposal + design + tasks + specs
+- `/opsx-apply <name>` — implement tasks iteratively, marks `[x]`
+- `/opsx-archive <name>` — move to `openspec/changes/archive/`
+- `/opsx-explore` — thinking partner, no code generation
 
 ## Architecture
 
 ```
-SBCL + CFFI → libocctwrap.so → OCCT shared libs
+SBCL + CFFI → lib/libocctwrap.so → OCCT shared libs (.local/)
 ```
 
-- `wrap/occt_wrap.cpp` — 14 `extern "C"` functions, no business logic
+- `wrap/occt_wrap.[h|cpp]` — thin `extern "C"` bridge, no business logic
 - `src/ffi/` — CFFI `defcfun` bindings (`%`-prefixed)
-- `src/core/` — CLOS `shape` + `tg:finalize` GC, primitives, booleans, transforms, STEP I/O
-- `src/dag/` — reactive DAG: parameter store, model registry, topological evaluation
-- `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!` macros
-- `src/package.lisp` — `cl-occt` and `cl-occt.impl` packages
+- `src/core/` — CLOS `shape` + `geom2d` with `tg:finalize` GC, primitives, booleans, transforms, faces, 2D curves, assembly tree, STEP/STL I/O
+- `src/dag/` — reactive DAG: `*params*` store, `*model-registry*`, topological sort, dirty propagation
+- `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros
+- `src/package.lisp` — `cl-occt` (public API) and `cl-occt.impl` (internal)
 
-## Build
+## Build & test
 
-- `just setup` — one-time ~15 min: downloads OCCT 8.0, CMake build, installs to `.local/`
-- `just wrap` — compiles `wrap/occt_wrap.cpp` → `lib/libocctwrap.so`
-- `just start` — SBCL with Quicklisp, loads system, lands in `CL-OCCT`
-- `just repl` — SBCL standalone (no Quicklisp), loads system, lands in `CL-OCCT`
-- `just clean` — removes OCCT build artifacts
-- `.local/` and `lib/` are gitignored
+| Command | What |
+|---------|------|
+| `just setup` | Download + CMake build OCCT 8.0 (~15 min, one-time) |
+| `just wrap` | Compile `wrap/occt_wrap.cpp` → `lib/libocctwrap.so` |
+| `just start` | SBCL + Quicklisp, loads system, lands in `CL-OCCT` |
+| `just repl` | SBCL standalone (no Quicklisp) |
+| `(asdf:test-system :cl-occt)` | 89 tests in `t/smoke-tests.lisp` |
+| `(cl-occt::run-tests)` | Same |
 
-## Testing
-
-- `(asdf:test-system :cl-occt)` or `(cl-occt::run-tests)` — 27 smoke tests
-- Tests: `t/smoke-tests.lisp` (primitives, booleans, transforms, IO, DAG, DSL)
+Prerequisites: `sbcl curl build-essential cmake libc6`. Quicklisp required for `just start`.
 
 ## Conventions
 
-- Dependencies: CFFI, trivial-garbage, alexandria (see `cl-occt.asd`)
-- C wrapper errors: returns `nullptr`, thread-local error string via `get_error_code`/`get_error_message`
-- DAG nil propagation: model returning nil passes nil to dependents
-- C FFI functions use `%` prefix (`%make-box`, `%boolean-cut`)
-- `make-shape` wraps pointer in CLOS `shape` + `tg:finalize`; returns nil on null pointer
-- `defmodel` statically scans body for `(model-ref 'name)` to build dependency graph
+- **Library, not app** — no GUI, no main entrypoint, use from REPL or scripts
+- **`%` prefix** — CFFI functions (`%make-box`, `%boolean-cut`); use core wrappers instead
+- **GC** — `make-shape` / `make-geom2d` wrap C pointer in CLOS + `tg:finalize`; return nil on null pointer
+- **Error handling** — invalid/degenerate inputs return nil, C-level errors via `(get-error-message)` (defined in `src/core/errors.lisp`, inside `cl-occt` package)
+- **DAG nil propagation** — model returning nil passes nil to all dependents
+- **`defmodel`** — statically scans body for `(model-ref 'name)` to build dependency graph
+- **Dependencies** — CFFI, trivial-garbage, alexandria (see `cl-occt.asd`)
