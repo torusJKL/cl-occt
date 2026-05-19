@@ -113,6 +113,20 @@
   (x2 :double) (y2 :double)
   (x3 :double) (y3 :double))
 
+(defcfun (%make-compound "make_compound") :pointer
+  (shapes :pointer)
+  (count :int))
+
+(defcfun (%add-to-compound "add_to_compound") :pointer
+  (compound :pointer)
+  (shape :pointer))
+
+(defcfun (%compound-is-empty "compound_is_empty") :int
+  (shape :pointer))
+
+(defcfun (%shape-is-compound "shape_is_compound") :int
+  (shape :pointer))
+
 (defcfun (%make-wire "make_wire") :pointer
   (edges :pointer)
   (count :int))

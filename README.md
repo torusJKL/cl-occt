@@ -70,6 +70,10 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
               "result.step")
   (write-stl (cut box (translate sphere 15 10 5))
              "result.stl"
+             :deflection 0.05)
+  ;; Export multiple shapes as a single STL
+  (write-stl (make-compound (list box sphere))
+             "compound.stl"
              :deflection 0.05))
 ```
 
@@ -181,9 +185,9 @@ Three layers:
  SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
 ```
 
-- `wrap/occt_wrap.cpp` — 53 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 57 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
+- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -240,6 +244,28 @@ Original shape is unchanged. Nil in → nil out.
 |----------|-------------|
 | `(write-stl shape path &key deflection)` | Export to binary STL file (deflection=0.1) |
 | `(read-stl path)` | Import from STL file |
+
+### Compounds
+
+| Function | Description |
+|----------|-------------|
+| `(make-compound list-of-shapes)` | Collect shapes into a `TopoDS_Compound` for multi-shape I/O |
+| `(add-to-compound compound shape)` | Add a shape to an existing compound; returns updated compound |
+| `(compound-shape-p obj)` | Predicate: returns `t` for compound shapes, `nil` otherwise |
+
+Nil shapes in the input list are silently skipped. If all shapes are nil or the list is empty, returns nil. Pass the result directly to `(write-stl ...)` to export all sub-shapes as a single STL file.
+
+```lisp
+;; Export multiple shapes as one STL
+(let ((c (make-compound (list (make-box 30 20 10)
+                               (translate (make-sphere 8) 15 10 5)))))
+  (write-stl c "assembly.stl" :deflection 0.05))
+
+;; Incremental building
+(let ((c (make-compound (list (make-box 10 20 30)))))
+  (add-to-compound c (make-cylinder 5 20))
+  (write-stl c "parts.stl"))
+```
 
 ### Assembly Tree (Colored STEP I/O)
 
@@ -325,6 +351,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── geom2d.lisp    geom2d class, make-pnt2d, make-vec2d, make-dir2d, make-line2d, make-circle2d
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common, section
+│   │   ├── compounds.lisp make-compound, add-to-compound, compound-shape-p
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
@@ -339,7 +366,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  84 smoke tests
+│   └── smoke-tests.lisp  101 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```
