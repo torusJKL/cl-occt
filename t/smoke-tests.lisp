@@ -301,6 +301,29 @@
 (deftest read-step-nonexistent
   (assert-nil (read-step "/tmp/clocct-nonexistent.step")))
 
+;; --- STL I/O ---
+
+(deftest write-stl-valid
+  (let ((result (write-stl (make-box 10 20 30) "/tmp/clocct-test-box.stl")))
+    (assert-true result "write-stl should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.stl") "STL file should exist"))
+
+(deftest write-stl-nil
+  (assert-nil (write-stl nil "/tmp/clocct-test-nil.stl")))
+
+(deftest read-stl-roundtrip
+  (write-stl (make-box 10 20 30) "/tmp/clocct-test-roundtrip.stl")
+  (let ((shape (read-stl "/tmp/clocct-test-roundtrip.stl")))
+    (assert-shape shape "read-stl should return a shape")))
+
+(deftest read-stl-nonexistent
+  (assert-nil (read-stl "/tmp/clocct-nonexistent.stl")))
+
+(deftest write-stl-deflection
+  (let ((result (write-stl (make-sphere 10) "/tmp/clocct-test-sphere.stl" :deflection 0.05)))
+    (assert-true result "write-stl with custom deflection should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-sphere.stl") "STL file should exist"))
+
 ;; --- DAG ---
 
 (deftest dag-set-param
@@ -357,6 +380,8 @@
                rotate-shape
                write-step-valid write-step-nil
                read-step-roundtrip read-step-nonexistent
+               write-stl-valid write-stl-nil
+               read-stl-roundtrip read-stl-nonexistent write-stl-deflection
                dag-set-param dag-set-params-batch
                param-function-global with-params-local with-params-does-not-leak))
       (funcall test-sym))

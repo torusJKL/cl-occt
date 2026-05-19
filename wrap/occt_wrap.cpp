@@ -29,6 +29,9 @@
 #include <GC_MakeSegment.hxx>
 #include <STEPControl_Writer.hxx>
 #include <STEPControl_Reader.hxx>
+#include <BRepMesh_IncrementalMesh.hxx>
+#include <StlAPI_Writer.hxx>
+#include <StlAPI_Reader.hxx>
 #include <IFSelect_ReturnStatus.hxx>
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
@@ -308,6 +311,44 @@ occt_shape read_step(const char* filename) {
         TopoDS_Shape shape = reader.OneShape();
         if (shape.IsNull()) {
             set_error("STEP file contains no shape");
+            return nullptr;
+        }
+        return from_shape(shape);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int write_stl(occt_shape shape, const char* filename, double deflection) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        BRepMesh_IncrementalMesh mesh(*to_shape(shape), deflection);
+        StlAPI_Writer writer;
+        writer.ASCIIMode() = false;
+        if (!writer.Write(*to_shape(shape), filename)) {
+            set_error("STL write failed");
+            return 0;
+        }
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+occt_shape read_stl(const char* filename) {
+    clear_error();
+    try {
+        StlAPI_Reader reader;
+        TopoDS_Shape shape;
+        if (!reader.Read(shape, filename)) {
+            set_error("STL read failed");
+            return nullptr;
+        }
+        if (shape.IsNull()) {
+            set_error("STL file contains no shape");
             return nullptr;
         }
         return from_shape(shape);

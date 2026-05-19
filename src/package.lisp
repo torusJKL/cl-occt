@@ -16,6 +16,8 @@
    :%rotate
    :%write-step
    :%read-step
+   :%write-stl
+   :%read-stl
    :%free-shape
    :%free-geom2d
    :%make-pnt2d
@@ -87,6 +89,8 @@
    :rotate
    :write-step
    :read-step
+   :write-stl
+   :read-stl
    :defmodel
    :param
    :model-ref
