@@ -163,3 +163,82 @@
                         :message (%get-error-message))
                  t)))
       (%xde-free-doc doc))))
+
+;; --- DAG Model STEP Import ---
+
+(defvar *dag-import-counter* 0)
+
+(defun %dag-import-name (name)
+  (if name
+      (intern (string-upcase (substitute #\- #\Space name)) :keyword)
+      (intern (format nil "PART-~A" (incf *dag-import-counter*)) :keyword)))
+
+(defun %import-node-into-dag (doc path)
+  (let* ((shape-ptr (%xde-get-shape-at doc path))
+         (shape (make-shape shape-ptr))
+         (disp-name (%xde-get-name doc path))
+         (color (%xde-get-color doc path))
+         (model-name (%dag-import-name disp-name))
+         (child-paths (%xde-get-child-paths doc path)))
+    (when shape
+      (let ((m (make-model :name model-name
+                           :fn (lambda () shape)
+                           :param-keys nil
+                           :model-deps nil
+                           :dirty nil
+                           :cached-shape shape
+                           :color color
+                           :display-name disp-name)))
+        (register-model model-name m)))
+    (dolist (child-path child-paths)
+      (%import-node-into-dag doc child-path))))
+
+(defun read-step-into-dag (filename)
+  (let ((doc (%xde-read-step filename)))
+    (if (cffi:null-pointer-p doc)
+        nil
+        (unwind-protect
+             (let ((root-paths (%xde-get-root-paths doc)))
+               (if (null root-paths)
+                   nil
+                   (progn
+                     (setf *dag-import-counter* 0)
+                     (dolist (path root-paths)
+                       (%import-node-into-dag doc path))
+                     t)))
+          (%xde-free-doc doc)))))
+
+;; --- DAG Model STEP Export ---
+
+(defun write-dag-models-to-step (filename)
+  (let ((doc (%xde-new-doc))
+        (count 0))
+    (unwind-protect
+         (progn
+           (loop for name being the hash-keys of *model-registry*
+                 using (hash-value m)
+                 for shape = (model-cached-shape m)
+                 when (and shape (not (cffi:null-pointer-p (%ptr shape))))
+                   do (let ((buf (cffi:foreign-alloc :char :count 256)))
+                       (unwind-protect
+                            (multiple-value-bind (color-type r g b a)
+                                (parse-color (cl-occt.impl:model-color m))
+                              (%xde-add-part doc ""
+                                             (%ptr shape)
+                                             (or (cl-occt.impl:model-display-name m) "")
+                                             color-type r g b a
+                                             (cffi:null-pointer)
+                                             buf 256)
+                              (incf count))
+                         (cffi:foreign-free buf))))
+           (if (zerop count)
+               (progn
+                 (warn "write-dag-models-to-step: no models with shapes found")
+                 nil)
+               (let ((result (%xde-write-step doc filename)))
+                 (if (zerop result)
+                     (error 'occt-error
+                            :code (%get-error-code)
+                            :message (%get-error-message))
+                     t))))
+      (%xde-free-doc doc))))

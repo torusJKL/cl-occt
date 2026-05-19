@@ -58,8 +58,11 @@
    :model-model-deps
    :model-dependents
    :model-dirty
-   :model-cached-shape
-   :model-last-param-hash
+    :model-cached-shape
+    :model-last-param-hash
+    :model-color
+    :model-display-name
+    :model-layer
    :register-model
    :find-model
    :unregister-model
@@ -70,6 +73,7 @@
 
 (defpackage :cl-occt
   (:use :cl :cl-occt.impl)
+  (:shadow :model-color :model-display-name :model-layer)
   (:export
    :shape
    :shape-p
@@ -106,6 +110,8 @@
    :read-stl
    :read-step-assembly
    :write-step-assembly
+   :write-dag-models-to-step
+   :read-step-into-dag
    :assembly
    :make-part
    :make-assembly
@@ -116,6 +122,9 @@
    :assembly-children
    :assembly-leaf-p
    :assembly-branch-p
+   :model-color
+   :model-display-name
+   :model-layer
    :defmodel
    :param
    :model-ref

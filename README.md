@@ -104,6 +104,37 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
 (param :w)                       ; => 30, global unchanged
 ```
 
+### Model metadata (color, name, layer)
+
+Models carry optional metadata that round-trips through STEP export.
+
+```lisp
+(set-params! :w 30 :d 20 :h 10 :col '(:generic 1.0 0.0 0.0 1.0))
+
+;; Static metadata
+(defmodel red-box (:w :d :h)
+  (:color (:generic 1.0 0.0 0.0 1.0))
+  (:name "Red Box")
+  (:layer "mechanical")
+  (make-box (param :w) (param :d) (param :h)))
+
+;; Parametric metadata — color from a parameter
+(defmodel colored-box (:w :d :h :col)
+  (:color (param :col))
+  (make-box (param :w) (param :d) (param :h)))
+
+;; Read metadata
+(model-color 'red-box)        ; => (:generic 1.0 0.0 0.0 1.0)
+(model-display-name 'red-box) ; => "Red Box"
+(model-layer 'red-box)        ; => "mechanical"
+
+;; Export all DAG models with metadata to STEP
+(write-dag-models-to-step "models.step")
+
+;; Import a STEP assembly into the DAG registry
+(read-step-into-dag "models.step")
+```
+
 ### Run the test suite
 
 ```lisp
@@ -200,6 +231,8 @@ Original shape is unchanged. Nil in → nil out.
 |----------|-------------|
 | `(write-step shape path)` | Export to STEP AP203 file |
 | `(read-step path)` | Import from STEP file |
+| `(write-dag-models-to-step path)` | Export all DAG models with metadata to STEP |
+| `(read-step-into-dag path)` | Import STEP assembly into DAG registry as models |
 
 ### STL I/O
 
@@ -233,9 +266,12 @@ Colors are plists: `(:generic r g b a)`, `(:surf r g b a)`, `(:curv r g b a)` wi
 
 | Form | Description |
 |------|-------------|
-| `(defmodel name (keys) body...)` | Define a parametric model |
+| `(defmodel name (keys) body...)` | Define a parametric model. Body may include `(:color ...)`, `(:name "...")`, `(:layer "...")` metadata clauses before shape forms |
 | `(param key)` | Read parameter (local then global) |
 | `(model-ref name)` | Reference another model's cached result |
+| `(model-color name)` | Get model's color plist `(:type r g b a)` or nil |
+| `(model-display-name name)` | Get model's display name string or nil |
+| `(model-layer name)` | Get model's layer string or nil |
 | `(set-param! key value)` | Set global parameter, trigger propagation |
 | `(set-params! &rest kv)` | Batch-set parameters, single propagation pass |
 | `(with-params (&rest kv) body...)` | Local parameter scope |
@@ -303,7 +339,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  67 smoke tests
+│   └── smoke-tests.lisp  84 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

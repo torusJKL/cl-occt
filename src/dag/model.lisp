@@ -8,4 +8,7 @@
   (dependents nil :type list)
   (dirty nil :type boolean)
   (cached-shape nil)
-  (last-param-hash nil :type (or null fixnum)))
+  (last-param-hash nil :type (or null fixnum))
+  (color nil :type (or null list))
+  (display-name nil :type (or null string))
+  (layer nil :type (or null string)))
