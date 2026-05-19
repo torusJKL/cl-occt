@@ -474,7 +474,7 @@ occt_shape make_edge_arc_2d(double x1, double y1, double x2, double y2, double x
             set_error("arc of circle construction failed");
             return nullptr;
         }
-        Handle(Geom_Curve) arc = arcMaker.Value();
+        Handle(Geom_TrimmedCurve) arc = arcMaker.Value();
         BRepBuilderAPI_MakeEdge maker(arc);
         return from_shape(maker.Shape());
     } catch (Standard_Failure& e) {

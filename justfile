@@ -1,6 +1,6 @@
 root-dir := justfile_directory()
 occt-version := "8.0.0"
-occt-url := "https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V8_0_0.tar.gz"
+occt-url := "https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V" + replace(occt-version, ".", "_") + ".tar.gz"
 occt-tarball := root-dir + "/.local/occt.tar.gz"
 occt-src := root-dir + "/.local/occt-src"
 occt-build := root-dir + "/.local/occt-build"
@@ -13,7 +13,7 @@ default:
     @echo "Usage: just <recipe>"
     @echo ""
     @echo "Recipes:"
-    @echo "  setup   Download & build OCCT 8.0 (one-time ~15 min)"
+    @echo "  setup   Download & build OCCT {{occt-version}} (one-time ~15 min)"
     @echo "  wrap    Compile C wrapper → lib/libocctwrap.so"
     @echo "  start   Launch SBCL REPL with cl-occt loaded (via Quicklisp)"
     @echo "  repl    Launch SBCL REPL with cl-occt loaded (standalone)"
