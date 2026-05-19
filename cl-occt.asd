@@ -20,8 +20,9 @@
         (:file "geom2d")
         (:file "faces")
         (:file "booleans")
-        (:file "transforms")
-        (:file "io")))
+         (:file "transforms")
+         (:file "assembly")
+         (:file "io")))
      (:module "dag"
       :components
       ((:file "params")

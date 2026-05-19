@@ -32,9 +32,22 @@
    :%make-wire
    :%make-face
    :%make-face-on-plane
-   :%get-error-code
-   :%get-error-message
-    :make-shape
+    :%get-error-code
+    :%get-error-message
+    :%xde-new-doc
+    :%xde-free-doc
+    :%xde-read-step
+    :%xde-write-step
+    :%xde-get-root-count
+    :%xde-get-root-path
+    :%xde-get-child-count
+    :%xde-get-child-path
+    :%xde-get-shape-at
+    :%xde-get-name-at
+    :%xde-get-color-at
+    :%xde-get-location-at
+    :%xde-add-part
+     :make-shape
     :make-geom2d
     :*params*
    :model
@@ -45,8 +58,11 @@
    :model-model-deps
    :model-dependents
    :model-dirty
-   :model-cached-shape
-   :model-last-param-hash
+    :model-cached-shape
+    :model-last-param-hash
+    :model-color
+    :model-display-name
+    :model-layer
    :register-model
    :find-model
    :unregister-model
@@ -57,6 +73,7 @@
 
 (defpackage :cl-occt
   (:use :cl :cl-occt.impl)
+  (:shadow :model-color :model-display-name :model-layer)
   (:export
    :shape
    :shape-p
@@ -91,6 +108,23 @@
    :read-step
    :write-stl
    :read-stl
+   :read-step-assembly
+   :write-step-assembly
+   :write-dag-models-to-step
+   :read-step-into-dag
+   :assembly
+   :make-part
+   :make-assembly
+   :assembly-shape
+   :assembly-name
+   :assembly-color
+   :assembly-location
+   :assembly-children
+   :assembly-leaf-p
+   :assembly-branch-p
+   :model-color
+   :model-display-name
+   :model-layer
    :defmodel
    :param
    :model-ref
