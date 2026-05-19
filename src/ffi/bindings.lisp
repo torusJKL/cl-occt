@@ -128,6 +128,14 @@
 (defcfun (%free-shape "free_shape") :void
   (shape :pointer))
 
+(defcfun (%write-stl "write_stl") :int
+  (shape :pointer)
+  (filename :string)
+  (deflection :double))
+
+(defcfun (%read-stl "read_stl") :pointer
+  (filename :string))
+
 (defcfun (%get-error-code "get_error_code") :int)
 
 (defcfun (%get-error-message "get_error_message") :string)

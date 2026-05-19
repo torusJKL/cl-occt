@@ -1,7 +1,7 @@
 # cl-occt — Common Lisp OCCT Library
 
 A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
-Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O,
+Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
 a reactive DAG engine, and a parametric DSL (`defmodel`, `param`, `model-ref`).
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
@@ -67,7 +67,10 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
 (let ((box (make-box 30 20 10))
       (sphere (make-sphere 8)))
   (write-step (cut box (translate sphere 15 10 5))
-              "result.step"))
+              "result.step")
+  (write-stl (cut box (translate sphere 15 10 5))
+             "result.stl"
+             :deflection 0.05))
 ```
 
 ### Parametric DAG
@@ -123,9 +126,9 @@ Three layers:
  SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
 ```
 
-- `wrap/occt_wrap.cpp` — 31 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 33 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, 2D geometry, face construction.
+- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -173,6 +176,13 @@ Original shape is unchanged. Nil in → nil out.
 |----------|-------------|
 | `(write-step shape path)` | Export to STEP AP203 file |
 | `(read-step path)` | Import from STEP file |
+
+### STL I/O
+
+| Function | Description |
+|----------|-------------|
+| `(write-stl shape path &key deflection)` | Export to binary STL file (deflection=0.1) |
+| `(read-stl path)` | Import from STL file |
 
 ### Parametric DSL
 
@@ -235,7 +245,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common, section
 │   │   ├── transforms.lisp translate, rotate
-│   │   ├── io.lisp       write-step, read-step
+│   │   ├── io.lisp       write-step, read-step, write-stl, read-stl
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store
@@ -247,7 +257,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  55 smoke tests
+│   └── smoke-tests.lisp  67 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

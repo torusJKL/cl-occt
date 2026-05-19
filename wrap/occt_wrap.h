@@ -28,6 +28,9 @@ occt_shape rotate(occt_shape shape, double ax, double ay, double az, double angl
 int write_step(occt_shape shape, const char* filename);
 occt_shape read_step(const char* filename);
 
+int write_stl(occt_shape shape, const char* filename, double deflection);
+occt_shape read_stl(const char* filename);
+
 void free_shape(occt_shape shape);
 
 occt_geom2d make_pnt2d(double x, double y);

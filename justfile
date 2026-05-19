@@ -47,7 +47,7 @@ wrap:
         -I{{occt-install}}/include/opencascade \
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
-        -lTKDESTEP -lTKXSBase \
+        -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh \
         -Wl,-rpath,{{occt-install}}/lib
 
 start:
