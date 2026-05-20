@@ -267,3 +267,71 @@
   `(let ((,var (make-viewer)))
      (unwind-protect (progn ,@body)
        (free-viewer ,var))))
+
+;; --- Trihedron ---
+
+(defparameter *trihedron-corner-map*
+  '((:lower-left   . 0)
+    (:upper-left   . 1)
+    (:lower-right  . 2)
+    (:upper-right  . 3)
+    (:center       . 4)))
+
+(defparameter *trihedron-datum-mode-map*
+  '((:wireframe . 0)
+    (:shaded    . 1)))
+
+(defun make-trihedron (&key (origin '(0 0 0)) (normal '(0 0 1)) (x-direction '(1 0 0)))
+  (destructuring-bind (ox oy oz) origin
+    (destructuring-bind (dx dy dz) normal
+      (destructuring-bind (ux uy uz) x-direction
+        (let ((ptr (%ais-create-trihedron
+                    (coerce ox 'double-float)
+                    (coerce oy 'double-float)
+                    (coerce oz 'double-float)
+                    (coerce dx 'double-float)
+                    (coerce dy 'double-float)
+                    (coerce dz 'double-float)
+                    (coerce ux 'double-float)
+                    (coerce uy 'double-float)
+                    (coerce uz 'double-float))))
+          (if (cffi:null-pointer-p ptr)
+              nil
+              (let ((obj (make-instance 'ais-object :ptr ptr)))
+                (tg:finalize obj (lambda () (ais-free obj)))
+                obj)))))))
+
+(defun set-trihedron-mode (tri mode)
+  (when (ais-object-p tri)
+    (let ((mode-int (%lookup mode *trihedron-datum-mode-map*))
+          (ptr (%ptr tri)))
+      (when (and mode-int ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-trihedron-set-datum-mode ptr mode-int)))))
+
+(defun set-trihedron-arrows (tri on)
+  (when (ais-object-p tri)
+    (let ((ptr (%ptr tri)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-trihedron-set-draw-arrows ptr (if on 1 0))))))
+
+(defun set-trihedron-size (tri size)
+  (when (ais-object-p tri)
+    (let ((ptr (%ptr tri)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-trihedron-set-size ptr (coerce size 'double-float))))))
+
+(defun set-trihedron-corner (tri corner &key (x-offset 50) (y-offset 50))
+  (when (ais-object-p tri)
+    (let ((corner-int (%lookup corner *trihedron-corner-map*))
+          (ptr (%ptr tri)))
+      (when (and corner-int ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-trihedron-set-transform-pers ptr corner-int
+                                           x-offset y-offset)))))
+
+(defun show-trihedron (context viewer &key (corner :lower-left) (size 50))
+  (let ((tri (make-trihedron)))
+    (when tri
+      (set-trihedron-corner tri corner :x-offset 50 :y-offset 50)
+      (set-trihedron-size tri size)
+      (ais-display context tri)
+      tri)))

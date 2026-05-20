@@ -2,7 +2,8 @@
 
 A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
 Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
-a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), a 3D viewer, and AIS display.
+a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), a full 3D viewer with object display,
+styling, camera control, and a trihedron orientation aid.
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
@@ -153,6 +154,7 @@ Models carry optional metadata that round-trips through STEP export.
 (with-viewer (v)
   (let ((ctx (ais-create-context v)))
     (ais-display ctx (make-box 10 20 30))
+    (show-trihedron ctx v :corner :lower-left)
     (fit-all v)))
 ```
 
@@ -215,7 +217,7 @@ Three layers:
  └──────────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 86 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 91 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
@@ -415,6 +417,17 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(activate-grid viewer grid-type draw-mode)` | Show grid (`:rectangular`/`:circular`, `:lines`/`:points`) |
 | `(deactivate-grid viewer)` | Hide grid |
 
+### Trihedron
+
+| Function | Description |
+|----------|-------------|
+| `(make-trihedron &key origin normal x-direction)` | Create a 3D axis indicator |
+| `(set-trihedron-mode obj mode)` | Set datum mode (`:wireframe` or `:shaded`) |
+| `(set-trihedron-arrows obj bool)` | Show/hide arrowheads |
+| `(set-trihedron-size obj size)` | Set visual size |
+| `(set-trihedron-corner obj corner &key x-offset y-offset)` | Pin to screen corner (`:lower-left`, `:upper-right`, etc.) |
+| `(show-trihedron ctx viewer &key corner size)` | Create, configure, and display a trihedron in one call |
+
 ### Introspection
 
 ## Project structure
@@ -423,7 +436,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (81 functions)
+│   ├── occt_wrap.h       C header (86 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -453,7 +466,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~121 smoke tests
+│   └── smoke-tests.lisp  ~128 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

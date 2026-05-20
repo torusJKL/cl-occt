@@ -331,3 +331,22 @@
 
 (defcfun (%v3d-view-invalidate "v3d_view_invalidate") :void
   (view :pointer))
+
+;; --- Trihedron ---
+
+(defcfun (%ais-create-trihedron "ais_create_trihedron") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double)
+  (ux :double) (uy :double) (uz :double))
+
+(defcfun (%ais-trihedron-set-datum-mode "ais_trihedron_set_datum_mode") :void
+  (obj :pointer) (mode :int))
+
+(defcfun (%ais-trihedron-set-draw-arrows "ais_trihedron_set_draw_arrows") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-trihedron-set-size "ais_trihedron_set_size") :void
+  (obj :pointer) (size :double))
+
+(defcfun (%ais-trihedron-set-transform-pers "ais_trihedron_set_transform_pers") :void
+  (obj :pointer) (corner :int) (x-off :int) (y-off :int))

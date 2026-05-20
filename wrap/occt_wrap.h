@@ -120,6 +120,14 @@ void v3d_viewer_activate_grid(void* viewer, int gridType, int drawMode);
 void v3d_viewer_deactivate_grid(void* viewer);
 void v3d_view_invalidate(void* view);
 
+void* ais_create_trihedron(double ox, double oy, double oz,
+                           double dx, double dy, double dz,
+                           double ux, double uy, double uz);
+void  ais_trihedron_set_datum_mode(void* obj, int mode);
+void  ais_trihedron_set_draw_arrows(void* obj, int on);
+void  ais_trihedron_set_size(void* obj, double size);
+void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
+
 #ifdef __cplusplus
 }
 #endif

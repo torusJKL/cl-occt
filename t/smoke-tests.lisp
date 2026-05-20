@@ -666,6 +666,45 @@
     (activate-grid v :circular :points)
     t))
 
+;; --- Trihedron Tests ---
+
+(deftest make-trihedron-defaults
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri) "make-trihedron with defaults should return ais-object")))
+
+(deftest make-trihedron-zero-normal
+  (assert-nil (make-trihedron :normal '(0 0 0)) "make-trihedron with zero normal should return nil"))
+
+(deftest set-trihedron-mode-shaded
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-mode tri :shaded)
+    t))
+
+(deftest set-trihedron-arrows-nil
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-arrows tri nil)
+    t))
+
+(deftest set-trihedron-size-100
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-size tri 100)
+    t))
+
+(deftest set-trihedron-corner-lower-right
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-corner tri :lower-right)
+    t))
+
+(deftest show-trihedron-in-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (let ((tri (show-trihedron ctx v :corner :lower-left :size 50)))
+        (assert-true (ais-object-p tri) "show-trihedron should return ais-object")))))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -731,7 +770,14 @@
                set-msaa-roundtrip
                set-antialiasing-roundtrip
                activate-grid-rectangular-lines
-               activate-grid-circular-points))
+               activate-grid-circular-points
+               make-trihedron-defaults
+               make-trihedron-zero-normal
+               set-trihedron-mode-shaded
+               set-trihedron-arrows-nil
+               set-trihedron-size-100
+               set-trihedron-corner-lower-right
+               show-trihedron-in-context))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

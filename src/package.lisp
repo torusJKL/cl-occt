@@ -79,9 +79,14 @@
       :%v3d-view-get-msaa
       :%v3d-view-set-antialiasing
       :%v3d-view-get-antialiasing
-      :%v3d-viewer-activate-grid
-      :%v3d-viewer-deactivate-grid
-      :%v3d-view-invalidate
+       :%v3d-viewer-activate-grid
+       :%v3d-viewer-deactivate-grid
+       :%v3d-view-invalidate
+       :%ais-create-trihedron
+       :%ais-trihedron-set-datum-mode
+       :%ais-trihedron-set-draw-arrows
+       :%ais-trihedron-set-size
+       :%ais-trihedron-set-transform-pers
        :make-shape
     :make-geom2d
     :*params*
@@ -205,6 +210,12 @@
       :msaa
       :set-antialiasing
       :antialiasing-p
-      :activate-grid
-      :deactivate-grid
-      :invalidate-view))
+       :activate-grid
+       :deactivate-grid
+       :invalidate-view
+       :make-trihedron
+       :set-trihedron-mode
+       :set-trihedron-arrows
+       :set-trihedron-size
+       :set-trihedron-corner
+       :show-trihedron))

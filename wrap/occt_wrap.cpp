@@ -66,6 +66,13 @@
 #include <Aspect_GridType.hxx>
 #include <Aspect_GridDrawMode.hxx>
 #include <V3d_TypeOfOrientation.hxx>
+#include <AIS_Trihedron.hxx>
+#include <Geom_Axis2Placement.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Dir.hxx>
+#include <Graphic3d_TransformPers.hxx>
+#include <Prs3d_DatumMode.hxx>
+#include <Aspect_TypeOfTriedronPosition.hxx>
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -1203,6 +1210,79 @@ int ais_context_is_displayed(void* ctx_ptr, void* obj_ptr) {
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return 0;
+    }
+}
+
+// --- Trihedron ---
+
+void* ais_create_trihedron(double ox, double oy, double oz,
+                           double dx, double dy, double dz,
+                           double ux, double uy, double uz) {
+    clear_error();
+    double nmag = sqrt(dx*dx + dy*dy + dz*dz);
+    double xmag = sqrt(ux*ux + uy*uy + uz*uz);
+    if (nmag < Precision::Confusion() || xmag < Precision::Confusion()) {
+        set_error("zero direction vector in trihedron construction", 2);
+        return nullptr;
+    }
+    try {
+        gp_Pnt origin(ox, oy, oz);
+        gp_Dir normal(dx, dy, dz);
+        gp_Dir xDir(ux, uy, uz);
+        Handle(Geom_Axis2Placement) axis = new Geom_Axis2Placement(origin, normal, xDir);
+        Handle(AIS_Trihedron)* h = new Handle(AIS_Trihedron)(new AIS_Trihedron(axis));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_trihedron_set_datum_mode(void* obj_ptr, int mode) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        (**obj).SetDatumDisplayMode(static_cast<Prs3d_DatumMode>(mode));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_trihedron_set_draw_arrows(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        (**obj).SetDrawArrows(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_trihedron_set_size(void* obj_ptr, double size) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        (**obj).SetSize(size);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_trihedron_set_transform_pers(void* obj_ptr, int corner, int xOff, int yOff) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        Handle(Graphic3d_TransformPers) pers =
+            new Graphic3d_TransformPers(Graphic3d_TMF_TriedronPers,
+                                         static_cast<Aspect_TypeOfTriedronPosition>(corner),
+                                         NCollection_Vec2<int>(xOff, yOff));
+        (**obj).SetTransformPersistence(pers);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
     }
 }
 
