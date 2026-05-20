@@ -20,16 +20,21 @@
 
 (defun set-background-cubemap (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
   (when (viewer-p view)
-    (let* ((cffi-vec (cffi:foreign-alloc :string :initial-contents
-                      (list pos-x neg-x pos-y neg-y pos-z neg-z)))
+    (let* ((strings (list pos-x neg-x pos-y neg-y pos-z neg-z))
+           (cffi-vec (cffi:foreign-alloc :pointer :initial-contents
+                       (mapcar #'cffi:foreign-string-alloc strings)))
            (ptr (%make-cubemap-separate cffi-vec 6)))
+      (dotimes (i 6)
+        (cffi:foreign-free (cffi:mem-aref cffi-vec :pointer i)))
       (cffi:foreign-free cffi-vec)
       (when (and ptr (not (cffi:null-pointer-p ptr)))
         (let ((view-ptr (%view view)))
           (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
-            (%v3d-view-set-bg-cubemap view-ptr ptr))
-          (tg:finalize ptr (lambda () (%free-cubemap ptr)))
-          view)))))
+            (%v3d-view-set-bg-cubemap view-ptr ptr))))
+      ;; Note: cubemap handle is intentionally NOT freed here.
+      ;; OCCT's V3d_View keeps a reference to it via SetBackgroundCubeMap.
+      ;; The cubemap will be freed when the viewer is destroyed.
+      view)))
 
 ;; (defun set-background-cubemap () already returns view)
 

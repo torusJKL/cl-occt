@@ -2737,7 +2737,7 @@ void* make_cubemap_separate(const char** paths, int count) {
 
 void free_cubemap(void* cubemap_ptr) {
     if (cubemap_ptr) {
-        delete static_cast<Handle(Graphic3d_CubeMap)*>(cubemap_ptr);
+        delete static_cast<Handle(Graphic3d_CubeMapSeparate)*>(cubemap_ptr);
     }
 }
 
@@ -2746,8 +2746,10 @@ void v3d_view_set_bg_cubemap(void* view_ptr, void* cubemap_ptr) {
     if (!view_ptr || !cubemap_ptr) { set_error("null argument", 2); return; }
     try {
         auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
-        auto* cubemap = static_cast<Handle(Graphic3d_CubeMap)*>(cubemap_ptr);
-        (*view)->SetBackgroundCubeMap(*cubemap, true, true);
+        if (view->IsNull()) { set_error("view handle is null", 2); return; }
+        auto* cubemap = static_cast<Handle(Graphic3d_CubeMapSeparate)*>(cubemap_ptr);
+        if (cubemap->IsNull()) { set_error("cubemap handle is null", 2); return; }
+        (*view)->SetBackgroundCubeMap(*cubemap, false, false);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
