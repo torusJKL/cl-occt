@@ -25,7 +25,8 @@
            (:file "transforms")
            (:file "assembly")
            (:file "io")
-           (:file "viewer")))
+            (:file "viewer")
+            (:file "viewer-colors")))
      (:module "dag"
       :components
       ((:file "params")

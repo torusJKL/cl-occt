@@ -1,24 +1,17 @@
 ## 1. Foundation: viewer-colors (named colors + color system)
 
-- [ ] 1.1 Add `%named-color-rgb` C bridge: takes color name keyword → returns RGB triple via `Quantity_Color(Quantity_NOC_*)`
-- [ ] 1.2 Add `%named-color-exists-p` C bridge: checks if a `Quantity_NameOfColor` value is valid
-- [ ] 1.3 Add `%color-to-rgb` C bridge: converts any `Quantity_Color` handle to (r g b) doubles
-- [ ] 1.4 Add `%make-color-rgb` C bridge: creates `Quantity_Color` from (r g b)
-- [ ] 1.5 Add `%make-color-hls` C bridge: creates `Quantity_Color` from (h l s) via `Quantity_TOC_HLS`
-- [ ] 1.6 Add `%color-delta` C bridge: compute color difference between two `Quantity_Color`
-- [ ] 1.7 Add `%hex-to-color` C bridge: parse hex string → `Quantity_Color`
-- [ ] 1.8 Add CFFI bindings for all color bridge functions in `src/ffi/bindings.lisp`
-- [ ] 1.9 Create `src/core/viewer-colors.lisp` with:
-  - `*named-colors*` alist mapping ~260 keyword → (r g b)
-  - `named-color`, `color-rgb` accessors
-  - `normalize-color` multimethod (keyword, list, hex-string, viewer-color)
-  - `viewer-color` CLOS class with %r %g %b %name slots
-  - `make-color` constructor (:rgb, :hls, :keyword)
-  - `hex-to-rgb`, `color-delta` functions
-  - `list-named-colors`
-- [ ] 1.10 Export all public symbols from `cl-occt` package in `src/package.lisp`
-- [ ] 1.11 Write unit tests: named color lookup, hex parsing, HLS conversion, color delta, invalid inputs
-- [ ] 1.12 Update README with color system documentation
+- [x] 1.1 Named color map as Lisp data (~160 entries), `named-color` lookup function
+- [x] 1.2 `named-color-exists-p` using Lisp alist
+- [x] 1.3 `color-rgb` function handling keyword, list, hex-string, viewer-color
+- [x] 1.4 `make-color` constructor for :rgb, :keyword, :hls
+- [x] 1.5 HLS→RGB conversion via `hls-to-rgb` function (pure Lisp math)
+- [x] 1.6 `color-delta` Euclidean distance function
+- [x] 1.7 `hex-to-rgb` parser for #RRGGBB and #RGB with hex validation
+- [x] 1.8 No C bridge needed — color system implemented entirely in Lisp
+- [x] 1.9 Create `src/core/viewer-colors.lisp` with complete color system
+- [x] 1.10 Export all public symbols from `cl-occt` package in `src/package.lisp`
+- [x] 1.11 Write unit tests: named color lookup, hex parsing, HLS conversion, color delta, invalid inputs
+- [x] 1.12 Update README with color system documentation
 
 ## 2. Core: viewer-camera (camera and view orientation)
 

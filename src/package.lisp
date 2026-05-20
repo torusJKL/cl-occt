@@ -270,6 +270,21 @@
         :text-font-advance-y
         :text-font-set-width-scaling
         :text-font-set-composite-curve-mode
-        :make-multi-line-text
-        :make-formatted-text
-        :text))
+         :make-multi-line-text
+         :make-formatted-text
+         :text
+         :viewer-color
+         :viewer-color-p
+         :make-color
+         :color-rgb
+         :color-r
+         :color-g
+         :color-b
+         :color-name
+         :named-color
+         :normalize-color
+         :hex-to-rgb
+         :color-delta
+         :list-named-colors
+         :named-color-exists-p
+         :hls-to-rgb))

@@ -514,6 +514,32 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
     (fit-all v)))
 ```
 
+### Interactive 3D Text Labels (Viewer)
+
+| Function | Description |
+|----------|-------------|
+| `(make-ais-text-label text &key position color font height)` | Create an interactive 3D text label (`AIS_TextLabel`) for viewer display. Not exported to STL/STEP. |
+| `(ais-text-label-p obj)` | Predicate for ais-text-label objects. |
+| `(ais-free-text-label label)` | Free an ais-text-label's C handle. |
+
+### Color System
+
+| Function | Description |
+|----------|-------------|
+| `(named-color name)` | Look up a named color by keyword (e.g., `:red`, `:steel-blue`, `:gold`). Returns `(r g b)` or nil. |
+| `(named-color-exists-p name)` | Check if a named color exists. |
+| `(list-named-colors)` | Return a list of all ~160 named color keywords. |
+| `(hex-to-rgb hex)` | Parse `#RRGGBB` or `#RGB` hex string. Returns `(r g b)` or nil. |
+| `(normalize-color color)` | Accepts keyword, `(r g b)` list, `#RRGGBB` hex string, or `viewer-color` instance. Returns `(r g b)`. |
+| `(make-color &key keyword rgb hls)` | Create a `viewer-color` instance. `:keyword` looks up a named color, `:rgb` takes `(r g b)`, `:hls` takes `(h l s)`. |
+| `(viewer-color-p obj)` | Predicate for `viewer-color` instances. |
+| `(color-rgb color)` | Get `(r g b)` from any color input type. |
+| `(color-r c)` / `(color-g c)` / `(color-b c)` | Red, green, blue components from `viewer-color`. |
+| `(color-name c)` | The keyword name of a `viewer-color` (or nil if unnamed). |
+| `(color-delta c1 c2)` | Euclidean color difference between two colors (any input types). Returns nil on invalid input. |
+
+Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque`, `:crimson`, `:dark-olive-green`, `:gold`, `:indian-red`, `:khaki`, `:lavender`, `:medium-aquamarine`, `:navy`, `:olive-drab`, `:pale-goldenrod`, `:sienna`, `:tomato`, `:wheat`, etc.) plus numbered variants (`:blue-1`, `:gray-50`, `:orange-1`) and grey spellings (`:grey`, `:dark-grey`).
+
 ### Introspection
 
 ## Project structure
