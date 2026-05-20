@@ -387,6 +387,13 @@
 (defcfun (%ais-trihedron-set-transform-pers "ais_trihedron_set_transform_pers") :void
   (obj :pointer) (corner :int) (x-off :int) (y-off :int))
 
+(defcfun (%ais-trihedron-set-datum-part-color "ais_trihedron_set_datum_part_color") :int
+  (obj :pointer) (part :int)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-trihedron-set-text-color "ais_trihedron_set_text_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
 ;; --- Font & Text ---
 
 (defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer

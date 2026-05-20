@@ -140,6 +140,8 @@ void  ais_trihedron_set_datum_mode(void* obj, int mode);
 void  ais_trihedron_set_draw_arrows(void* obj, int on);
 void  ais_trihedron_set_size(void* obj, double size);
 void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
+int   ais_trihedron_set_datum_part_color(void* obj, int part, double r, double g, double b);
+void  ais_trihedron_set_text_color(void* obj, double r, double g, double b);
 
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);

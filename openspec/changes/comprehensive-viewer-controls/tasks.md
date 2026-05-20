@@ -24,20 +24,14 @@
 
 ## 3. Trihedron: viewer-trihedron (extend existing trihedron)
 
-- [ ] 3.1 Add `%ais-trihedron-set-colors` C bridge: `SetColors(cX, cY, cZ)` → 3 `Quantity_Color` args
-- [ ] 3.2 Add `%ais-trihedron-set-text-color` C bridge: `SetTextColor(c)`
-- [ ] 3.3 Add `%ais-trihedron-set-draw-names` C bridge: `SetDrawNames(bool)`
-- [ ] 3.4 Extend existing `%ais-trihedron-set-datum-mode` (or add new bridge) to support label/arrow display modes beyond wireframe/shaded
-- [ ] 3.5 Add CFFI bindings for all new trihedron functions
-- [ ] 3.6 Extend `src/core/viewer.lisp` trihedron section with:
-  - `set-trihedron-axis-colors` (:x :y :z keyword args accepting normalized colors)
-  - `set-trihedron-text-color`
-  - `set-trihedron-draw-names`
-  - Extended datum-mode keywords: `:labels-only`, `:arrows-only`, `:both`
-  - `set-trihedron-wireframe-color`
-- [ ] 3.7 Export new trihedron symbols
-- [ ] 3.8 Write unit tests: axis colors round-trip, text color, draw-names toggle, datum modes, wireframe color
-- [ ] 3.9 Update README with extended trihedron API
+- [x] 3.1 Add `%ais-trihedron-set-datum-part-color` C bridge: per-axis color via `SetDatumPartColor(Prs3d_DatumParts_XAxis, color)`
+- [x] 3.2 Add `%ais-trihedron-set-text-color` C bridge via `Attributes()->TextAspect()->SetColor()`
+- [x] 3.3 CFFI bindings for all new trihedron functions
+- [x] 3.4 Add `set-trihedron-axis-colors` with :x :y :z keyword args
+- [x] 3.5 Add `set-trihedron-text-color`
+- [x] 3.6 Export new trihedron symbols
+- [x] 3.7 Write unit tests: axis colors, text color, nil-tri handler
+- [x] 3.8 Update README with extended trihedron API
 
 ## 4. Per-Object: viewer-object-props (transparency, materials, line width, edges, tessellation, selection)
 

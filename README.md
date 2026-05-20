@@ -436,6 +436,8 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-trihedron-arrows obj bool)` | Show/hide arrowheads |
 | `(set-trihedron-size obj size)` | Set visual size |
 | `(set-trihedron-corner obj corner &key x-offset y-offset)` | Pin to screen corner (`:lower-left`, `:upper-right`, etc.) |
+| `(set-trihedron-axis-colors obj &key x y z)` | Set per-axis colors (accepts named colors or (r g b) lists; partial update: unspecified axes keep defaults) |
+| `(set-trihedron-text-color obj color)` | Set the color of XYZ axis label text |
 | `(show-trihedron ctx viewer &key corner size)` | Create, configure, and display a trihedron in one call |
 
 ### 3D Text

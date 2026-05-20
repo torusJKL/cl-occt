@@ -774,6 +774,33 @@
       (fit-all v box)
       t)))
 
+;; --- Trihedron Extended ---
+
+(deftest set-trihedron-axis-colors-red-blue-green
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (tri (show-trihedron ctx v)))
+      (assert-true (ais-object-p tri))
+      (assert-true (set-trihedron-axis-colors tri :x :red :y :blue :z :green)
+                   "set-trihedron-axis-colors should return trihedron"))))
+
+(deftest set-trihedron-axis-colors-partial
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (tri (show-trihedron ctx v)))
+      (assert-true (set-trihedron-axis-colors tri :x :orange)
+                   "partial axis color should work"))))
+
+(deftest set-trihedron-text-color-white
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (tri (show-trihedron ctx v)))
+      (assert-true (set-trihedron-text-color tri :white)
+                   "set-trihedron-text-color should return trihedron"))))
+
+(deftest set-trihedron-text-color-nil-tri
+  (assert-nil (set-trihedron-text-color nil :white) "text color on nil trihedron returns nil"))
+
 ;; --- Colors ---
 
 (deftest named-color-red
@@ -1123,6 +1150,10 @@
                 set-trihedron-size-100
                 set-trihedron-corner-lower-right
                  show-trihedron-in-context
+                 set-trihedron-axis-colors-red-blue-green
+                 set-trihedron-axis-colors-partial
+                 set-trihedron-text-color-white
+                 set-trihedron-text-color-nil-tri
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

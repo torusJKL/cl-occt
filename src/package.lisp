@@ -95,10 +95,12 @@
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
         :%ais-create-trihedron
-        :%ais-trihedron-set-datum-mode
-        :%ais-trihedron-set-draw-arrows
-        :%ais-trihedron-set-size
-        :%ais-trihedron-set-transform-pers
+         :%ais-trihedron-set-datum-mode
+         :%ais-trihedron-set-draw-arrows
+         :%ais-trihedron-set-size
+         :%ais-trihedron-set-transform-pers
+         :%ais-trihedron-set-datum-part-color
+         :%ais-trihedron-set-text-color
         :%make-brep-font-from-file
         :%make-brep-font-from-name
         :%free-brep-font
@@ -266,9 +268,11 @@
        :make-trihedron
        :set-trihedron-mode
        :set-trihedron-arrows
-       :set-trihedron-size
+        :set-trihedron-size
         :set-trihedron-corner
         :show-trihedron
+        :set-trihedron-axis-colors
+        :set-trihedron-text-color
         :brep-font
         :brep-font-p
         :make-brep-font-from-file

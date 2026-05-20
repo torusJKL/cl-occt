@@ -74,6 +74,9 @@
 #include <gp_Dir.hxx>
 #include <Graphic3d_TransformPers.hxx>
 #include <Prs3d_DatumMode.hxx>
+#include <Prs3d_Drawer.hxx>
+#include <Prs3d_DatumParts.hxx>
+#include <Prs3d_TextAspect.hxx>
 #include <Aspect_TypeOfTriedronPosition.hxx>
 #include <Font_FontAspect.hxx>
 #include <Font_StrictLevel.hxx>
@@ -1300,6 +1303,40 @@ void ais_trihedron_set_size(void* obj_ptr, double size) {
         set_error(e.what());
     }
 }
+
+// Prs3d_DatumPart indices: 0=XAxis, 1=YAxis, 2=ZAxis
+int ais_trihedron_set_datum_part_color(void* obj_ptr, int part, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return 0; }
+    if (part < 0 || part > 2) { set_error("invalid datum part (0=X, 1=Y, 2=Z)", 2); return 0; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        static const Prs3d_DatumParts parts[] = {
+            Prs3d_DatumParts_XAxis,
+            Prs3d_DatumParts_YAxis,
+            Prs3d_DatumParts_ZAxis
+        };
+        (**obj).SetDatumPartColor(parts[part], Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_trihedron_set_text_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        (**obj).Attributes()->TextAspect()->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// draw-names is not available in OCCT 8.0 AIS_Trihedron API.
+// Labels are always shown as part of the datum presentation.
 
 void ais_trihedron_set_transform_pers(void* obj_ptr, int corner, int xOff, int yOff) {
     clear_error();
