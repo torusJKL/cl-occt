@@ -204,6 +204,14 @@ void ais_object_set_shading_color(void* obj, double r, double g, double b);
 void ais_object_set_face_boundary_draw(void* obj, int on);
 void ais_object_set_free_boundary_draw(void* obj, int on);
 
+// --- Dimensions ---
+void* prsdim_make_length_2p(double x1, double y1, double z1, double x2, double y2, double z2);
+void* prsdim_make_angle_3p(double vx, double vy, double vz, double p1x, double p1y, double p1z, double p2x, double p2y, double p2z);
+void* prsdim_make_diameter(void* shape);
+void* prsdim_make_radius(void* shape);
+void  prsdim_set_text_position(void* dim, double x, double y, double z);
+void  prsdim_set_display_units(void* dim, const char* units);
+
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);
 occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size);

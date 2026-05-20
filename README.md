@@ -486,6 +486,23 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-text-label-angle label degrees)` | Rotate a text label by degrees. |
 | `(make-text-label ctx text position &key color font height angle)` | Create, configure, and display a text label in one call. |
 
+### Dimensions
+
+| Function | Description |
+|----------|-------------|
+| `(make-dimension type &key from to vertex point1 point2 shape)` | Create a dimension. `:length` takes `:from` `:to` (points), `:angle` takes `:vertex` `:point1` `:point2`, `:diameter`/`:radius` take `:shape`. |
+| `(set-dimension-text-position dim (x y z))` | Set the position of the dimension label text. |
+| `(set-dimension-units dim string)` | Set display units string (e.g. `"mm"`). |
+
+Dimensions are `ais-object` instances displayed with `ais-display`:
+
+```lisp
+(with-viewer (v)
+  (let* ((ctx (ais-create-context v))
+         (dim (make-dimension :length :from '(0 0 0) :to '(50 0 0))))
+    (ais-display ctx dim)))
+```
+
 ### Drawer (Prs3d) — Per-Object Aspect Control
 
 | Function | Description |

@@ -542,6 +542,29 @@
 (defcfun (%ais-object-set-free-boundary-draw "ais_object_set_free_boundary_draw") :void
   (obj :pointer) (on :int))
 
+;; --- Dimensions ---
+
+(defcfun (%prsdim-make-length-2p "prsdim_make_length_2p") :pointer
+  (x1 :double) (y1 :double) (z1 :double)
+  (x2 :double) (y2 :double) (z2 :double))
+
+(defcfun (%prsdim-make-angle-3p "prsdim_make_angle_3p") :pointer
+  (vx :double) (vy :double) (vz :double)
+  (p1x :double) (p1y :double) (p1z :double)
+  (p2x :double) (p2y :double) (p2z :double))
+
+(defcfun (%prsdim-make-diameter "prsdim_make_diameter") :pointer
+  (shape :pointer))
+
+(defcfun (%prsdim-make-radius "prsdim_make_radius") :pointer
+  (shape :pointer))
+
+(defcfun (%prsdim-set-text-position "prsdim_set_text_position") :void
+  (dim :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%prsdim-set-display-units "prsdim_set_display_units") :void
+  (dim :pointer) (units :string))
+
 ;; --- Font & Text ---
 
 (defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer

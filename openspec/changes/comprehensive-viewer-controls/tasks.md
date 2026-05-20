@@ -104,6 +104,11 @@
 - [x] 11.5 Write unit tests: set line color, line width, shading color, toggle boundaries
 - [x] 11.6 Update README with drawer API documentation
 
-## 12. Dimensions: viewer-dimensions (deferred)
+## 12. Dimensions: viewer-dimensions (length, angle, diameter, radius)
 
-- [ ] 12.x AIS_Dimension classes not available in OCCT 8.0 build (requires additional module). Deferred for future work.
+- [x] 12.1-12.7 C bridge functions for PrsDim_LengthDimension (2p), PrsDim_AngleDimension (3p), PrsDim_DiameterDimension, PrsDim_RadiusDimension, text position, display units
+- [x] 12.8 CFFI bindings for all dimension functions
+- [x] 12.9 Create `src/core/viewer-dimensions.lisp` with `make-dimension` constructor, dimension styling functions
+- [x] 12.10 Export dimension symbols
+- [x] 12.11 Write unit tests: create each dimension type, set text position, units, display in context
+- [x] 12.12 Update README with dimension API documentation

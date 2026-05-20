@@ -2221,6 +2221,87 @@ void ais_object_set_free_boundary_draw(void* obj_ptr, int on) {
     }
 }
 
+// --- Dimensions ---
+
+#include <PrsDim_LengthDimension.hxx>
+#include <PrsDim_AngleDimension.hxx>
+#include <PrsDim_DiameterDimension.hxx>
+#include <PrsDim_RadiusDimension.hxx>
+
+void* prsdim_make_length_2p(double x1, double y1, double z1, double x2, double y2, double z2) {
+    clear_error();
+    try {
+        Handle(PrsDim_LengthDimension)* h = new Handle(PrsDim_LengthDimension)();
+        *h = new PrsDim_LengthDimension(gp_Pnt(x1, y1, z1), gp_Pnt(x2, y2, z2), gp_Pln(gp_Pnt(0,0,0), gp_Dir(0,0,1)));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_angle_3p(double vx, double vy, double vz, double p1x, double p1y, double p1z, double p2x, double p2y, double p2z) {
+    clear_error();
+    try {
+        Handle(PrsDim_AngleDimension)* h = new Handle(PrsDim_AngleDimension)();
+        *h = new PrsDim_AngleDimension(gp_Pnt(vx, vy, vz), gp_Pnt(p1x, p1y, p1z), gp_Pnt(p2x, p2y, p2z));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_diameter(void* shape_ptr) {
+    clear_error();
+    if (!shape_ptr) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Handle(PrsDim_DiameterDimension)* h = new Handle(PrsDim_DiameterDimension)();
+        *h = new PrsDim_DiameterDimension(*shape);
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_radius(void* shape_ptr) {
+    clear_error();
+    if (!shape_ptr) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Handle(PrsDim_RadiusDimension)* h = new Handle(PrsDim_RadiusDimension)();
+        *h = new PrsDim_RadiusDimension(*shape);
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void prsdim_set_text_position(void* dim_ptr, double x, double y, double z) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetTextPosition(gp_Pnt(x, y, z));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void prsdim_set_display_units(void* dim_ptr, const char* units) {
+    clear_error();
+    if (!dim_ptr || !units) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetDisplayUnits(TCollection_AsciiString(units));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 // --- Font & Text ---
 
 typedef opencascade::handle<StdPrs_BRepFont> BRepFontHandle;

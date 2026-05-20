@@ -35,7 +35,8 @@
             (:file "viewer-rendering")
             (:file "viewer-text-labels")
             (:file "viewer-defaults")
-            (:file "viewer-drawer")))
+            (:file "viewer-drawer")
+            (:file "viewer-dimensions")))
      (:module "dag"
       :components
       ((:file "params")

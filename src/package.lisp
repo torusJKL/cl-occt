@@ -117,6 +117,12 @@
        :%v3d-viewer-set-default-view-proj
        :%v3d-viewer-set-default-view-size
        :%v3d-viewer-set-default-view-type
+       :%prsdim-make-length-2p
+       :%prsdim-make-angle-3p
+       :%prsdim-make-diameter
+       :%prsdim-make-radius
+       :%prsdim-set-text-position
+       :%prsdim-set-display-units
        :%ais-object-set-line-color
        :%ais-object-set-line-width
        :%ais-object-set-shading-color
@@ -357,6 +363,9 @@
         :set-default-projection
         :set-default-view-size
         :set-default-view-type
+        :make-dimension
+        :set-dimension-text-position
+        :set-dimension-units
         :ais-set-drawer-line-color
         :ais-set-drawer-line-width
         :ais-set-drawer-shading-color

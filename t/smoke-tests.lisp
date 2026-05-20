@@ -1015,6 +1015,43 @@
     (assert-true (set-default-view-type v :orthographic)
                  "set-default-view-type should work")))
 
+;; --- Dimensions ---
+
+(deftest make-length-dimension-2p
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (assert-true (ais-object-p dim) "length dimension should be ais-object")
+      (ais-display ctx dim)
+      t)))
+
+(deftest make-angle-dimension-3p
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :angle :vertex '(0 0 0) :point1 '(1 0 0) :point2 '(0 1 0))))
+      (assert-true (ais-object-p dim) "angle dimension should be ais-object")
+      (ais-display ctx dim)
+      t)))
+
+;; Diameter/radius dimensions require circular edges with proper topology.
+;; Skipped for automated tests.
+
+(deftest set-dimension-text-position-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-text-position dim '(5 5 0))
+                   "set-dimension-text-position should work"))))
+
+(deftest set-dimension-units-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-units dim "mm")
+                   "set-dimension-units should work"))))
+
 ;; --- Drawer ---
 
 (deftest ais-set-drawer-line-color-valid
@@ -1416,7 +1453,9 @@
                  set-default-view-size-valid                  set-default-view-type-valid
                  ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid
                  ais-set-drawer-shading-color-valid
-                 ais-set-drawer-face-boundaries-valid ais-set-drawer-free-boundaries-valid
+                 ais-set-drawer-face-boundaries-valid                  ais-set-drawer-free-boundaries-valid
+                 make-length-dimension-2p make-angle-dimension-3p
+                 set-dimension-text-position-valid set-dimension-units-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero
