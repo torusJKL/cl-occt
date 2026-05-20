@@ -2185,6 +2185,26 @@ void ais_object_set_line_width(void* obj_ptr, double w) {
     }
 }
 
+void ais_object_set_line_type(void* obj_ptr, int type) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = drawer->LineAspect();
+        if (aspect.IsNull()) {
+            drawer->SetLineAspect(new Prs3d_LineAspect(
+                Quantity_Color(1, 1, 1, Quantity_TOC_RGB),
+                static_cast<Aspect_TypeOfLine>(type), 1.0));
+        } else {
+            aspect->SetTypeOfLine(static_cast<Aspect_TypeOfLine>(type));
+        }
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 void ais_object_set_shading_color(void* obj_ptr, double r, double g, double b) {
     clear_error();
     if (!obj_ptr) { set_error("null object argument", 2); return; }

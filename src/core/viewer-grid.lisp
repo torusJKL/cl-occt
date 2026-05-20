@@ -6,6 +6,12 @@
       (when (and v-ptr (not (cffi:null-pointer-p v-ptr)))
         (not (zerop (%v3d-viewer-grid-active v-ptr)))))))
 
+(defun set-grid-xy-size (viewer x-step y-step)
+  (set-rectangular-grid-values viewer :x-step x-step :y-step y-step))
+
+(defun set-grid-offset (viewer x-offset y-offset)
+  (set-rectangular-grid-values viewer :x-origin x-offset :y-origin y-offset))
+
 (defun set-rectangular-grid-values (viewer &key (x-origin 0.0) (y-origin 0.0) (x-step 10.0) (y-step 10.0) (rotation-angle 0.0))
   (when (viewer-p viewer)
     (let ((v-ptr (%viewer viewer)))

@@ -1056,6 +1056,16 @@
 
 ;; --- Viewer Defaults ---
 
+(deftest set-grid-xy-size-valid
+  (with-viewer (v)
+    (assert-true (set-grid-xy-size v 5.0 10.0)
+                 "set-grid-xy-size should work")))
+
+(deftest set-grid-offset-valid
+  (with-viewer (v)
+    (assert-true (set-grid-offset v 2.5 3.5)
+                 "set-grid-offset should work")))
+
 (deftest set-rectangular-grid-values-valid
   (with-viewer (v)
     (assert-true (set-rectangular-grid-values v :x-step 5.0 :y-step 5.0)
@@ -1160,6 +1170,11 @@
   (let ((obj (ais-create-shape (make-box 10 20 30))))
     (assert-true (ais-set-drawer-line-color obj :red)
                  "drawer line color should work")))
+
+(deftest ais-set-drawer-line-type-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-line-type obj :dash)
+                 "ais-set-drawer-line-type should work")))
 
 (deftest ais-set-drawer-line-width-valid
   (let ((obj (ais-create-shape (make-box 10 20 30))))
@@ -1560,8 +1575,9 @@
                  set-default-background-valid set-default-projection-valid
                  set-default-view-size-valid set-default-view-type-valid
                  set-default-bg-gradient-valid
-                 set-rectangular-grid-values-valid grid-display-valid
-                 ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid
+                 set-rectangular-grid-values-valid set-grid-xy-size-valid
+                 set-grid-offset-valid grid-display-valid
+                 ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid ais-set-drawer-line-type-valid
                  ais-set-drawer-shading-color-valid
                  ais-set-drawer-face-boundaries-valid                  ais-set-drawer-free-boundaries-valid
                  make-length-dimension-2p make-angle-dimension-3p

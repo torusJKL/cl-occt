@@ -235,6 +235,7 @@ void  shading_aspect_set_color(void* aspect, double r, double g, double b);
 void  shading_aspect_set_material(void* aspect, double ar, double ag, double ab, double dr, double dg, double db, double sr, double sg, double sb, double shininess, double transparency);
 void ais_object_set_line_color(void* obj, double r, double g, double b);
 void ais_object_set_line_width(void* obj, double w);
+void ais_object_set_line_type(void* obj, int type);
 void ais_object_set_shading_color(void* obj, double r, double g, double b);
 void ais_object_set_face_boundary_draw(void* obj, int on);
 void ais_object_set_free_boundary_draw(void* obj, int on);

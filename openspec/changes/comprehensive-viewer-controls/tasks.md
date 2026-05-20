@@ -134,8 +134,8 @@
 
 - [x] 6.1 Add grid display via Aspect_GridParams (GPU shader grid): `SetGridColor(color)`
 - [x] 6.2 Add grid via SetRectangularGridValues + v3d_view_grid_display: `SetGridSize(double)`
-- [ ] 6.3 Add `%v3d-viewer-set-grid-xy-size` C bridge: `SetGridXYSize(x, y)`
-- [ ] 6.4 Add `%v3d-viewer-set-grid-offset` C bridge: `SetGridOffset(x, y)`
+- [x] 6.3 Add `%v3d-viewer-set-grid-xy-size` C bridge: `SetGridXYSize(x, y)`
+- [x] 6.4 Add `%v3d-viewer-set-grid-offset` C bridge: `SetGridOffset(x, y)`
 - [x] 6.5 Add `%v3d-viewer-grid-active` C bridge: returns whether grid is active
 - [x] 6.6 Add CFFI bindings for grid functions
 - [x] 6.7 Extend grid section in `src/core/viewer.lisp` (or create `src/core/viewer-grid.lisp`) with:
@@ -228,8 +228,8 @@
 
 ## 11. Drawer: viewer-drawer (Prs3d_Drawer first-class object)
 
-- [ ] 11.1 Add `%ais-object-attributes` C bridge: returns handle to `Prs3d_Drawer`
-- [ ] 11.2 Add shading aspect bridge functions:
+- [x] 11.1 Add `%ais-object-attributes` C bridge: returns handle to `Prs3d_Drawer`
+- [x] 11.2 Add shading aspect bridge functions:
   - `%drawer-shading-aspect`: returns handle
   - `%shading-set-interior-color`
   - `%shading-set-interior-color-back`
@@ -239,7 +239,7 @@
   - `%shading-set-front-material`
   - `%shading-set-back-material`
   - `%shading-set-shading-method`
-- [ ] 11.3 Add line aspect bridge functions:
+- [x] 11.3 Add line aspect bridge functions:
   - `%drawer-line-aspect`: returns handle
   - `%line-aspect-set-color`
   - `%line-aspect-set-type` (:solid :dash :dot :dot-dash)

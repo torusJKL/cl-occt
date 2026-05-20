@@ -653,6 +653,9 @@
 (defcfun (%ais-object-set-line-width "ais_object_set_line_width") :void
   (obj :pointer) (w :double))
 
+(defcfun (%ais-object-set-line-type "ais_object_set_line_type") :void
+  (obj :pointer) (type :int))
+
 (defcfun (%ais-object-set-shading-color "ais_object_set_shading_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
 

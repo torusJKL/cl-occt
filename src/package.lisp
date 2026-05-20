@@ -149,6 +149,7 @@
        :%shading-aspect-set-material
        :%ais-object-set-line-color
        :%ais-object-set-line-width
+       :%ais-object-set-line-type
        :%ais-object-set-shading-color
        :%ais-object-set-face-boundary-draw
        :%ais-object-set-free-boundary-draw
@@ -386,6 +387,8 @@
         :viewer-default-lights
         :grid-active-p
         :set-rectangular-grid-values
+        :set-grid-xy-size
+        :set-grid-offset
         :grid-display
         :set-image-background
         :set-gradient-background
@@ -428,6 +431,7 @@
         :shading-aspect-color
         :ais-set-drawer-line-color
         :ais-set-drawer-line-width
+        :ais-set-drawer-line-type
         :ais-set-drawer-shading-color
         :ais-set-drawer-face-boundaries
         :ais-set-drawer-free-boundaries
