@@ -1,3 +1,8 @@
+## EXTENDED BY
+
+The trihedron capabilities are extended by:
+- `viewer-trihedron` — per-axis colors (`set-trihedron-axis-colors`), text color, datum display modes
+
 ## ADDED Requirements
 
 ### Requirement: Create trihedron

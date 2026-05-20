@@ -1,3 +1,12 @@
+## EXTENDED BY
+
+The styling capabilities are extended by the following viewer specs:
+- `viewer-camera` — full camera control (eye/target/up, perspective/ortho, FOV, clipping)
+- `viewer-object-props` — per-object transparency, material presets, line width, edges, selection
+- `viewer-grid` — grid XY size, offset, GPU grid display
+- `viewer-background` — gradient and cube-map backgrounds
+- `viewer-rendering` — computed mode, back-face model, frustum culling, transparency method
+
 ## ADDED Requirements
 
 ### Requirement: Set background color
