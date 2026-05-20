@@ -1015,6 +1015,33 @@
     (assert-true (set-default-view-type v :orthographic)
                  "set-default-view-type should work")))
 
+;; --- Drawer ---
+
+(deftest ais-set-drawer-line-color-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-line-color obj :red)
+                 "drawer line color should work")))
+
+(deftest ais-set-drawer-line-width-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-line-width obj 2.0)
+                 "drawer line width should work")))
+
+(deftest ais-set-drawer-shading-color-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-shading-color obj :steel-blue)
+                 "drawer shading color should work")))
+
+(deftest ais-set-drawer-face-boundaries-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-face-boundaries obj t)
+                 "drawer face boundaries toggle should work")))
+
+(deftest ais-set-drawer-free-boundaries-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-free-boundaries obj t)
+                 "drawer free boundaries toggle should work")))
+
 ;; --- Colors ---
 
 (deftest named-color-red
@@ -1386,7 +1413,10 @@
                  set-immediate-update-valid
                  set-text-label-angle-valid make-text-label-convenience
                  set-default-background-valid set-default-projection-valid
-                 set-default-view-size-valid set-default-view-type-valid
+                 set-default-view-size-valid                  set-default-view-type-valid
+                 ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid
+                 ais-set-drawer-shading-color-valid
+                 ais-set-drawer-face-boundaries-valid ais-set-drawer-free-boundaries-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

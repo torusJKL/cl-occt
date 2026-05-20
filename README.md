@@ -486,6 +486,16 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-text-label-angle label degrees)` | Rotate a text label by degrees. |
 | `(make-text-label ctx text position &key color font height angle)` | Create, configure, and display a text label in one call. |
 
+### Drawer (Prs3d) — Per-Object Aspect Control
+
+| Function | Description |
+|----------|-------------|
+| `(ais-set-drawer-line-color obj color)` | Set line/wireframe color on an ais-object's drawer. |
+| `(ais-set-drawer-line-width obj width)` | Set line/wireframe width in pixels. |
+| `(ais-set-drawer-shading-color obj color)` | Set surface shading color. |
+| `(ais-set-drawer-face-boundaries obj bool)` | Show/hide face boundary edges. |
+| `(ais-set-drawer-free-boundaries obj bool)` | Show/hide free boundary edges. |
+
 ### Viewer Defaults
 
 | Function | Description |

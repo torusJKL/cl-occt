@@ -197,6 +197,13 @@ void v3d_viewer_set_default_view_proj(void* viewer, int orientation);
 void v3d_viewer_set_default_view_size(void* viewer, double size);
 void v3d_viewer_set_default_view_type(void* viewer, int is_perspective);
 
+// --- Drawer (Prs3d) ---
+void ais_object_set_line_color(void* obj, double r, double g, double b);
+void ais_object_set_line_width(void* obj, double w);
+void ais_object_set_shading_color(void* obj, double r, double g, double b);
+void ais_object_set_face_boundary_draw(void* obj, int on);
+void ais_object_set_free_boundary_draw(void* obj, int on);
+
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);
 occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size);

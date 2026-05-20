@@ -117,6 +117,11 @@
        :%v3d-viewer-set-default-view-proj
        :%v3d-viewer-set-default-view-size
        :%v3d-viewer-set-default-view-type
+       :%ais-object-set-line-color
+       :%ais-object-set-line-width
+       :%ais-object-set-shading-color
+       :%ais-object-set-face-boundary-draw
+       :%ais-object-set-free-boundary-draw
       :%v3d-view-set-antialiasing
       :%v3d-view-get-antialiasing
        :%v3d-viewer-activate-grid
@@ -352,6 +357,11 @@
         :set-default-projection
         :set-default-view-size
         :set-default-view-type
+        :ais-set-drawer-line-color
+        :ais-set-drawer-line-width
+        :ais-set-drawer-shading-color
+        :ais-set-drawer-face-boundaries
+        :ais-set-drawer-free-boundaries
         :brep-font
         :brep-font-p
         :make-brep-font-from-file

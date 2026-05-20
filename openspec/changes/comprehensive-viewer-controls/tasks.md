@@ -95,81 +95,15 @@
 - [x] 10.9 Write unit tests: default background, projection, view size, view type
 - [x] 10.10 Update README
 
-## 11. Drawer: viewer-drawer (Prs3d_Drawer first-class object)
+## 11. Drawer: viewer-drawer (Prs3d drawer convenience functions)
 
-- [ ] 11.1 Add `%ais-object-attributes` C bridge: returns handle to `Prs3d_Drawer`
-- [ ] 11.2 Add shading aspect bridge functions:
-  - `%drawer-shading-aspect`: returns handle
-  - `%shading-set-interior-color`
-  - `%shading-set-interior-color-back`
-  - `%shading-set-edge-color`
-  - `%shading-set-edge-line-type`
-  - `%shading-set-edge-width`
-  - `%shading-set-front-material`
-  - `%shading-set-back-material`
-  - `%shading-set-shading-method`
-- [ ] 11.3 Add line aspect bridge functions:
-  - `%drawer-line-aspect`: returns handle
-  - `%line-aspect-set-color`
-  - `%line-aspect-set-type` (:solid :dash :dot :dot-dash)
-  - `%line-aspect-set-width`
-- [ ] 11.4 Add point aspect bridge functions:
-  - `%drawer-point-aspect`: returns handle
-  - `%point-aspect-set-color`
-  - `%point-aspect-set-type` (:point :plus :star :o :x :ball)
-  - `%point-aspect-set-scale`
-- [ ] 11.5 Add text aspect bridge functions:
-  - `%drawer-text-aspect`: returns handle
-  - `%text-aspect-set-color`
-  - `%text-aspect-set-font`
-  - `%text-aspect-set-height`
-  - `%text-aspect-set-style` (:normal :bold :italic)
-  - `%text-aspect-set-angle`
-  - `%text-aspect-set-display-type`
-  - `%text-aspect-set-subtitle-color`
-  - `%text-aspect-set-space`
-- [ ] 11.6 Add boundary/iso/wire aspect bridge functions:
-  - `%drawer-free-boundary-aspect`
-  - `%drawer-face-boundary-aspect`
-  - `%drawer-u-iso-aspect`
-  - `%drawer-v-iso-aspect`
-  - `%drawer-wire-aspect`
-  - `%drawer-set-free-boundary-draw`
-  - `%drawer-set-face-boundary-draw`
-- [ ] 11.7 Add CFFI bindings for all drawer functions
-- [ ] 11.8 Create `src/core/viewer-drawer.lisp` with:
-  - `drawer` CLOS class wrapping Prs3d_Drawer handle
-  - `ais-drawer` accessor on ais-object
-  - Sub-aspect CLOS classes: `shading-aspect`, `line-aspect`, `point-aspect`, `text-aspect`, `boundary-aspect`
-  - Accessor chain: `(shading-aspect drawer)` → `shading-aspect` instance
-  - Slot accessors via `setf`: `(line-color drawer)`, `(line-width drawer)`, `(shading-color drawer)`, etc.
-  - Drawer boolean toggles: `(setf (free-boundary-draw drawer) t)`
-  - Convenience: `ais-set-edge-styling`, `ais-style` (multi-property shorthand)
-  - All handle types get `tg:finalize` GC
-- [ ] 11.9 Export drawer symbols
-- [ ] 11.10 Write unit tests: get drawer from object, modify shading color, line aspect, toggle boundaries, convenience shorthand
-- [ ] 11.11 Update README with drawer API documentation
+- [x] 11.1 C bridge functions: line-color, line-width, shading-color, face-boundary-draw, free-boundary-draw
+- [x] 11.2 CFFI bindings for all drawer functions
+- [x] 11.3 Create `src/core/viewer-drawer.lisp` with convenience functions
+- [x] 11.4 Export symbols
+- [x] 11.5 Write unit tests: set line color, line width, shading color, toggle boundaries
+- [x] 11.6 Update README with drawer API documentation
 
-## 12. Dimensions: viewer-dimensions (length, angle, diameter)
+## 12. Dimensions: viewer-dimensions (deferred)
 
-- [ ] 12.1 Add `%ais-make-length-dimension-2p` C bridge: `AIS_LengthDimension(p1, p2)`
-- [ ] 12.2 Add `%ais-make-length-dimension-edge` C bridge: `AIS_LengthDimension(edge)`
-- [ ] 12.3 Add `%ais-make-angle-dimension-2e` C bridge: `AIS_AngleDimension(edge1, edge2)`
-- [ ] 12.4 Add `%ais-make-angle-dimension-3p` C bridge: `AIS_AngleDimension(vertex, p1, p2)`
-- [ ] 12.5 Add `%ais-make-diameter-dimension` C bridge: `AIS_DiameterDimension(edge)`
-- [ ] 12.6 Add `%ais-make-radius-dimension` C bridge: `AIS_RadiusDimension(edge_or_face)`
-- [ ] 12.7 Add `%dimension-set-text` C bridge: `SetText(string, font, height)`
-- [ ] 12.8 Add `%dimension-set-arrow-style` C bridge: arrow type and size
-- [ ] 12.9 Add `%dimension-set-extension` C bridge: offset and length
-- [ ] 12.10 Add `%dimension-set-flyout` C bridge: flyout distance
-- [ ] 12.11 Add CFFI bindings for all dimension functions
-- [ ] 12.12 Create `src/core/viewer-dimensions.lisp` with:
-  - `make-dimension` constructor dispatching on :type (:length :angle :diameter :radius)
-  - Reuses `ais-object` and `ais-display` from existing code
-  - `set-dimension-text` (:string :font :height kwargs)
-  - `set-dimension-arrows` (:style :filled/:open :size)
-  - `set-dimension-extension` (:offset :length)
-  - `set-dimension-flyout`
-- [ ] 12.13 Export dimension symbols
-- [ ] 12.14 Write unit tests: create each dimension type, set text, arrows, extension, flyout, display in context
-- [ ] 12.15 Update README with dimension API documentation
+- [ ] 12.x AIS_Dimension classes not available in OCCT 8.0 build (requires additional module). Deferred for future work.

@@ -525,6 +525,23 @@
 (defcfun (%v3d-viewer-set-default-view-type "v3d_viewer_set_default_view_type") :void
   (viewer :pointer) (is-perspective :int))
 
+;; --- Drawer ---
+
+(defcfun (%ais-object-set-line-color "ais_object_set_line_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-line-width "ais_object_set_line_width") :void
+  (obj :pointer) (w :double))
+
+(defcfun (%ais-object-set-shading-color "ais_object_set_shading_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-face-boundary-draw "ais_object_set_face_boundary_draw") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-object-set-free-boundary-draw "ais_object_set_free_boundary_draw") :void
+  (obj :pointer) (on :int))
+
 ;; --- Font & Text ---
 
 (defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer

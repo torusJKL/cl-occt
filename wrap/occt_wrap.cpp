@@ -80,6 +80,7 @@
 #include <Prs3d_DatumParts.hxx>
 #include <Prs3d_TextAspect.hxx>
 #include <Prs3d_LineAspect.hxx>
+#include <Prs3d_ShadingAspect.hxx>
 #include <Aspect_TypeOfTriedronPosition.hxx>
 #include <Font_FontAspect.hxx>
 #include <Font_StrictLevel.hxx>
@@ -2145,6 +2146,76 @@ void v3d_viewer_set_default_view_type(void* viewer_ptr, int is_perspective) {
     try {
         auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
         (*viewer)->SetDefaultTypeOfView(is_perspective ? V3d_PERSPECTIVE : V3d_ORTHOGRAPHIC);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Drawer (Prs3d) ---
+
+void ais_object_set_line_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetLineAspect(new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_line_width(void* obj_ptr, double w) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetLineAspect(new Prs3d_LineAspect(
+            Quantity_Color(1, 1, 1, Quantity_TOC_RGB), Aspect_TOL_SOLID, w));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_shading_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetShadingAspect(new Prs3d_ShadingAspect());
+        drawer->ShadingAspect()->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_face_boundary_draw(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetFaceBoundaryDraw(on != 0);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_free_boundary_draw(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetFreeBoundaryDraw(on != 0);
+        (*obj)->Redisplay(true);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
