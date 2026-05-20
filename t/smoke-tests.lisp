@@ -33,6 +33,10 @@
 (defun assert-geom2d (val &optional msg)
   (assert-true (geom2d-p val) (or msg "expected geom2d")))
 
+(defparameter *test-image-dir*
+  (namestring (merge-pathnames "t/images/"
+                                (asdf:system-source-directory :cl-occt/tests))))
+
 (defparameter *test-font-path*
   (namestring (merge-pathnames "t/fonts/Cousine-Regular.ttf"
                                (asdf:system-source-directory :cl-occt/tests))))
@@ -972,6 +976,22 @@
     (assert-true (set-gradient-background v :color1 '(0.1 0.1 0.3) :color2 '(0.8 0.8 0.9))
                  "gradient background should work")))
 
+(deftest set-background-cubemap-creation
+  (let* ((dir *test-image-dir*)
+         (cffi-vec (cffi:foreign-alloc :string :initial-contents
+                     (list (concatenate 'string dir "px.png")
+                           (concatenate 'string dir "nx.png")
+                           (concatenate 'string dir "py.png")
+                           (concatenate 'string dir "ny.png")
+                           (concatenate 'string dir "pz.png")
+                           (concatenate 'string dir "nz.png"))))
+         (ptr (%make-cubemap-separate cffi-vec 6)))
+    (cffi:foreign-free cffi-vec)
+    (assert-true (and ptr (not (cffi:null-pointer-p ptr)))
+                 "cubemap creation from valid images should succeed")
+    (when ptr (%free-cubemap ptr))
+    t))
+
 (deftest set-gradient-background-style
   (with-viewer (v)
     (assert-true (set-gradient-background v :style :x-neg)
@@ -1606,7 +1626,7 @@
                  set-light-color-intensity set-light-direction-valid
                  set-headlight-valid viewer-default-lights-valid
                  grid-active-p-after-activate grid-active-p-after-deactivate
-                 set-gradient-background-valid set-gradient-background-style
+                 set-background-cubemap-creation set-gradient-background-valid set-gradient-background-style
                  reset-background-valid
                  set-computed-mode-toggle set-back-face-model-valid
                  set-frustum-culling-valid set-transparency-method-valid redraw-view-valid
