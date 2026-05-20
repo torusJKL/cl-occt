@@ -262,3 +262,32 @@
 
 (defcfun (%free-neutral-window "free_neutral_window") :void
   (window :pointer))
+
+;; --- AIS Visualization (Display Objects) ---
+
+(defcfun (%ais-create-context "ais_create_context") :pointer
+  (viewer :pointer))
+
+(defcfun (%ais-free-context "ais_free_context") :void
+  (ctx :pointer))
+
+(defcfun (%ais-create-shape "ais_create_shape") :pointer
+  (shape :pointer))
+
+(defcfun (%ais-free-shape "ais_free_shape") :void
+  (obj :pointer))
+
+(defcfun (%ais-context-display "ais_context_display") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-erase "ais_context_erase") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-remove "ais_context_remove") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-remove-all "ais_context_remove_all") :void
+  (ctx :pointer) (update :int))
+
+(defcfun (%ais-context-is-displayed "ais_context_is_displayed") :int
+  (ctx :pointer) (obj :pointer))

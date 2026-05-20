@@ -61,6 +61,15 @@
      :%v3d-view-must-be-resized
      :%create-neutral-window
      :%free-neutral-window
+     :%ais-create-context
+     :%ais-free-context
+     :%ais-create-shape
+     :%ais-free-shape
+     :%ais-context-display
+     :%ais-context-erase
+     :%ais-context-remove
+     :%ais-context-remove-all
+     :%ais-context-is-displayed
       :make-shape
     :make-geom2d
     :*params*
@@ -160,5 +169,18 @@
     :make-viewer
     :free-viewer
     :fit-all
-    :must-be-resized
-    :with-viewer))
+     :must-be-resized
+     :with-viewer
+     :ais-context
+     :ais-context-p
+     :ais-object
+     :ais-object-p
+     :ais-create-context
+     :ais-free-context
+     :ais-create-shape
+     :ais-free
+     :ais-display
+     :ais-erase
+     :ais-remove
+     :ais-remove-all
+     :ais-displayed-p))

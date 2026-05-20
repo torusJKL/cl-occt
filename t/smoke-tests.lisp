@@ -572,6 +572,53 @@
     (free-viewer v))
   t)
 
+;; --- AIS Display ---
+
+(deftest ais-create-context-returns-ais-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (assert-true (ais-context-p ctx) "ais-create-context should return ais-context"))))
+
+(deftest ais-create-shape-from-box
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-object-p obj) "ais-create-shape from box should return ais-object")))
+
+(deftest ais-create-shape-nil-shape
+  (assert-nil (ais-create-shape nil) "ais-create-shape with nil should return nil"))
+
+(deftest ais-display-shape-in-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (let ((obj (ais-display ctx (make-box 10 20 30))))
+        (assert-true (ais-object-p obj) "ais-display shape should return ais-object")))))
+
+(deftest ais-displayed-p-returns-t-after-display
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-displayed-p ctx obj) "ais-displayed-p should return t after display"))))
+
+(deftest ais-erase-hides-without-removing
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-erase ctx obj)
+      (assert-nil (ais-displayed-p ctx obj) "ais-erase should hide without removing"))))
+
+(deftest ais-remove-removes-from-context
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-remove ctx obj)
+      (assert-nil (ais-displayed-p ctx obj) "ais-remove should remove from context"))))
+
+(deftest ais-free-on-nil-safe
+  (ais-free nil)
+  t)
+
+(deftest ais-create-shape-nil-input
+  (assert-nil (ais-create-shape nil) "ais-create-shape with nil returns nil"))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -622,7 +669,14 @@
                defmodel-no-metadata defmodel-metadata-re-evaluation
                write-dag-models-to-step-valid read-step-into-dag-valid
                make-viewer-returns-viewer with-viewer-creates-and-cleans-up
-               free-viewer-double-free-safe))
+               free-viewer-double-free-safe
+               ais-create-context-returns-ais-context
+               ais-create-shape-from-box ais-create-shape-nil-shape
+               ais-display-shape-in-context
+               ais-displayed-p-returns-t-after-display
+               ais-erase-hides-without-removing
+               ais-remove-removes-from-context
+               ais-free-on-nil-safe ais-create-shape-nil-input))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

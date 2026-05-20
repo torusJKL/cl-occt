@@ -60,6 +60,9 @@
 #include <Aspect_NeutralWindow.hxx>
 #include <V3d_Viewer.hxx>
 #include <V3d_View.hxx>
+#include <AIS_InteractiveContext.hxx>
+#include <AIS_Shape.hxx>
+#include <AIS_InteractiveObject.hxx>
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -1092,6 +1095,111 @@ void* create_neutral_window(void* native_handle) {
 void free_neutral_window(void* window) {
     if (window) {
         delete static_cast<Handle(Aspect_NeutralWindow)*>(window);
+    }
+}
+
+// --- AIS Visualization (Display Objects) ---
+
+void* ais_create_context(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return nullptr; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        Handle(AIS_InteractiveContext)* h = new Handle(AIS_InteractiveContext);
+        *h = new AIS_InteractiveContext(*viewer);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_free_context(void* ctx) {
+    if (ctx) {
+        delete static_cast<Handle(AIS_InteractiveContext)*>(ctx);
+    }
+}
+
+void* ais_create_shape(void* shape_ptr) {
+    clear_error();
+    if (!shape_ptr) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Handle(AIS_Shape)* h = new Handle(AIS_Shape)(new AIS_Shape(*shape));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_free_shape(void* obj) {
+    if (obj) {
+        delete static_cast<Handle(AIS_InteractiveObject)*>(obj);
+    }
+}
+
+void ais_context_display(void* ctx_ptr, void* obj_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Display(*obj, update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_erase(void* ctx_ptr, void* obj_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Erase(*obj, update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_remove(void* ctx_ptr, void* obj_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Remove(*obj, update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_remove_all(void* ctx_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->RemoveAll(update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int ais_context_is_displayed(void* ctx_ptr, void* obj_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return 0; }
+    if (!obj_ptr) { set_error("null object argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        return (*ctx)->IsDisplayed(*obj) ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
     }
 }
 

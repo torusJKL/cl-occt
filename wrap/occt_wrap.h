@@ -93,7 +93,18 @@ void  v3d_free_view(void* view);
 void  v3d_fit_all(void* view);
 void  v3d_view_must_be_resized(void* view);
 void* create_neutral_window(void* native_handle);
-void  free_neutral_window(void* window);
+  void  free_neutral_window(void* window);
+
+// --- AIS Visualization (Display Objects) ---
+void* ais_create_context(void* viewer);
+void  ais_free_context(void*);
+void* ais_create_shape(void* shape);
+void  ais_free_shape(void*);
+void  ais_context_display(void* ctx, void* obj, int update);
+void  ais_context_erase(void* ctx, void* obj, int update);
+void  ais_context_remove(void* ctx, void* obj, int update);
+void  ais_context_remove_all(void* ctx, int update);
+int   ais_context_is_displayed(void* ctx, void* obj);
 
 #ifdef __cplusplus
 }

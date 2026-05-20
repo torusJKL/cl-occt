@@ -2,7 +2,7 @@
 
 A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
 Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
-a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), and a 3D viewer.
+a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), a 3D viewer, and AIS display.
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
@@ -148,6 +148,12 @@ Models carry optional metadata that round-trips through STEP export.
 ;; Pass as :native-window-handle to make-viewer
 (with-viewer (v)
   (fit-all v))
+
+;; Display a shape in the 3D view
+(with-viewer (v)
+  (let ((ctx (ais-create-context v)))
+    (ais-display ctx (make-box 10 20 30))
+    (fit-all v)))
 ```
 
 ### Run the test suite
@@ -193,23 +199,25 @@ Models carry optional metadata that round-trips through STEP export.
 Three layers:
 
 ```
- ┌──────────────────────────────────────────────────┐
- │  SBCL + CFFI (viewer CLOS, with-viewer, fit-all) │
- └──────────────────────┬───────────────────────────┘
+ ┌──────────────────────────────────────────────────────┐
+ │  SBCL + CFFI (viewer CLOS, ais-context, ais-object,  │
+ │              ais-display, ais-erase, ais-remove, ...) │
+ └──────────────────────┬───────────────────────────────┘
                         ↓
- ┌──────────────────────────────────────────────────┐
- │  libocctwrap.so (graphic-driver, viewer, view,   │
- │                  neutral-window, fit-all, resize) │
- └──────────────────────┬───────────────────────────┘
+ ┌──────────────────────────────────────────────────────┐
+ │  libocctwrap.so (graphic-driver, viewer, view,       │
+ │                  neutral-window, fit-all, resize,     │
+ │                  ais_* context + shape functions)     │
+ └──────────────────────┬───────────────────────────────┘
                         ↓
- ┌──────────────────────────────────────────────────┐
- │  OCCT shared libs (TKV3d, TKOpenGl, TKService)   │
- └──────────────────────────────────────────────────┘
+ ┌──────────────────────────────────────────────────────┐
+ │  OCCT shared libs (TKV3d, TKOpenGl, TKService, AIS)  │
+ └──────────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 65 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 74 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer.
+- `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -361,6 +369,20 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(fit-all v)` | Zoom to fit all displayed objects |
 | `(must-be-resized v)` | Call after window resize |
 
+### Display
+
+| Function | Description |
+|----------|-------------|
+| `(ais-create-context viewer)` | Create an AIS interactive context from a viewer |
+| `(ais-free-context ctx)` | Destroy an AIS context |
+| `(ais-create-shape shape)` | Create an interactive shape object from a geometry shape |
+| `(ais-display ctx shape-or-obj &key update)` | Display a shape or ais-object; returns ais-object |
+| `(ais-erase ctx obj &key update)` | Hide an object (remains in context) |
+| `(ais-remove ctx obj &key update)` | Permanently remove an object from context |
+| `(ais-remove-all ctx &key update)` | Remove all objects from context |
+| `(ais-displayed-p ctx obj)` | Check if an object is currently displayed |
+| `(ais-free obj)` | Free an ais-object's C handle |
+
 ### Introspection
 
 ## Project structure
@@ -369,7 +391,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (52 functions)
+│   ├── occt_wrap.h       C header (69 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -387,7 +409,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
-│   │   ├── viewer.lisp   viewer class, make-viewer, free-viewer, fit-all, must-be-resized, with-viewer
+│   │   ├── viewer.lisp   viewer class, make-viewer, free-viewer, fit-all, must-be-resized, with-viewer, ais-context, ais-object, ais-display, ais-erase, ais-remove
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store
@@ -399,7 +421,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~104 smoke tests
+│   └── smoke-tests.lisp  ~113 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```
