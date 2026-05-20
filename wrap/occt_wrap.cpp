@@ -69,6 +69,7 @@
 #include <V3d_TypeOfView.hxx>
 #include <Graphic3d_Camera.hxx>
 #include <Graphic3d_TextureEnv.hxx>
+#include <Graphic3d_CubeMapSeparate.hxx>
 #include <BRepBndLib.hxx>
 #include <AIS_Trihedron.hxx>
 #include <Geom_Axis2Placement.hxx>
@@ -2572,6 +2573,46 @@ void v3d_view_set_bg_image(void* view_ptr, const char* path) {
     try {
         auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
         (*view)->SetBackgroundImage(path);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Cube-map ---
+
+void* make_cubemap_separate(const char** paths, int count) {
+    clear_error();
+    if (!paths || count != 6) { set_error("need exactly 6 cube face paths", 2); return nullptr; }
+    try {
+        NCollection_Array1<TCollection_AsciiString> arr(1, 6);
+        arr(1) = TCollection_AsciiString(paths[0]);
+        arr(2) = TCollection_AsciiString(paths[1]);
+        arr(3) = TCollection_AsciiString(paths[2]);
+        arr(4) = TCollection_AsciiString(paths[3]);
+        arr(5) = TCollection_AsciiString(paths[4]);
+        arr(6) = TCollection_AsciiString(paths[5]);
+        Handle(Graphic3d_CubeMapSeparate)* h = new Handle(Graphic3d_CubeMapSeparate)(
+            new Graphic3d_CubeMapSeparate(arr));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void free_cubemap(void* cubemap_ptr) {
+    if (cubemap_ptr) {
+        delete static_cast<Handle(Graphic3d_CubeMap)*>(cubemap_ptr);
+    }
+}
+
+void v3d_view_set_bg_cubemap(void* view_ptr, void* cubemap_ptr) {
+    clear_error();
+    if (!view_ptr || !cubemap_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        auto* cubemap = static_cast<Handle(Graphic3d_CubeMap)*>(cubemap_ptr);
+        (*view)->SetBackgroundCubeMap(*cubemap, true, true);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }

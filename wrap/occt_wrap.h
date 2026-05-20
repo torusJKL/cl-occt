@@ -190,7 +190,10 @@ void v3d_view_grid_display(void* view, double r, double g, double b, double size
 // --- Background ---
 void v3d_view_set_bg_gradient(void* view, double r1, double g1, double b1, double r2, double g2, double b2, int style);
 void v3d_view_set_bg_image(void* view, const char* path);
+void v3d_view_set_bg_cubemap(void* view, void* cubemap);
 void v3d_view_reset_background(void* view);
+void* make_cubemap_separate(const char** paths, int count);
+void  free_cubemap(void* cubemap);
 
 // --- Rendering ---
 void v3d_view_set_transparent_shading(void* view, int on);

@@ -511,6 +511,15 @@
 (defcfun (%v3d-view-set-bg-image "v3d_view_set_bg_image") :void
   (view :pointer) (path :string))
 
+(defcfun (%make-cubemap-separate "make_cubemap_separate") :pointer
+  (paths :pointer) (count :int))
+
+(defcfun (%free-cubemap "free_cubemap") :void
+  (cubemap :pointer))
+
+(defcfun (%v3d-view-set-bg-cubemap "v3d_view_set_bg_cubemap") :void
+  (view :pointer) (cubemap :pointer))
+
 (defcfun (%v3d-view-set-bg-gradient "v3d_view_set_bg_gradient") :void
   (view :pointer)
   (r1 :double) (g1 :double) (b1 :double)

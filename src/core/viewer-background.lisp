@@ -18,6 +18,21 @@
               style-int)))
         view))))
 
+(defun set-background-cubemap (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
+  (when (viewer-p view)
+    (let* ((cffi-vec (cffi:foreign-alloc :string :initial-contents
+                      (list pos-x neg-x pos-y neg-y pos-z neg-z)))
+           (ptr (%make-cubemap-separate cffi-vec 6)))
+      (cffi:foreign-free cffi-vec)
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (let ((view-ptr (%view view)))
+          (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+            (%v3d-view-set-bg-cubemap view-ptr ptr))
+          (tg:finalize ptr (lambda () (%free-cubemap ptr)))
+          view)))))
+
+;; (defun set-background-cubemap () already returns view)
+
 (defun set-image-background (view path)
   (when (viewer-p view)
     (let ((view-ptr (%view view)))

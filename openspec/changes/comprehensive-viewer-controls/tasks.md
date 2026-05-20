@@ -152,7 +152,7 @@
 
 - [x] 7.1 Add `%v3d-view-set-bg-gradient` C bridge: `SetBgGradientColors(c1, c2, style, fill_method)`
 - [x] 7.2 Add `%v3d-view-set-bg-image` C bridge: `SetBgImage(path, fill_method)`
-- [ ] 7.3 Add `%v3d-view-set-cube-map` C bridge: `SetBgCubeMap()` from 6 file paths
+- [x] 7.3 Add `%v3d-view-set-cube-map` C bridge: `SetBgCubeMap()` from 6 file paths
 - [x] 7.4 Add `%v3d-view-reset-background` C bridge: reset to default
 - [x] 7.5 Add CFFI bindings for background functions
 - [x] 7.6 Create `src/core/viewer-background.lisp` with:

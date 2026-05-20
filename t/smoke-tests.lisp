@@ -977,6 +977,9 @@
     (assert-true (set-gradient-background v :style :x-neg)
                  "gradient with style should work")))
 
+;; Cubemap test requires valid image files. Manual test:
+;; (set-background-cubemap view :pos-x "px.jpg" ...)
+
 (deftest reset-background-valid
   (with-viewer (v)
     (assert-true (reset-background v) "reset-background should work")))

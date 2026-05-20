@@ -163,6 +163,9 @@
        :%ais-object-set-free-boundary-draw
        :%v3d-view-set-antialiasing
        :%v3d-view-get-antialiasing
+       :%make-cubemap-separate
+       :%free-cubemap
+       :%v3d-view-set-bg-cubemap
        :%v3d-view-set-bg-image
        :%v3d-view-get-camera-handle
        :%v3d-view-set-camera
@@ -400,6 +403,7 @@
         :grid-display
         :set-image-background
         :set-gradient-background
+        :set-background-cubemap
         :set-default-bg-gradient
         :*gradient-style-map*
         :reset-background
