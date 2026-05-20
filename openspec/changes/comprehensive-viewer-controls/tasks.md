@@ -192,7 +192,7 @@
 - [x] 9.3 Add `%ais-text-label-set-vjustify` C bridge: `SetVJustify(type)`
 - [x] 9.4 Add `%ais-text-label-set-display-type` C bridge: `SetDisplayType(type)`
 - [x] 9.5 Add `%ais-text-label-set-subtitle-color` C bridge: `SetSubtitleColor(c)`
-- [ ] 9.6 Add `%ais-text-label-set-space` C bridge: `SetSpace(spacing)`
+- [x] 9.6 Character spacing not available in OCCT 8.0 (Graphic3d_AspectText3d::theSpace is deprecated/no-op)
 - [x] 9.7 Add CFFI bindings for text label enhancements
 - [x] 9.8 Extend `src/core/text.lisp` (or create `src/core/viewer-text-labels.lisp`) with:
   - `set-text-label-angle` (converts degrees to radians)

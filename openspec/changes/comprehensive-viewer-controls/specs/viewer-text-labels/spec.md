@@ -67,13 +67,6 @@ The system SHALL set the background box color when in subtitle display mode.
 - **WHEN** user calls `(set-text-label-subtitle-color label :dark-grey)`
 - **THEN** the subtitle background renders in dark grey
 
-### Requirement: Set character spacing
-The system SHALL adjust the spacing between characters in a text label.
-
-#### Scenario: Wider spacing
-- **WHEN** user calls `(set-text-label-spacing label 2.0)`
-- **THEN** characters are spaced 2x the default distance
-
 ### Requirement: Combined text label convenience
 The system SHALL provide a convenience function to create and configure a text label in one call.
 
