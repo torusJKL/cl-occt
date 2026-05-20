@@ -310,7 +310,7 @@
                      :direction :output
                      :if-exists :supersede
                      :element-type '(unsigned-byte 8))
-    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+    (write-sequence (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255) s))
   (assert-nil (read-step "/tmp/clocct-corrupted.step")))
 
 ;; --- STL I/O ---
@@ -336,7 +336,7 @@
                      :direction :output
                      :if-exists :supersede
                      :element-type '(unsigned-byte 8))
-    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+    (write-sequence (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255) s))
   (assert-nil (read-stl "/tmp/clocct-corrupted.stl")))
 
 (deftest write-stl-deflection
