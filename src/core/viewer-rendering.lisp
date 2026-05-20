@@ -55,3 +55,6 @@
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
         (%v3d-view-set-immediate-update view-ptr (if on 1 0))
         view))))
+
+(defun set-transparent-shading (view method)
+  (set-transparency-method view method))

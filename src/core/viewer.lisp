@@ -364,6 +364,18 @@
             (coerce b 'double-float)))
         tri))))
 
+(defun set-trihedron-wireframe-color (tri color)
+  (when (ais-object-p tri)
+    (let ((rgb (normalize-color color))
+          (ptr (%ptr tri)))
+      (when (and rgb ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (r g b) rgb
+          (%ais-trihedron-set-wireframe-color ptr
+            (coerce r 'double-float)
+            (coerce g 'double-float)
+            (coerce b 'double-float)))
+        tri))))
+
 (defun show-trihedron (context viewer &key (corner :lower-left) (size 50))
   (let ((tri (make-trihedron)))
     (when tri

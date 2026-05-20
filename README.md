@@ -399,6 +399,9 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | Function | Description |
 |----------|-------------|
 | `(set-view-projection view orientation)` | Set camera orientation (`:iso-pers`, `:z-pos`, `:x-pos`, etc.) |
+| `(viewer-camera view)` | Capture current camera state as a `viewer-camera` value object (eye, target, up, projection-type, fov). |
+| `(viewer-camera-p obj)` | Predicate for `viewer-camera` instances. |
+| `(set-viewer-camera view cam)` | Apply a `viewer-camera` instance to a view. Returns the view. |
 | `(set-camera view &key eye target up)` | Position camera with optional eye, target (look-at), and up vectors. Each is `(x y z)`. Partial calls update only the specified values. |
 | `(set-perspective view bool)` | Switch between perspective (`t`) and orthographic (`nil`) projection. |
 | `(perspective-p view)` | Return `t` if view uses perspective projection, `nil` for orthographic. |
@@ -424,7 +427,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(ais-set-line-width ctx obj width)` | Set wireframe/edge line width in pixels |
 | `(ais-show-edges ctx obj bool)` | Show/hide edges on shaded display |
 | `(ais-set-edge-styling ctx obj &key color width)` | Configure edge appearance (color and width) |
-| `(ais-set-selection-mode ctx obj mode)` | Set selection mode (nil = deactivate, 0=shape, 1=face, 2=edge, 3=vertex) |
+| `(ais-set-selection-mode ctx obj mode)` | Set selection mode (nil = deactivate, 0=shape, 1=face, 2=edge, 3=vertex). Accepts keywords: `:shape`, `:face`, `:edge`, `:vertex`. |
 | `(ais-set-tessellation obj &key quality deviation)` | Set tessellation quality (lower = finer mesh, default 0.1) |
 
 ### Lighting
@@ -448,6 +451,8 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-light-concentration light v)` | Set spot light falloff concentration (0.0-1.0). |
 | `(set-headlight light bool)` | Attach/detach light from camera. |
 | `(set-light-shadows light bool)` | Enable/disable shadow casting (ray-tracing). |
+| `(viewer-lights viewer)` | List all registered lights for a viewer (returns list of `viewer-light`). |
+| `(viewer-active-lights viewer)` | List registered lights that are currently enabled. |
 | `(viewer-default-lights viewer)` | Restore default ambient + directional lights. |
 
 ### Grid
@@ -461,6 +466,11 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-grid-xy-size viewer x y)` | Set grid X and Y spacing. |
 | `(set-grid-offset viewer x y)` | Set grid origin offset. |
 | `(grid-display view &key color size-x size-y)` | Display GPU shader grid with color and cell size. |
+| `(set-grid-color viewer color)` | Convenience: set grid color only (wraps `grid-display`). |
+| `(set-grid-size viewer size)` | Convenience: set uniform grid spacing (wraps `set-grid-xy-size`). |
+| `(grid-color viewer)` | Stub: returns `nil` (no OCCT getter available). |
+| `(grid-size viewer)` | Stub: returns `nil`. |
+| `(grid-offset viewer)` | Stub: returns `nil`. |
 
 ### Background
 
@@ -469,6 +479,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-gradient-background view &key color1 color2 style)` | Two-color gradient background. `:style` is `:x-pos`, `:x-neg`, `:y-pos`, `:y-neg`, `:z-pos`, or `:z-neg`. |
 | `(set-image-background view path)` | Load an image file as the view background. |
 | `(set-background-cubemap view &key pos-x neg-x pos-y neg-y pos-z neg-z)` | Set a cube-map environment from 6 image files (requires ray-tracing). |
+| `(set-cube-map view &key pos-x neg-x pos-y neg-y pos-z neg-z)` | Alias for `set-background-cubemap`. |
 | `(reset-background view)` | Reset background to solid black. |
 
 ### Rendering
@@ -485,6 +496,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-back-face-model view model)` | Set back-face model (`:auto`, `:force`, `:disable`). |
 | `(set-frustum-culling view bool)` | Enable/disable frustum culling. |
 | `(set-transparency-method view method)` | Set transparency sorting method (`:blend-unordered`, `:blend-oit`, `:depth-peeling-oit`). |
+| `(set-transparent-shading view method)` | Alias for `set-transparency-method`. |
 | `(redraw-view view)` | Force immediate redraw of main and overlay content. |
 | `(set-immediate-update view bool)` | Control immediate flush of display changes. |
 
@@ -497,13 +509,14 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-text-label-vjustification label align)` | Set vertical alignment (`:top`, `:cap`, `:half`, `:base`, `:bottom`). |
 | `(set-text-label-display-type label type)` | Set display type (`:ordinary`, `:subtitle`, `:dekale`, `:blend`, `:dimension`). |
 | `(set-text-label-subtitle-color label color)` | Set subtitle/background box color. |
+| `(set-text-label-align label &key horizontal vertical)` | Set both horizontal (`:left`, `:center`, `:right`) and vertical (`:top`, `:cap`, `:half`, `:base`, `:bottom`) alignment in one call. |
 | `(make-text-label ctx text position &key color font height angle)` | Create, configure, and display a text label in one call. |
 
 ### Dimensions
 
 | Function | Description |
 |----------|-------------|
-| `(make-dimension type &key from to vertex point1 point2 shape)` | Create a dimension. `:length` takes `:from` `:to` (points), `:angle` takes `:vertex` `:point1` `:point2`, `:diameter`/`:radius` take `:shape`. |
+| `(make-dimension type &key from to vertex point1 point2 shape edge edge1 edge2)` | Create a dimension. `:length` takes `:from` `:to` (points) or `:edge` (shape), `:angle` takes `:vertex` `:point1` `:point2` or `:edge1` `:edge2`, `:diameter`/`:radius` take `:shape`. |
 | `(set-dimension-text-position dim (x y z))` | Set the position of the dimension label text. |
 | `(set-dimension-units dim string)` | Set display units string (e.g. `"mm"`). |
 | `(set-dimension-flyout dim v)` | Set flyout distance between dimension line and measured geometry. |
@@ -511,6 +524,9 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-dimension-extension-size dim v)` | Set dimension extension line length. |
 | `(set-dimension-custom-value dim string)` | Override the displayed dimension text. |
 | `(set-dimension-angle-edges dim edge1 edge2)` | Set measured edges for an angle dimension. |
+| `(set-dimension-text dim value)` | Alias for `set-dimension-custom-value`. |
+| `(set-dimension-arrows dim &key style size)` | Set arrow style (`:filled`, `:open`, `:none`) and size. |
+| `(set-dimension-extension dim &key offset length)` | Set extension line offset and length. |
 
 Dimensions are `ais-object` instances displayed with `ais-display`:
 
@@ -550,6 +566,10 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | `(set-default-view-size viewer size)` | Set default camera distance for new views. |
 | `(set-default-view-type viewer type)` | Set default projection type (`:perspective` or `:orthographic`). |
 | `(default-lights viewer)` | Restore the viewer's default lights. |
+| `(set-default-gradient viewer color1 color2 &key style)` | Alias for `set-default-bg-gradient`. |
+| `(set-default-lights viewer mode)` | Control default lights (`:on` restores, `:off` disables, `:custom` no-op placeholder). |
+
+> **`set-default-drawer`**: Blocked. `V3d_Viewer` in OCCT 8.0 has no `SetDefaultDrawer` method. The alternative is through `AIS_InteractiveContext::DefaultDrawer()`, which is accessible via `ais-drawer`. See the Drawer table above for per-object aspect control.
 
 ### Trihedron
 
@@ -562,6 +582,7 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | `(set-trihedron-corner obj corner &key x-offset y-offset)` | Pin to screen corner (`:lower-left`, `:upper-right`, etc.) |
 | `(set-trihedron-axis-colors obj &key x y z)` | Set per-axis colors (accepts named colors or (r g b) lists; partial update: unspecified axes keep defaults) |
 | `(set-trihedron-text-color obj color)` | Set the color of XYZ axis label text |
+| `(set-trihedron-wireframe-color obj color)` | Set the wireframe color of the trihedron's attributes drawer. |
 | `(show-trihedron ctx viewer &key corner size)` | Create, configure, and display a trihedron in one call |
 
 ### 3D Text

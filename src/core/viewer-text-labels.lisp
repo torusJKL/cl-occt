@@ -47,13 +47,21 @@
             (coerce b 'double-float)))
         label))))
 
+(defun set-text-label-align (label &key horizontal vertical)
+  (when (ais-text-label-p label)
+    (when horizontal
+      (set-text-label-hjustification label horizontal))
+    (when vertical
+      (set-text-label-vjustification label vertical))
+    label))
+
 (defun make-text-label (ctx text position &key color font height angle)
   (let* ((normalized-color (and color (normalize-color color)))
          (label (make-ais-text-label text
-                                      :position position
-                                      :color normalized-color
-                                      :font font
-                                      :height height)))
+                                       :position position
+                                       :color normalized-color
+                                       :font font
+                                       :height height)))
     (when label
       (when angle (set-text-label-angle label angle))
       (ais-display ctx label)

@@ -102,15 +102,21 @@
                   (coerce b 'double-float))))))
         obj))))
 
+(defparameter *selection-mode-map*
+  '((:shape . 0) (:face . 1) (:edge . 2) (:vertex . 3)))
+
 (defun ais-set-selection-mode (context obj mode)
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
-          (obj-ptr (%ptr obj)))
+          (obj-ptr (%ptr obj))
+          (mode-int (if (keywordp mode)
+                        (cdr (assoc mode *selection-mode-map*))
+                        mode)))
       (when (and ctx-ptr obj-ptr
                  (not (cffi:null-pointer-p ctx-ptr))
                  (not (cffi:null-pointer-p obj-ptr)))
-        (if mode
-            (%ais-set-selection-mode ctx-ptr obj-ptr mode)
+        (if mode-int
+            (%ais-set-selection-mode ctx-ptr obj-ptr mode-int)
             (%ais-deactivate-selection ctx-ptr obj-ptr))
         obj))))
 

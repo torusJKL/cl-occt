@@ -114,11 +114,21 @@ void ais_context_unset_color(void* ctx, void* obj);
 void ais_context_set_display_mode(void* ctx, void* obj, int mode);
 void v3d_view_set_proj(void* view, int orientation);
 void v3d_view_set_eye(void* view, double x, double y, double z);
+double v3d_view_get_eye_x(void* view);
+double v3d_view_get_eye_y(void* view);
+double v3d_view_get_eye_z(void* view);
 void v3d_view_set_target(void* view, double x, double y, double z);
+double v3d_view_get_target_x(void* view);
+double v3d_view_get_target_y(void* view);
+double v3d_view_get_target_z(void* view);
 void v3d_view_set_up(void* view, double x, double y, double z);
+double v3d_view_get_up_x(void* view);
+double v3d_view_get_up_y(void* view);
+double v3d_view_get_up_z(void* view);
 void v3d_view_set_projection_type(void* view, int is_perspective);
 int  v3d_view_get_projection_type(void* view);
 void v3d_view_set_fov(void* view, double fov_rad);
+double v3d_view_get_fov(void* view);
 void v3d_view_set_clip_planes(void* view, double near, double far);
 void v3d_view_fit_all_shape(void* view, void* shape);
 void v3d_view_pan(void* view, double dx, double dy);
@@ -142,6 +152,7 @@ void  ais_trihedron_set_size(void* obj, double size);
 void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
 int   ais_trihedron_set_datum_part_color(void* obj, int part, double r, double g, double b);
 void  ais_trihedron_set_text_color(void* obj, double r, double g, double b);
+void  ais_trihedron_set_wireframe_color(void* obj, double r, double g, double b);
 
 // --- Custom Material ---
 void* make_material(double ar, double ag, double ab, double dr, double dg, double db,

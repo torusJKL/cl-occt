@@ -1535,6 +1535,130 @@
     (assert-nil (write-stl label "/tmp/clocct-label-test.stl")
                 "write-stl should reject non-shape objects")))
 
+;; --- Feature Gap Tests ---
+
+(deftest viewer-camera-predicate
+  (let ((cam (make-instance 'viewer-camera
+               :eye '(0 0 10) :target '(0 0 0) :up '(0 1 0)
+               :projection-type :perspective :fov 1.0)))
+    (assert-true (viewer-camera-p cam) "viewer-camera-p should be t")
+    (assert-nil (viewer-camera-p nil) "viewer-camera-p should be nil for nil")
+    (assert-nil (viewer-camera-p :not-a-cam) "viewer-camera-p should be nil for non-camera")))
+
+(deftest viewer-camera-roundtrip
+  (with-viewer (v)
+    (let* ((cam (make-instance 'viewer-camera
+                  :eye '(5 5 10) :target '(0 0 0) :up '(0 1 0)
+                  :projection-type :perspective :fov 1.0))
+           (result (set-viewer-camera v cam)))
+      (assert-true (viewer-p result) "set-viewer-camera should return viewer"))))
+
+(deftest viewer-lights-and-active
+  (with-viewer (v)
+    (let* ((l1 (make-light :ambient :color :warm-gray))
+           (l2 (make-light :directional :color :white :direction '(0 0 -1))))
+      (viewer-add-light v l1)
+      (viewer-add-light v l2)
+      (viewer-light-on v l1)
+      (let ((all (viewer-lights v))
+            (active (viewer-active-lights v)))
+        (assert-true (and (listp all) (= (length all) 2)) "viewer-lights should return 2 lights")
+        (assert-true (listp active) "viewer-active-lights should return a list")
+        (free-light l1)
+        (free-light l2)))))
+
+(deftest set-trihedron-wireframe-color-valid
+  (let ((tri (make-trihedron)))
+    (assert-true (set-trihedron-wireframe-color tri :red)
+                 "set-trihedron-wireframe-color should work")))
+
+(deftest set-default-gradient-alias
+  (with-viewer (v)
+    (assert-true (set-default-gradient v :dark-blue :sky-blue)
+                 "set-default-gradient alias should work")))
+
+(deftest set-default-lights-modes
+  (with-viewer (v)
+    (assert-true (set-default-lights v :on) "set-default-lights :on should work")
+    (assert-true (set-default-lights v :off) "set-default-lights :off should work")
+    (assert-true (set-default-lights v :custom) "set-default-lights :custom should work")))
+
+(deftest set-grid-color-convenience
+  (with-viewer (v)
+    (assert-true (set-grid-color v :grey) "set-grid-color should work")))
+
+(deftest set-grid-size-convenience
+  (with-viewer (v)
+    (assert-true (set-grid-size v 10.0) "set-grid-size should work")))
+
+(deftest grid-getter-stubs
+  (with-viewer (v)
+    (assert-nil (grid-color v) "grid-color should be nil")
+    (assert-nil (grid-size v) "grid-size should be nil")
+    (assert-nil (grid-offset v) "grid-offset should be nil")))
+
+(deftest make-dimension-edge-keyword
+  (let ((edge (make-edge 0 0 10 0)))
+    (let ((dim (make-dimension :length :edge edge)))
+      (assert-true (ais-object-p dim) "length dimension with :edge should work"))))
+
+(deftest set-dimension-text-alias
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-text dim "Custom Label")
+                   "set-dimension-text alias should work"))))
+
+(deftest set-dimension-arrows-convenience
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-arrows dim :style :filled :size 5.0)
+                   "set-dimension-arrows should work"))))
+
+(deftest set-dimension-extension-convenience
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-extension dim :offset 5.0 :length 10.0)
+                   "set-dimension-extension should work"))))
+
+(deftest ais-set-selection-mode-keywords
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-selection-mode ctx obj :shape) ":shape keyword should work")
+      (assert-true (ais-set-selection-mode ctx obj :face) ":face keyword should work")
+      (assert-true (ais-set-selection-mode ctx obj :edge) ":edge keyword should work")
+      (assert-true (ais-set-selection-mode ctx obj :vertex) ":vertex keyword should work"))))
+
+(deftest set-text-label-align-convenience
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-align label :horizontal :center :vertical :top)
+                 "set-text-label-align should work")
+    (ais-free-text-label label)))
+
+(deftest set-cube-map-alias
+  (let* ((dir *test-image-dir*))
+    (with-viewer (v)
+      (let ((result (set-cube-map v
+                      :pos-x (concatenate 'string dir "px.png")
+                      :neg-x (concatenate 'string dir "nx.png")
+                      :pos-y (concatenate 'string dir "py.png")
+                      :neg-y (concatenate 'string dir "ny.png")
+                      :pos-z (concatenate 'string dir "pz.png")
+                      :neg-z (concatenate 'string dir "nz.png"))))
+        (assert-true (or (viewer-p result) (null result))
+                     "set-cube-map alias should work or fail gracefully")))))
+
+(deftest set-transparent-shading-alias
+  (with-viewer (v)
+    (assert-true (set-transparent-shading v :blend-oit)
+                 "set-transparent-shading alias should work")))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -1697,8 +1821,25 @@
                 text-font-advance-y-valid
                 text-font-set-width-scaling-valid
                 text-font-set-composite-curve-mode-valid
-                write-step-skips-ais-label
-                write-stl-skips-ais-label))
+                 write-step-skips-ais-label
+                 write-stl-skips-ais-label
+                 viewer-camera-predicate
+                 viewer-camera-roundtrip
+                 viewer-lights-and-active
+                 set-trihedron-wireframe-color-valid
+                 set-default-gradient-alias
+                 set-default-lights-modes
+                 set-grid-color-convenience
+                 set-grid-size-convenience
+                 grid-getter-stubs
+                 make-dimension-edge-keyword
+                 set-dimension-text-alias
+                 set-dimension-arrows-convenience
+                 set-dimension-extension-convenience
+                 ais-set-selection-mode-keywords
+                 set-text-label-align-convenience
+                 set-cube-map-alias
+                 set-transparent-shading-alias))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

@@ -75,12 +75,22 @@
       :%ais-context-unset-color
       :%ais-context-set-display-mode
        :%v3d-view-set-proj
-       :%v3d-view-set-eye
-       :%v3d-view-set-target
-       :%v3d-view-set-up
-       :%v3d-view-set-projection-type
-       :%v3d-view-get-projection-type
-       :%v3d-view-set-fov
+        :%v3d-view-set-eye
+        :%v3d-view-get-eye-x
+        :%v3d-view-get-eye-y
+        :%v3d-view-get-eye-z
+        :%v3d-view-set-target
+        :%v3d-view-get-target-x
+        :%v3d-view-get-target-y
+        :%v3d-view-get-target-z
+        :%v3d-view-set-up
+        :%v3d-view-get-up-x
+        :%v3d-view-get-up-y
+        :%v3d-view-get-up-z
+        :%v3d-view-set-projection-type
+        :%v3d-view-get-projection-type
+        :%v3d-view-set-fov
+        :%v3d-view-get-fov
        :%v3d-view-set-clip-planes
        :%v3d-view-fit-all-shape
        :%v3d-view-pan
@@ -195,8 +205,9 @@
          :%ais-trihedron-set-draw-arrows
          :%ais-trihedron-set-size
          :%ais-trihedron-set-transform-pers
-         :%ais-trihedron-set-datum-part-color
-         :%ais-trihedron-set-text-color
+          :%ais-trihedron-set-datum-part-color
+          :%ais-trihedron-set-text-color
+          :%ais-trihedron-set-wireframe-color
         :%make-brep-font-from-file
         :%make-brep-font-from-name
         :%free-brep-font
@@ -343,16 +354,19 @@
       :ais-set-color
       :ais-unset-color
       :ais-set-display-mode
-       :set-view-projection
-       :set-camera
-       :set-perspective
-       :perspective-p
-       :set-fov
-       :set-clip-planes
-       :pan-camera
-       :zoom-camera
-       :rotate-camera
-       :reset-view
+        :set-view-projection
+        :viewer-camera
+        :viewer-camera-p
+        :set-viewer-camera
+        :set-camera
+        :set-perspective
+        :perspective-p
+        :set-fov
+        :set-clip-planes
+        :pan-camera
+        :zoom-camera
+        :rotate-camera
+        :reset-view
        :fit-all
        :set-msaa
       :msaa
@@ -362,13 +376,14 @@
        :deactivate-grid
        :invalidate-view
        :make-trihedron
-       :set-trihedron-mode
-       :set-trihedron-arrows
-        :set-trihedron-size
-        :set-trihedron-corner
-        :show-trihedron
-        :set-trihedron-axis-colors
-        :set-trihedron-text-color
+         :set-trihedron-mode
+         :set-trihedron-arrows
+         :set-trihedron-size
+         :set-trihedron-corner
+         :show-trihedron
+         :set-trihedron-axis-colors
+         :set-trihedron-text-color
+         :set-trihedron-wireframe-color
         :ais-set-transparency
         :ais-set-material
         :ais-set-custom-material
@@ -390,6 +405,8 @@
         :viewer-light-on
         :viewer-light-off
         :viewer-light-active-p
+        :viewer-lights
+        :viewer-active-lights
         :set-light-color
         :set-light-intensity
         :set-light-direction
@@ -400,10 +417,16 @@
         :set-rectangular-grid-values
         :set-grid-xy-size
         :set-grid-offset
+        :set-grid-color
+        :set-grid-size
+        :grid-color
+        :grid-size
+        :grid-offset
         :grid-display
         :set-image-background
         :set-gradient-background
         :set-background-cubemap
+        :set-cube-map
         :set-default-bg-gradient
         :*gradient-style-map*
         :reset-background
@@ -412,11 +435,13 @@
         :set-back-face-model
         :set-frustum-culling
         :set-transparency-method
+        :set-transparent-shading
         :redraw-view
         :set-immediate-update
         :set-text-label-angle
         :set-text-label-hjustification
         :set-text-label-vjustification
+        :set-text-label-align
         :set-text-label-subtitle-color
         :set-text-label-display-type
         :make-text-label
@@ -425,6 +450,8 @@
         :set-default-view-size
         :set-default-view-type
         :default-lights
+        :set-default-gradient
+        :set-default-lights
         :make-dimension
         :set-dimension-text-position
         :set-dimension-units
@@ -433,6 +460,9 @@
         :set-dimension-extension-size
         :set-dimension-custom-value
         :set-dimension-angle-edges
+        :set-dimension-text
+        :set-dimension-arrows
+        :set-dimension-extension
         :ais-drawer
         :drawer-p
         :drawer-shading-aspect

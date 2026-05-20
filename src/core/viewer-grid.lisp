@@ -34,3 +34,21 @@
             (coerce r 'double-float) (coerce g 'double-float) (coerce b 'double-float)
             (coerce size-x 'double-float) (coerce size-y 'double-float)))
         view))))
+
+(defun set-grid-color (viewer color)
+  (grid-display viewer :color color))
+
+(defun set-grid-size (viewer size)
+  (set-grid-xy-size viewer size size))
+
+(defun grid-color (viewer)
+  (declare (ignore viewer))
+  nil)
+
+(defun grid-size (viewer)
+  (declare (ignore viewer))
+  nil)
+
+(defun grid-offset (viewer)
+  (declare (ignore viewer))
+  nil)

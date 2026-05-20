@@ -46,3 +46,9 @@
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
         (%v3d-view-reset-background view-ptr)
         view))))
+
+(defun set-cube-map (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
+  (set-background-cubemap view
+    :pos-x pos-x :neg-x neg-x
+    :pos-y pos-y :neg-y neg-y
+    :pos-z pos-z :neg-z neg-z))

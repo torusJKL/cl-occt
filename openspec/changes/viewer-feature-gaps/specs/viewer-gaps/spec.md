@@ -34,7 +34,7 @@ The system SHALL set the color of the trihedron's wireframe representation.
 - **THEN** the wireframe trihedron renders in blue
 
 ### Requirement: Default drawer (blocked)
-The system SHOULD provide `set-default-drawer` on the viewer. Note: `V3d_Viewer` in OCCT 8.0 does not have `SetDefaultDrawer`. The alternative is through `AIS_InteractiveContext::DefaultDrawer()`. This requirement is blocked by OCCT 8.0 API limitations.
+The system SHOULD provide `set-default-drawer` on the viewer. Note: `V3d_Viewer` in OCCT 8.0 does not have `SetDefaultDrawer`. The alternative is through `AIS_InteractiveContext::DefaultDrawer()`, accessible via `ais-drawer` / `ais-context-default-drawer`. This requirement is blocked by OCCT 8.0 API limitations.
 
 ### Requirement: Alias functions for spec conformance
 The system SHALL provide alias functions where the spec name differs from the implementation name.

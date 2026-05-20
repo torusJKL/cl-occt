@@ -56,3 +56,17 @@
         (%v3d-viewer-set-default-view-type v-ptr
           (if (eq type :perspective) 1 0))
         viewer))))
+
+(defun set-default-gradient (viewer color1 color2 &key (style :y-pos))
+  (set-default-bg-gradient viewer color1 color2 :style style))
+
+(defun set-default-lights (viewer mode)
+  (when (viewer-p viewer)
+    (ecase mode
+      (:on (default-lights viewer))
+      (:off
+       (let ((v-ptr (%viewer viewer)))
+         (when (and v-ptr (not (cffi:null-pointer-p v-ptr)))
+           (%v3d-viewer-set-default-lights v-ptr 0)
+           viewer)))
+      (:custom viewer))))

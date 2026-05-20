@@ -1347,6 +1347,21 @@ void ais_trihedron_set_text_color(void* obj_ptr, double r, double g, double b) {
     }
 }
 
+void ais_trihedron_set_wireframe_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (**obj).Attributes();
+        Handle(Prs3d_LineAspect) aspect = new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0);
+        drawer->SetWireAspect(aspect);
+        (**obj).Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 // draw-names is not available in OCCT 8.0 AIS_Trihedron API.
 // Labels are always shown as part of the datum presentation.
 
@@ -1440,6 +1455,42 @@ void v3d_view_set_eye(void* view_ptr, double x, double y, double z) {
     }
 }
 
+double v3d_view_get_eye_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_eye_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_eye_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
 void v3d_view_set_target(void* view_ptr, double x, double y, double z) {
     clear_error();
     if (!view_ptr) { set_error("null view argument", 2); return; }
@@ -1452,6 +1503,42 @@ void v3d_view_set_target(void* view_ptr, double x, double y, double z) {
     }
 }
 
+double v3d_view_get_target_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_target_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_target_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
 void v3d_view_set_up(void* view_ptr, double x, double y, double z) {
     clear_error();
     if (!view_ptr) { set_error("null view argument", 2); return; }
@@ -1461,6 +1548,42 @@ void v3d_view_set_up(void* view_ptr, double x, double y, double z) {
         (*view)->Update();
     } catch (Standard_Failure& e) {
         set_error(e.what());
+    }
+}
+
+double v3d_view_get_up_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_up_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_up_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
     }
 }
 
@@ -1499,6 +1622,18 @@ void v3d_view_set_fov(void* view_ptr, double fov_rad) {
         (*view)->Update();
     } catch (Standard_Failure& e) {
         set_error(e.what());
+    }
+}
+
+double v3d_view_get_fov(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->FOVy();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
     }
 }
 

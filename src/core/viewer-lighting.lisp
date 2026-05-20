@@ -1,5 +1,19 @@
 (in-package :cl-occt)
 
+(defparameter *light-registry* (make-hash-table :test 'eq))
+
+(defun %register-light (viewer light)
+  (let* ((v-ptr (%viewer viewer))
+         (lights (gethash v-ptr *light-registry*)))
+    (pushnew light lights :test #'eq)
+    (setf (gethash v-ptr *light-registry*) lights)))
+
+(defun %deregister-light (viewer light)
+  (let* ((v-ptr (%viewer viewer))
+         (lights (gethash v-ptr *light-registry*)))
+    (setf (gethash v-ptr *light-registry*)
+          (remove light lights :test #'eq))))
+
 (defclass viewer-light ()
   ((%ptr :initarg :ptr :reader %ptr)
    (%type :initarg :type :reader light-type)))
@@ -64,6 +78,7 @@
       (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
                  (not (cffi:null-pointer-p l-ptr)))
         (%v3d-viewer-add-light v-ptr l-ptr)
+        (%register-light viewer light)
         light))))
 
 (defun viewer-remove-light (viewer light)
@@ -72,7 +87,8 @@
           (l-ptr (%ptr light)))
       (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
                  (not (cffi:null-pointer-p l-ptr)))
-        (%v3d-viewer-remove-light v-ptr l-ptr)))))
+        (%v3d-viewer-remove-light v-ptr l-ptr)
+        (%deregister-light viewer light)))))
 
 (defun viewer-light-on (viewer light)
   (when (and (viewer-p viewer) (viewer-light-p light))
@@ -174,3 +190,15 @@
       (when (and v-ptr (not (cffi:null-pointer-p v-ptr)))
         (%v3d-viewer-default-lights v-ptr)
         viewer))))
+
+(defun viewer-lights (viewer)
+  (when (viewer-p viewer)
+    (let ((v-ptr (%viewer viewer)))
+      (gethash v-ptr *light-registry*))))
+
+(defun viewer-active-lights (viewer)
+  (when (viewer-p viewer)
+    (let ((v-ptr (%viewer viewer)))
+      (remove-if-not (lambda (light)
+                       (viewer-light-active-p viewer light))
+                     (gethash v-ptr *light-registry*)))))

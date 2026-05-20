@@ -314,11 +314,38 @@
 (defcfun (%v3d-view-set-eye "v3d_view_set_eye") :void
   (view :pointer) (x :double) (y :double) (z :double))
 
+(defcfun (%v3d-view-get-eye-x "v3d_view_get_eye_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-eye-y "v3d_view_get_eye_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-eye-z "v3d_view_get_eye_z") :double
+  (view :pointer))
+
 (defcfun (%v3d-view-set-target "v3d_view_set_target") :void
   (view :pointer) (x :double) (y :double) (z :double))
 
+(defcfun (%v3d-view-get-target-x "v3d_view_get_target_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-target-y "v3d_view_get_target_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-target-z "v3d_view_get_target_z") :double
+  (view :pointer))
+
 (defcfun (%v3d-view-set-up "v3d_view_set_up") :void
   (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-get-up-x "v3d_view_get_up_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-up-y "v3d_view_get_up_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-up-z "v3d_view_get_up_z") :double
+  (view :pointer))
 
 (defcfun (%v3d-view-set-projection-type "v3d_view_set_projection_type") :void
   (view :pointer) (is-perspective :int))
@@ -328,6 +355,9 @@
 
 (defcfun (%v3d-view-set-fov "v3d_view_set_fov") :void
   (view :pointer) (fov-rad :double))
+
+(defcfun (%v3d-view-get-fov "v3d_view_get_fov") :double
+  (view :pointer))
 
 (defcfun (%v3d-view-set-clip-planes "v3d_view_set_clip_planes") :void
   (view :pointer) (near :double) (far :double))
@@ -392,6 +422,9 @@
   (r :double) (g :double) (b :double))
 
 (defcfun (%ais-trihedron-set-text-color "ais_trihedron_set_text_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-trihedron-set-wireframe-color "ais_trihedron_set_wireframe_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
 
 ;; --- Per-Object Properties ---
