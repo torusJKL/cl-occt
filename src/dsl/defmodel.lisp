@@ -24,6 +24,15 @@
         (model-cached-shape m)
         (error "Model ~S not found" name))))
 
+(defmacro text (string &key font (h-align :left) (v-align :bottom) position normal)
+  `(make-text-shape (or ,font
+                        (error "text: :font is required"))
+                    ,string
+                    :h-align ,h-align
+                    :v-align ,v-align
+                    :position ,position
+                    :normal ,normal))
+
 (defun %collect-model-refs (form)
   (when (consp form)
     (if (and (eq (car form) 'model-ref)

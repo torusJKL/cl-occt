@@ -435,15 +435,33 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(make-brep-font-from-file path size &optional face-id)` | Load a TrueType/OpenType font from a file path. Returns `brep-font` or nil. |
 | `(make-brep-font-from-name name size &key aspect)` | Look up a system font by name. `aspect` is `:regular`, `:bold`, `:italic`, or `:bold-italic` (default `:regular`). Returns `brep-font` or nil. |
 | `(brep-font-p obj)` | Predicate: returns t for `brep-font` objects, nil otherwise |
-| `(make-text-shape font text &key h-align v-align)` | Render text as a flat BRep shape on the XY plane. `h-align`: `:left`, `:center`, `:right`. `v-align`: `:bottom`, `:center`, `:top`, `:top-first-line`. Returns a `shape` compound of positioned glyph faces or nil. |
-| `(make-text-shape-3d font text depth &key h-align v-align)` | Render text and extrude it by `depth` in Z. Convenience wrapper around `make-text-shape` + `make-prism`. Returns a `shape` or nil. |
+| `(make-text-shape font text &key h-align v-align position normal)` | Render text as a flat BRep shape. Supports optional `:position` `(x y z)` and `:normal` `(dx dy dz)` for arbitrary plane placement. Returns a `shape` or nil. |
+| `(make-text-shape-3d font text depth &key h-align v-align position normal)` | Render and extrude text. Same position/normal args as `make-text-shape`. |
+| `(make-text-shape-on-plane font text &key h-align v-align position normal)` | Convenience — explicit position/normal defaults for plane placement. |
+| `(text-bounding-box font text &key h-align v-align)` | Query text extent without rendering. Returns `(values width height)` or nil. |
+| `(list-available-fonts)` | Return a list of available system font name strings. |
+| `(font-info name)` | Query font information (`:name`, `:key` plist) by name. |
+| `(text-glyph-as-shape font codepoint)` | Render a single glyph by Unicode codepoint as a shape. |
+| `(text-glyph-as-shape-3d font codepoint depth)` | Render and extrude a single glyph. |
+| `(text-font-ascender font)` | Font ascender height above baseline. |
+| `(text-font-descender font)` | Font descender depth below baseline. |
+| `(text-font-line-spacing font)` | Default line spacing (baseline to baseline). |
+| `(text-font-advance-x font c1 c2)` | Horizontal advance between two glyph codepoints (with kerning). |
+| `(text-font-advance-y font c1 c2)` | Vertical advance between two glyph codepoints. |
+| `(text-font-set-width-scaling font scale)` | Set glyph width scaling factor for subsequent rendering. |
+| `(text-font-set-composite-curve-mode font bool)` | Toggle composite BSpline curves for glyph contours. |
+| `(make-multi-line-text font text &key h-align v-align position normal line-spacing)` | Render multi-line text (split on `#\Newline`), lines stacked vertically by `line-spacing`. |
+| `(make-formatted-text font text &key h-align v-align position normal line-spacing)` | Alias for `make-multi-line-text`. |
+| `(make-ais-text-label text &key position color font height)` | Create an interactive 3D text label (`AIS_TextLabel`) for viewer display. Not exported to STL/STEP. |
+| `(ais-text-label-p obj)` | Predicate for ais-text-label objects. |
+| `(ais-free-text-label label)` | Free an ais-text-label's C handle. |
 
 Font size is in **model units** (e.g., millimeters). To convert from typographic points: `sizeInMeters = 0.0254 * pt / 72.0`.
 
 ```lisp
 ;; From a font file — create flat text
-(let* ((font  (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
-       (flat  (make-text-shape font "Hello 3D!")))
+(let* ((font (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
+       (flat (make-text-shape font "Hello 3D!")))
   (write-step flat "flat-text.step"))
 
 ;; From a font file — create 3D text (one step)
@@ -452,17 +470,48 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
   (write-step text3d "hello-3d.step")
   (write-stl text3d "hello-3d.stl" :deflection 0.05))
 
-;; Flat text + manual extrusion (composable)
-(let* ((font     (make-brep-font-from-file "font.ttf" 10.0))
-       (flat     (make-text-shape font "Hello"))
-       (extruded (make-prism flat 0 0 3.0)))
-  (write-step extruded "extruded.step"))
-
 ;; System font with bold style
 (let* ((font   (make-brep-font-from-name "Arial" 12.0 :aspect :bold))
        (text3d (make-text-shape-3d font "Centered" 1.5
                                     :h-align :center :v-align :center)))
   (write-step text3d "centered.step"))
+
+;; Text on a rotated plane (YZ plane in this example)
+(let* ((font   (make-brep-font-from-name "Arial" 10.0))
+       (rotated (make-text-shape font "Angled" :position '(0 0 0) :normal '(1 0 0))))
+  (write-step rotated "angled-text.step"))
+
+;; Multi-line text (lines stacked vertically)
+(let* ((font (make-brep-font-from-name "Arial" 10.0))
+       (multi (make-multi-line-text font "Line1\nLine2\nLine3")))
+  (write-step multi "multiline-text.step"))
+
+;; Bounding box query (useful for layout)
+(let* ((font (make-brep-font-from-name "Arial" 10.0)))
+  (multiple-value-bind (w h) (text-bounding-box font "Hello")
+    (format t "Text is ~,1f × ~,1f model units~%" w h)))
+
+;; List available system fonts
+(list-available-fonts)
+
+;; Per-glyph rendering
+(let* ((font   (make-brep-font-from-name "Arial" 10.0))
+       (glyphA (text-glyph-as-shape font (char-code #\A))))
+  (write-step glyphA "glyph-A.step"))
+
+;; Font metrics
+(let* ((font (make-brep-font-from-name "Arial" 10.0)))
+  (format t "Ascender: ~,2f  Descender: ~,2f  LineSpacing: ~,2f~%"
+          (text-font-ascender font)
+          (text-font-descender font)
+          (text-font-line-spacing font)))
+
+;; Interactive 3D text label (viewer only, not exported)
+(with-viewer (v)
+  (let* ((ctx   (ais-create-context v))
+         (label (make-ais-text-label "My Label" :position '(0 0 0))))
+    (ais-display ctx label)
+    (fit-all v)))
 ```
 
 ### Introspection
@@ -473,7 +522,7 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (86 functions)
+│   ├── occt_wrap.h       C header (100+ functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -484,7 +533,7 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
 │   │   ├── shape.lisp    CLOS shape class
 │   │   ├── errors.lisp   OCCT error condition
 │   │   ├── primitives.lisp make-shape, make-box, make-cylinder, make-cone, make-torus, make-prism, make-revol
-│   │   ├── text.lisp      brep-font, make-brep-font-from-file, make-brep-font-from-name, make-text-shape, make-text-shape-3d
+│   │   ├── text.lisp      brep-font, ais-text-label, font loading, text shapes, positioning, bounding-box, multi-line, per-glyph metrics, font enumeration, text labels
 │   │   ├── geom2d.lisp    geom2d class, make-pnt2d, make-vec2d, make-dir2d, make-line2d, make-circle2d
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common, section
@@ -504,7 +553,7 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~128 smoke tests
+│   └── smoke-tests.lisp  ~165 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

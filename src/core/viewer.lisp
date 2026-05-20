@@ -94,9 +94,12 @@
 
 (defun ais-display (context shape-or-obj &key (update t))
   (when (ais-context-p context)
-    (let* ((obj (if (ais-object-p shape-or-obj)
-                    shape-or-obj
-                    (ais-create-shape shape-or-obj)))
+    (let* ((obj (cond ((ais-object-p shape-or-obj)
+                       shape-or-obj)
+                      ((ais-text-label-p shape-or-obj)
+                       shape-or-obj)
+                      (t
+                       (ais-create-shape shape-or-obj))))
            (ptr (when obj (%ptr obj))))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
         (%ais-context-display (%ptr context) ptr (if update 1 0)))
