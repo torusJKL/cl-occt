@@ -74,8 +74,20 @@
       :%ais-context-set-color
       :%ais-context-unset-color
       :%ais-context-set-display-mode
-      :%v3d-view-set-proj
-      :%v3d-view-set-msaa
+       :%v3d-view-set-proj
+       :%v3d-view-set-eye
+       :%v3d-view-set-target
+       :%v3d-view-set-up
+       :%v3d-view-set-projection-type
+       :%v3d-view-get-projection-type
+       :%v3d-view-set-fov
+       :%v3d-view-set-clip-planes
+       :%v3d-view-fit-all-shape
+       :%v3d-view-pan
+       :%v3d-view-zoom
+       :%v3d-view-rotate
+       :%v3d-view-reset
+       :%v3d-view-set-msaa
       :%v3d-view-get-msaa
       :%v3d-view-set-antialiasing
       :%v3d-view-get-antialiasing
@@ -233,8 +245,18 @@
       :ais-set-color
       :ais-unset-color
       :ais-set-display-mode
-      :set-view-projection
-      :set-msaa
+       :set-view-projection
+       :set-camera
+       :set-perspective
+       :perspective-p
+       :set-fov
+       :set-clip-planes
+       :pan-camera
+       :zoom-camera
+       :rotate-camera
+       :reset-view
+       :fit-all
+       :set-msaa
       :msaa
       :set-antialiasing
       :antialiasing-p

@@ -26,7 +26,8 @@
            (:file "assembly")
            (:file "io")
             (:file "viewer")
-            (:file "viewer-colors")))
+            (:file "viewer-colors")
+            (:file "viewer-camera")))
      (:module "dag"
       :components
       ((:file "params")

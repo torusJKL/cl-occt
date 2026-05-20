@@ -32,11 +32,16 @@
             (slot-value v '%viewer) (cffi:null-pointer)
             (slot-value v '%view) (cffi:null-pointer)))))
 
-(defun fit-all (v)
+(defun fit-all (v &optional shape)
   (when (viewer-p v)
     (let ((view (%view v)))
       (when (and view (not (cffi:null-pointer-p view)))
-        (%v3d-fit-all view)))))
+        (if (shape-p shape)
+            (let ((shape-ptr (%ptr shape)))
+              (when (and shape-ptr (not (cffi:null-pointer-p shape-ptr)))
+                (%v3d-view-fit-all-shape view shape-ptr)))
+            (%v3d-fit-all view))
+        v))))
 
 (defun must-be-resized (v)
   (when (viewer-p v)

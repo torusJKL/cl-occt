@@ -399,6 +399,16 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | Function | Description |
 |----------|-------------|
 | `(set-view-projection view orientation)` | Set camera orientation (`:iso-pers`, `:z-pos`, `:x-pos`, etc.) |
+| `(set-camera view &key eye target up)` | Position camera with optional eye, target (look-at), and up vectors. Each is `(x y z)`. Partial calls update only the specified values. |
+| `(set-perspective view bool)` | Switch between perspective (`t`) and orthographic (`nil`) projection. |
+| `(perspective-p view)` | Return `t` if view uses perspective projection, `nil` for orthographic. |
+| `(set-fov view degrees)` | Set vertical field of view in degrees. |
+| `(set-clip-planes view &key near far)` | Set Z-clipping near and far plane distances. |
+| `(pan-camera view dx dy)` | Pan (shift) the view by screen-space pixel amounts. |
+| `(zoom-camera view factor)` | Set camera zoom scale factor. |
+| `(rotate-camera view ax ay az)` | Rotate camera by angles in radians around X, Y, Z axes. |
+| `(reset-view view)` | Restore default view orientation and mapping. |
+| `(fit-all view &optional shape-or-obj)` | Zoom to fit all displayed objects, or a specific shape/ais-object when provided. |
 
 ### Rendering
 

@@ -311,6 +311,42 @@
 (defcfun (%v3d-view-set-proj "v3d_view_set_proj") :void
   (view :pointer) (orientation :int))
 
+(defcfun (%v3d-view-set-eye "v3d_view_set_eye") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-set-target "v3d_view_set_target") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-set-up "v3d_view_set_up") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-set-projection-type "v3d_view_set_projection_type") :void
+  (view :pointer) (is-perspective :int))
+
+(defcfun (%v3d-view-get-projection-type "v3d_view_get_projection_type") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-fov "v3d_view_set_fov") :void
+  (view :pointer) (fov-rad :double))
+
+(defcfun (%v3d-view-set-clip-planes "v3d_view_set_clip_planes") :void
+  (view :pointer) (near :double) (far :double))
+
+(defcfun (%v3d-view-fit-all-shape "v3d_view_fit_all_shape") :void
+  (view :pointer) (shape :pointer))
+
+(defcfun (%v3d-view-pan "v3d_view_pan") :void
+  (view :pointer) (dx :double) (dy :double))
+
+(defcfun (%v3d-view-zoom "v3d_view_zoom") :void
+  (view :pointer) (factor :double))
+
+(defcfun (%v3d-view-rotate "v3d_view_rotate") :void
+  (view :pointer) (ax :double) (ay :double) (az :double))
+
+(defcfun (%v3d-view-reset "v3d_view_reset") :void
+  (view :pointer))
+
 (defcfun (%v3d-view-set-msaa "v3d_view_set_msaa") :void
   (view :pointer) (samples :int))
 

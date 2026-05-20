@@ -725,6 +725,55 @@
       (let ((tri (show-trihedron ctx v :corner :lower-left :size 50)))
         (assert-true (ais-object-p tri) "show-trihedron should return ais-object")))))
 
+;; --- Camera ---
+
+(deftest set-camera-eye-target-up
+  (with-viewer (v)
+    (assert-true (set-camera v :eye '(10 10 10) :target '(0 0 0) :up '(0 1 0))
+                 "set-camera should return the viewer")))
+
+(deftest set-camera-partial-eye-only
+  (with-viewer (v)
+    (assert-true (set-camera v :eye '(5 5 5))
+                 "set-camera with only :eye should work")))
+
+(deftest set-perspective-toggles
+  (with-viewer (v)
+    (set-perspective v t)
+    (assert-true (perspective-p v) "perspective-p should be t after setting perspective")
+    (set-perspective v nil)
+    (assert-nil (perspective-p v) "perspective-p should be nil after setting orthographic")))
+
+(deftest set-fov-valid
+  (with-viewer (v)
+    (set-fov v 45.0)
+    t))
+
+(deftest set-fov-zero
+  (with-viewer (v)
+    (set-fov v 0.0)
+    t))
+
+(deftest set-clip-planes-valid
+  (with-viewer (v)
+    (set-clip-planes v :near 0.1 :far 1000.0)
+    t))
+
+;; Pan/zoom/rotate are interactive operations that require an active window.
+;; They are tested for build correctness (no compile errors) but skipped in
+;; automated headless test runs.
+
+(deftest reset-view-valid
+  (with-viewer (v)
+    (reset-view v)
+    t))
+
+(deftest fit-all-shape-valid
+  (with-viewer (v)
+    (let ((box (make-box 10 20 30)))
+      (fit-all v box)
+      t)))
+
 ;; --- Colors ---
 
 (deftest named-color-red
@@ -1074,6 +1123,11 @@
                 set-trihedron-size-100
                 set-trihedron-corner-lower-right
                  show-trihedron-in-context
+                 set-camera-eye-target-up set-camera-partial-eye-only
+                 set-perspective-toggles
+                 set-fov-valid set-fov-zero
+                 set-clip-planes-valid
+                 reset-view-valid fit-all-shape-valid
                  named-color-red named-color-blue named-color-white
                  named-color-unknown named-color-exists-p-true named-color-exists-p-false
                  hex-to-rgb-6-digit hex-to-rgb-3-digit hex-to-rgb-invalid

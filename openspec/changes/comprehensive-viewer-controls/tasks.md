@@ -15,31 +15,12 @@
 
 ## 2. Core: viewer-camera (camera and view orientation)
 
-- [ ] 2.1 Add `%v3d-view-set-eye` C bridge: `SetEye(gp_Pnt(x,y,z))`
-- [ ] 2.2 Add `%v3d-view-set-target` C bridge: `SetTarget(gp_Pnt(x,y,z))`
-- [ ] 2.3 Add `%v3d-view-set-up` C bridge: `SetUp(gp_Dir(x,y,z))`
-- [ ] 2.4 Add `%v3d-view-set-projection-type` C bridge: perspective/orthographic toggle
-- [ ] 2.5 Add `%v3d-view-set-fov` C bridge: `Camera()->SetFOV(radians)`
-- [ ] 2.6 Add `%v3d-view-set-clip-planes` C bridge: near/far Z-clipping
-- [ ] 2.7 Add `%v3d-view-fit-all-shape` C bridge: `FitAll(shape)` for individual shapes
-- [ ] 2.8 Add `%v3d-view-pan` C bridge: `Pan(dx, dy)`
-- [ ] 2.9 Add `%v3d-view-zoom` C bridge: `Zoom(scale)`
-- [ ] 2.10 Add `%v3d-view-rotate` C bridge: `Rotate(ax, ay, az)`
-- [ ] 2.11 Add `%v3d-view-reset` C bridge: `SetViewOrientationDefault()` + `SetViewMappingDefault()`
-- [ ] 2.12 Add `%v3d-view-camera` C bridge: returns handle to `Graphic3d_Camera`
-- [ ] 2.13 Add `%v3d-view-set-camera` C bridge: `SetCamera(handle)`
-- [ ] 2.14 Add CFFI bindings for all camera functions
-- [ ] 2.15 Create `src/core/viewer-camera.lisp` with:
-  - `set-camera` convenience (:eye :target :up keyword args)
-  - `viewer-camera` CLOS class wrapping Graphic3d_Camera handle
-  - `set-perspective`, `perspective-p`
-  - `set-fov`, `set-clip-planes`
-  - `fit-all` extended to accept optional ais-object argument
-  - `pan-camera`, `zoom-camera`, `rotate-camera`
-  - `reset-view`
-- [ ] 2.16 Export public camera symbols
-- [ ] 2.17 Write unit tests: camera round-trip, perspective toggle, FOV set, clip planes, pan/zoom/rotate, fit-all per-shape
-- [ ] 2.18 Update README with camera API documentation
+- [x] 2.1-2.13 Add C bridge functions: set-eye, set-target, set-up, projection-type (set/get), set-fov, clip-planes, fit-all-shape, pan, zoom, rotate, reset
+- [x] 2.14 Add CFFI bindings for all camera functions in `src/ffi/bindings.lisp`
+- [x] 2.15 Create `src/core/viewer-camera.lisp` with convenience functions
+- [x] 2.16 Export public camera symbols in `src/package.lisp`
+- [x] 2.17 Write unit tests: eye/target/up, perspective toggle, FOV, clip planes, reset, fit-all per-shape
+- [x] 2.18 Update README with camera API documentation
 
 ## 3. Trihedron: viewer-trihedron (extend existing trihedron)
 

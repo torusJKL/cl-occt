@@ -66,6 +66,8 @@
 #include <Aspect_GridType.hxx>
 #include <Aspect_GridDrawMode.hxx>
 #include <V3d_TypeOfOrientation.hxx>
+#include <Graphic3d_Camera.hxx>
+#include <BRepBndLib.hxx>
 #include <AIS_Trihedron.hxx>
 #include <Geom_Axis2Placement.hxx>
 #include <gp_Pnt.hxx>
@@ -1372,6 +1374,153 @@ void v3d_view_set_proj(void* view_ptr, int orientation) {
     try {
         auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
         (*view)->SetProj(static_cast<V3d_TypeOfOrientation>(orientation));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_eye(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetEye(gp_Pnt(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_target(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetCenter(gp_Pnt(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_up(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetUp(gp_Dir(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_projection_type(void* view_ptr, int is_perspective) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetProjectionType(
+            is_perspective ? Graphic3d_Camera::Projection_Perspective
+                           : Graphic3d_Camera::Projection_Orthographic);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_get_projection_type(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->ProjectionType() == Graphic3d_Camera::Projection_Perspective ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_fov(void* view_ptr, double fov_rad) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetFOVy(fov_rad);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_clip_planes(void* view_ptr, double near, double far) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (far <= near) { set_error("far must be greater than near", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetZRange(near, far);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_fit_all_shape(void* view_ptr, void* shape_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (!shape_ptr) { set_error("null shape argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Bnd_Box box;
+        BRepBndLib::Add(*shape, box);
+        (*view)->FitAll(box);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_pan(void* view_ptr, double dx, double dy) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Pan(dx, dy, 0.0, 0.0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_zoom(void* view_ptr, double factor) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetScale(factor);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_rotate(void* view_ptr, double ax, double ay, double az) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Rotate(ax, ay, az);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_reset(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetViewOrientationDefault();
+        (*view)->SetViewMappingDefault();
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
