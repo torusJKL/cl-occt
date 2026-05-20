@@ -654,14 +654,15 @@
 
 (deftest set-background-valid
   (with-viewer (v)
-    (set-background v 0.1 0.1 0.2)
-    t))
+    (assert-true (set-background v 0.1 0.1 0.2)
+                 "set-background should return the color list")))
 
 (deftest ais-set-color-on-displayed-shape
   (with-viewer (v)
     (let* ((ctx (ais-create-context v))
            (obj (ais-display ctx (make-box 10 20 30))))
       (ais-set-color ctx obj '(1.0 0.0 0.0))
+      ;; void function, pass if no crash
       t)))
 
 (deftest ais-set-display-mode-wireframe
@@ -669,11 +670,13 @@
     (let* ((ctx (ais-create-context v))
            (obj (ais-display ctx (make-box 10 20 30))))
       (ais-set-display-mode ctx obj :wireframe)
+      ;; void function, pass if no crash
       t)))
 
 (deftest set-view-projection-iso
   (with-viewer (v)
     (set-view-projection v :iso-pers)
+    ;; void function, pass if no crash
     t))
 
 (deftest set-msaa-roundtrip
@@ -690,11 +693,13 @@
 (deftest activate-grid-rectangular-lines
   (with-viewer (v)
     (activate-grid v :rectangular :lines)
+    ;; void function, pass if no crash
     t))
 
 (deftest activate-grid-circular-points
   (with-viewer (v)
     (activate-grid v :circular :points)
+    ;; void function, pass if no crash
     t))
 
 ;; --- Trihedron Tests ---
@@ -757,18 +762,16 @@
 
 (deftest set-fov-valid
   (with-viewer (v)
-    (set-fov v 45.0)
-    t))
+    (assert-true (set-fov v 45.0) "set-fov should return the viewer")))
 
 (deftest set-fov-zero
   (with-viewer (v)
-    (set-fov v 0.0)
-    t))
+    (assert-true (set-fov v 0.0) "set-fov with 0.0 should return the viewer")))
 
 (deftest set-clip-planes-valid
   (with-viewer (v)
-    (set-clip-planes v :near 0.1 :far 1000.0)
-    t))
+    (assert-true (set-clip-planes v :near 0.1 :far 1000.0)
+                 "set-clip-planes should return the viewer")))
 
 ;; Pan/zoom/rotate are interactive operations that require an active window.
 ;; They are tested for build correctness (no compile errors) but skipped in
@@ -776,14 +779,12 @@
 
 (deftest reset-view-valid
   (with-viewer (v)
-    (reset-view v)
-    t))
+    (assert-true (reset-view v) "reset-view should return the viewer")))
 
 (deftest fit-all-shape-valid
   (with-viewer (v)
     (let ((box (make-box 10 20 30)))
-      (fit-all v box)
-      t)))
+      (assert-true (fit-all v box) "fit-all should return the viewer"))))
 
 ;; --- Custom Material ---
 
@@ -922,11 +923,13 @@
 
 (deftest set-light-position-angle-concentration
   (let ((light (make-light :spot)))
-    (set-light-position light '(5 5 5))
-    (set-light-angle light 30.0)
-    (set-light-concentration light 0.8)
-    (free-light light))
-  t)
+    (assert-true (set-light-position light '(5 5 5))
+                 "set-light-position should return the light")
+    (assert-true (set-light-angle light 30.0)
+                 "set-light-angle should return the light")
+    (assert-true (set-light-concentration light 0.8)
+                 "set-light-concentration should return the light")
+    (free-light light)))
 
 (deftest make-light-directional-valid
   (let ((light (make-light :directional :color :white :direction '(0 0 -1))))
@@ -1025,28 +1028,27 @@
 
 (deftest set-back-face-model-valid
   (with-viewer (v)
-    (set-back-face-model v :force)
-    t))
+    (assert-true (set-back-face-model v :force)
+                 "set-back-face-model should return the viewer")))
 
 (deftest set-transparency-method-valid
   (with-viewer (v)
-    (set-transparency-method v :blend-oit)
-    t))
+    (assert-true (set-transparency-method v :blend-oit)
+                 "set-transparency-method should return the viewer")))
 
 (deftest set-frustum-culling-valid
   (with-viewer (v)
-    (set-frustum-culling v t)
-    t))
+    (assert-true (set-frustum-culling v t)
+                 "set-frustum-culling should return the viewer")))
 
 (deftest redraw-view-valid
   (with-viewer (v)
-    (redraw-view v)
-    t))
+    (assert-true (redraw-view v) "redraw-view should return the viewer")))
 
 (deftest set-immediate-update-valid
   (with-viewer (v)
-    (set-immediate-update v t)
-    t))
+    (assert-true (set-immediate-update v t)
+                 "set-immediate-update should return the viewer")))
 
 ;; --- Text Labels ---
 
