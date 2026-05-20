@@ -394,6 +394,37 @@
 (defcfun (%ais-trihedron-set-text-color "ais_trihedron_set_text_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
 
+;; --- Per-Object Properties ---
+
+(defcfun (%ais-set-transparency "ais_set_transparency") :void
+  (ctx :pointer) (obj :pointer) (v :double))
+
+(defcfun (%ais-set-material-by-name "ais_set_material_by_name") :int
+  (ctx :pointer) (obj :pointer) (name :string))
+
+(defcfun (%ais-material-preset-count "ais_material_preset_count") :int)
+
+(defcfun (%ais-material-preset-name "ais_material_preset_name") :string
+  (index :int))
+
+(defcfun (%ais-set-line-width "ais_set_line_width") :void
+  (ctx :pointer) (obj :pointer) (w :double))
+
+(defcfun (%ais-set-edges-display "ais_set_edges_display") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-set-edge-color "ais_set_edge_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-set-selection-mode "ais_set_selection_mode") :void
+  (ctx :pointer) (obj :pointer) (mode :int))
+
+(defcfun (%ais-deactivate-selection "ais_deactivate_selection") :void
+  (ctx :pointer) (obj :pointer))
+
+(defcfun (%ais-set-tessellation "ais_set_tessellation") :void
+  (obj :pointer) (deflection :double) (deviation :double))
+
 ;; --- Font & Text ---
 
 (defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer

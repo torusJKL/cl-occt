@@ -774,6 +774,83 @@
       (fit-all v box)
       t)))
 
+;; --- Object Properties ---
+
+(deftest ais-set-transparency-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-transparency ctx obj 0.5)
+                   "ais-set-transparency should return the object"))))
+
+(deftest ais-set-transparency-zero
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-transparency ctx obj 0.0)
+                   "zero transparency should work"))))
+
+(deftest ais-set-material-gold
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-material ctx obj :gold)
+                   "ais-set-material with :gold should work"))))
+
+(deftest ais-set-material-plastic
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-material ctx obj :plastic)
+                   "ais-set-material with :plastic should work"))))
+
+(deftest ais-set-material-unknown
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-nil (ais-set-material ctx obj :nonexistent)
+                  "unknown material should return nil"))))
+
+(deftest ais-set-line-width-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-line-width ctx obj 3.0)
+                   "ais-set-line-width should return the object"))))
+
+(deftest ais-show-edges-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-show-edges ctx obj t)
+                   "ais-show-edges should return the object"))))
+
+(deftest ais-set-edge-styling-color
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-edge-styling ctx obj :color :red)
+                   "ais-set-edge-styling with color should work"))))
+
+(deftest ais-set-selection-mode-face
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-selection-mode ctx obj 1)
+                   "selection mode 1 (face) should work"))))
+
+(deftest ais-set-selection-mode-nil
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-selection-mode ctx obj nil)
+                   "deactivating selection should work"))))
+
+(deftest ais-set-tessellation-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-tessellation obj :quality 0.1)
+                 "ais-set-tessellation should work on ais-object")))
+
 ;; --- Trihedron Extended ---
 
 (deftest set-trihedron-axis-colors-red-blue-green
@@ -1154,6 +1231,12 @@
                  set-trihedron-axis-colors-partial
                  set-trihedron-text-color-white
                  set-trihedron-text-color-nil-tri
+                 ais-set-transparency-valid ais-set-transparency-zero
+                 ais-set-material-gold ais-set-material-plastic ais-set-material-unknown
+                 ais-set-line-width-valid
+                 ais-show-edges-valid ais-set-edge-styling-color
+                 ais-set-selection-mode-face ais-set-selection-mode-nil
+                 ais-set-tessellation-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

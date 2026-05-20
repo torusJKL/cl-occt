@@ -420,6 +420,19 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(antialiasing-p view)` | Check if anti-aliasing is enabled |
 | `(invalidate-view view)` | Request view redraw after property changes |
 
+### Object Properties
+
+| Function | Description |
+|----------|-------------|
+| `(ais-set-transparency ctx obj value)` | Set object transparency (0.0 = opaque, 1.0 = fully transparent) |
+| `(ais-set-material ctx obj preset)` | Set material preset by keyword (`:gold`, `:plastic`, `:glass`, `:chrome`, `:copper`, etc.) |
+| `(material-preset-list)` | Return list of available material preset keywords |
+| `(ais-set-line-width ctx obj width)` | Set wireframe/edge line width in pixels |
+| `(ais-show-edges ctx obj bool)` | Show/hide edges on shaded display |
+| `(ais-set-edge-styling ctx obj &key color width)` | Configure edge appearance (color and width) |
+| `(ais-set-selection-mode ctx obj mode)` | Set selection mode (nil = deactivate, 0=shape, 1=face, 2=edge, 3=vertex) |
+| `(ais-set-tessellation obj &key quality deviation)` | Set tessellation quality (lower = finer mesh, default 0.1) |
+
 ### Grid
 
 | Function | Description |

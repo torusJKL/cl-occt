@@ -94,7 +94,17 @@
        :%v3d-viewer-activate-grid
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
-        :%ais-create-trihedron
+       :%ais-set-transparency
+       :%ais-set-material-by-name
+       :%ais-material-preset-count
+       :%ais-material-preset-name
+       :%ais-set-line-width
+       :%ais-set-edges-display
+       :%ais-set-edge-color
+       :%ais-set-selection-mode
+       :%ais-deactivate-selection
+       :%ais-set-tessellation
+         :%ais-create-trihedron
          :%ais-trihedron-set-datum-mode
          :%ais-trihedron-set-draw-arrows
          :%ais-trihedron-set-size
@@ -273,6 +283,15 @@
         :show-trihedron
         :set-trihedron-axis-colors
         :set-trihedron-text-color
+        :ais-set-transparency
+        :ais-set-material
+        :material-preset-list
+        :*material-presets*
+        :ais-set-line-width
+        :ais-show-edges
+        :ais-set-edge-styling
+        :ais-set-selection-mode
+        :ais-set-tessellation
         :brep-font
         :brep-font-p
         :make-brep-font-from-file

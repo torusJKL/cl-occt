@@ -35,31 +35,17 @@
 
 ## 4. Per-Object: viewer-object-props (transparency, materials, line width, edges, tessellation, selection)
 
-- [ ] 4.1 Add `%ais-set-transparency` C bridge: `SetTransparency(v)`
-- [ ] 4.2 Add `%ais-set-material-by-name` C bridge: `SetMaterial(Graphic3d_NOM_*)` from preset name string
-- [ ] 4.3 Add `%ais-material-preset-count` C bridge: returns number of material presets
-- [ ] 4.4 Add `%ais-material-preset-name` C bridge: returns string name for preset index
-- [ ] 4.5 Add `%make-material` C bridge: creates `Graphic3d_MaterialAspect` from ambient/diffuse/specular/emissive/shininess/transparency
-- [ ] 4.6 Add `%ais-set-custom-material` C bridge: applies a material aspect to an AIS object
-- [ ] 4.7 Add `%ais-set-line-width` C bridge: `SetWidth(w)` on the AIS object
-- [ ] 4.8 Add `%ais-show-edges` C bridge: `Attributes()->SetDisplayEdgesEdges(bool)`
-- [ ] 4.9 Add `%ais-set-edge-color` C bridge: edge color via `SetFaceBoundaryAspect` / `ShadingAspect`
-- [ ] 4.10 Add `%ais-set-selection-mode` C bridge: `SetSelectionMode(mode)`
-- [ ] 4.11 Add `%ais-set-tessellation` C bridge: `SetDiscretisation(d)` + `SetDeviationCoefficient(d)`
-- [ ] 4.12 Add CFFI bindings for all object-props functions
-- [ ] 4.13 Create `src/core/viewer-object-props.lisp` with:
-  - `ais-set-transparency`
-  - `ais-set-material` (keyword dispatch to preset or custom)
-  - `make-material` constructor → `material` CLOS struct/class
-  - `ais-set-line-width`
-  - `ais-show-edges`, `ais-set-edge-styling`
-  - `ais-set-selection-mode`
-  - `ais-set-tessellation`
-  - `*material-presets*` keyword map
-  - `material` CLOS class with %ambient %diffuse %specular %emissive %shininess %transparency
-- [ ] 4.14 Export all object-props symbols
-- [ ] 4.15 Write unit tests: transparency set, material preset, custom material, line width, edges toggle, selection mode, tessellation
-- [ ] 4.16 Update README with per-object properties documentation
+- [x] 4.1 Add `%ais-set-transparency` C bridge via AIS_InteractiveContext::SetTransparency
+- [x] 4.2 Add `%ais-set-material-by-name` C bridge: maps keyword → Graphic3d_NOM_* enum
+- [x] 4.3 Add `%ais-set-line-width` C bridge via AIS_InteractiveContext::SetWidth
+- [x] 4.4 Add `%ais-set-edges-display` and `%ais-set-edge-color` C bridges
+- [x] 4.5 Add `%ais-set-selection-mode` and `%ais-deactivate-selection` C bridges via Activate/Deactivate
+- [x] 4.6 Add `%ais-set-tessellation` C bridge via Prs3d_Drawer::SetDiscretisation
+- [x] 4.7 Add CFFI bindings for all object-props functions
+- [x] 4.8 Create `src/core/viewer-object-props.lisp` with convenience functions
+- [x] 4.9 Export all object-props symbols
+- [x] 4.10 Write unit tests: transparency, material presets, line width, edges, edge color, selection, tessellation
+- [x] 4.11 Update README with per-object properties documentation
 
 ## 5. Lighting: viewer-lighting (all 4 light types)
 

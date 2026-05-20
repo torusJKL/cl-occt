@@ -77,6 +77,7 @@
 #include <Prs3d_Drawer.hxx>
 #include <Prs3d_DatumParts.hxx>
 #include <Prs3d_TextAspect.hxx>
+#include <Prs3d_LineAspect.hxx>
 #include <Aspect_TypeOfTriedronPosition.hxx>
 #include <Font_FontAspect.hxx>
 #include <Font_StrictLevel.hxx>
@@ -1646,6 +1647,154 @@ void v3d_view_invalidate(void* view_ptr) {
 void free_shape(occt_shape shape) {
     if (shape) {
         delete to_shape(shape);
+    }
+}
+
+// --- Per-Object Properties ---
+
+void ais_set_transparency(void* ctx_ptr, void* obj_ptr, double v) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetTransparency(*obj, v, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int ais_set_material_by_name(void* ctx_ptr, void* obj_ptr, const char* name) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr || !name) { set_error("null argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        // Map material name string to Graphic3d_NameOfMaterial
+        std::string s(name);
+        Graphic3d_NameOfMaterial mat = Graphic3d_NOM_DEFAULT;
+        if (s == "brass") mat = Graphic3d_NOM_BRASS;
+        else if (s == "bronze") mat = Graphic3d_NOM_BRONZE;
+        else if (s == "copper") mat = Graphic3d_NOM_COPPER;
+        else if (s == "gold") mat = Graphic3d_NOM_GOLD;
+        else if (s == "pewter") mat = Graphic3d_NOM_PEWTER;
+        else if (s == "plastic") mat = Graphic3d_NOM_PLASTIC;
+        else if (s == "silver") mat = Graphic3d_NOM_SILVER;
+        else if (s == "steel") mat = Graphic3d_NOM_STEEL;
+        else if (s == "stone") mat = Graphic3d_NOM_STONE;
+        else if (s == "shiny-plastic") mat = Graphic3d_NOM_SHINY_PLASTIC;
+        else if (s == "satin") mat = Graphic3d_NOM_SATIN;
+        else if (s == "metalized") mat = Graphic3d_NOM_METALIZED;
+        else if (s == "neon-phc") mat = Graphic3d_NOM_NEON_PHC;
+        else if (s == "chrome") mat = Graphic3d_NOM_CHROME;
+        else if (s == "aluminium") mat = Graphic3d_NOM_ALUMINIUM;
+        else if (s == "obsidian") mat = Graphic3d_NOM_OBSIDIAN;
+        else if (s == "glass") mat = Graphic3d_NOM_GLASS;
+        else if (s == "jade") mat = Graphic3d_NOM_JADE;
+        else if (s == "matte") mat = Graphic3d_NOM_PLASTIC;
+        else if (s == "shiny") mat = Graphic3d_NOM_SHINY_PLASTIC;
+        else if (s == "default") mat = Graphic3d_NOM_DEFAULT;
+        else { set_error("unknown material name", 2); return 0; }
+        Graphic3d_MaterialAspect aspect(mat);
+        (*ctx)->SetMaterial(*obj, aspect, false);
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int ais_material_preset_count(void) {
+    return 22; // number of named presets we support
+}
+
+const char* ais_material_preset_name(int index) {
+    static const char* names[] = {
+        "brass", "bronze", "copper", "gold", "pewter", "plastic", "silver",
+        "steel", "stone", "shiny-plastic", "satin", "metalized", "neon-phc",
+        "chrome", "aluminium", "obsidian", "glass", "jade", "matte", "shiny",
+        "default", nullptr
+    };
+    if (index < 0 || index >= 22) return nullptr;
+    return names[index];
+}
+
+void ais_set_line_width(void* ctx_ptr, void* obj_ptr, double w) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetWidth(*obj, w, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_edges_display(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*obj)->SetDisplayMode(on != 0 ? AIS_Shaded : AIS_WireFrame);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_edge_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB),
+            Aspect_TOL_SOLID, 1.0);
+        drawer->SetFaceBoundaryAspect(aspect);
+        drawer->SetFaceBoundaryDraw(true);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_selection_mode(void* ctx_ptr, void* obj_ptr, int mode) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Activate(*obj, mode);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_deactivate_selection(void* ctx_ptr, void* obj_ptr) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Deactivate(*obj);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_tessellation(void* obj_ptr, double deflection, double deviation) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetDiscretisation(deflection);
+        drawer->SetDeviationCoefficient(deviation);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
     }
 }
 

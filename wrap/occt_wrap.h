@@ -143,6 +143,18 @@ void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff
 int   ais_trihedron_set_datum_part_color(void* obj, int part, double r, double g, double b);
 void  ais_trihedron_set_text_color(void* obj, double r, double g, double b);
 
+// --- Per-Object Properties ---
+void ais_set_transparency(void* ctx, void* obj, double v);
+int  ais_set_material_by_name(void* ctx, void* obj, const char* name);
+int  ais_material_preset_count(void);
+const char* ais_material_preset_name(int index);
+void ais_set_line_width(void* ctx, void* obj, double w);
+void ais_set_edges_display(void* obj, int on);
+void ais_set_edge_color(void* obj, double r, double g, double b);
+void ais_set_selection_mode(void* ctx, void* obj, int mode);
+void ais_deactivate_selection(void* ctx, void* obj);
+void ais_set_tessellation(void* obj, double deflection, double deviation);
+
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);
 occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size);
