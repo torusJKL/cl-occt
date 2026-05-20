@@ -425,6 +425,106 @@
 (defcfun (%ais-set-tessellation "ais_set_tessellation") :void
   (obj :pointer) (deflection :double) (deviation :double))
 
+;; --- Lighting ---
+
+(defcfun (%make-light-ambient "make_light_ambient") :pointer
+  (r :double) (g :double) (b :double) (intensity :double))
+
+(defcfun (%make-light-directional "make_light_directional") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (dx :double) (dy :double) (dz :double))
+
+(defcfun (%light-free "light_free") :void
+  (light :pointer))
+
+(defcfun (%v3d-viewer-add-light "v3d_viewer_add_light") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-remove-light "v3d_viewer_remove_light") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-light-on "v3d_viewer_light_on") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-light-off "v3d_viewer_light_off") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%light-is-on "light_is_on") :int
+  (light :pointer))
+
+(defcfun (%light-set-color "light_set_color") :void
+  (light :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%light-set-intensity "light_set_intensity") :void
+  (light :pointer) (v :double))
+
+(defcfun (%light-set-direction "light_set_direction") :void
+  (light :pointer) (dx :double) (dy :double) (dz :double))
+
+(defcfun (%light-set-headlight "light_set_headlight") :void
+  (light :pointer) (on :int))
+
+(defcfun (%light-set-shadows "light_set_shadows") :void
+  (light :pointer) (on :int))
+
+(defcfun (%v3d-viewer-default-lights "v3d_viewer_default_lights") :void
+  (viewer :pointer))
+
+;; --- Grid Extensions ---
+
+(defcfun (%v3d-viewer-grid-active "v3d_viewer_grid_active") :int
+  (viewer :pointer))
+
+;; --- Background ---
+
+(defcfun (%v3d-view-set-bg-gradient "v3d_view_set_bg_gradient") :void
+  (view :pointer)
+  (r1 :double) (g1 :double) (b1 :double)
+  (r2 :double) (g2 :double) (b2 :double)
+  (style :int))
+
+(defcfun (%v3d-view-reset-background "v3d_view_reset_background") :void
+  (view :pointer))
+
+;; --- Rendering ---
+
+(defcfun (%v3d-view-set-computed-mode "v3d_view_set_computed_mode") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-computed-mode "v3d_view_computed_mode") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-back-face-model "v3d_view_set_back_face_model") :void
+  (view :pointer) (mode :int))
+
+(defcfun (%v3d-view-set-frustum-culling "v3d_view_set_frustum_culling") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-redraw "v3d_view_redraw") :void
+  (view :pointer))
+
+(defcfun (%v3d-view-set-immediate-update "v3d_view_set_immediate_update") :void
+  (view :pointer) (on :int))
+
+;; --- Text Label Enhancements ---
+
+(defcfun (%ais-text-label-set-angle "ais_text_label_set_angle") :void
+  (label :pointer) (rad :double))
+
+;; --- Viewer Defaults ---
+
+(defcfun (%v3d-viewer-set-default-bg-color "v3d_viewer_set_default_bg_color") :void
+  (viewer :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%v3d-viewer-set-default-view-proj "v3d_viewer_set_default_view_proj") :void
+  (viewer :pointer) (orientation :int))
+
+(defcfun (%v3d-viewer-set-default-view-size "v3d_viewer_set_default_view_size") :void
+  (viewer :pointer) (size :double))
+
+(defcfun (%v3d-viewer-set-default-view-type "v3d_viewer_set_default_view_type") :void
+  (viewer :pointer) (is-perspective :int))
+
 ;; --- Font & Text ---
 
 (defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer

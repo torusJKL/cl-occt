@@ -155,6 +155,48 @@ void ais_set_selection_mode(void* ctx, void* obj, int mode);
 void ais_deactivate_selection(void* ctx, void* obj);
 void ais_set_tessellation(void* obj, double deflection, double deviation);
 
+// --- Lighting ---
+void* make_light_ambient(double r, double g, double b, double intensity);
+void* make_light_directional(double r, double g, double b, double intensity, double dx, double dy, double dz);
+void  light_free(void* light);
+void  v3d_viewer_add_light(void* viewer, void* light);
+void  v3d_viewer_remove_light(void* viewer, void* light);
+void  v3d_viewer_light_on(void* viewer, void* light);
+void  v3d_viewer_light_off(void* viewer, void* light);
+int   light_is_on(void* light);
+void  light_set_color(void* light, double r, double g, double b);
+void  light_set_intensity(void* light, double v);
+void  light_set_direction(void* light, double dx, double dy, double dz);
+void  light_set_position(void* light, double x, double y, double z);
+void  light_set_headlight(void* light, int on);
+void  light_set_shadows(void* light, int on);
+void  v3d_viewer_default_lights(void* viewer);
+
+// --- Grid Extensions ---
+int  v3d_viewer_grid_active(void* viewer);
+
+// --- Background ---
+void v3d_view_set_bg_gradient(void* view, double r1, double g1, double b1, double r2, double g2, double b2, int style);
+void v3d_view_reset_background(void* view);
+
+// --- Rendering ---
+void v3d_view_set_computed_mode(void* view, int on);
+int  v3d_view_computed_mode(void* view);
+void v3d_view_set_back_face_model(void* view, int mode);
+void v3d_view_set_frustum_culling(void* view, int on);
+void v3d_view_set_transparent_shading(void* view, int on);
+void v3d_view_redraw(void* view);
+void v3d_view_set_immediate_update(void* view, int on);
+
+// --- Text Label Enhancements ---
+void ais_text_label_set_angle(void* label, double rad);
+
+// --- Viewer Defaults ---
+void v3d_viewer_set_default_bg_color(void* viewer, double r, double g, double b);
+void v3d_viewer_set_default_view_proj(void* viewer, int orientation);
+void v3d_viewer_set_default_view_size(void* viewer, double size);
+void v3d_viewer_set_default_view_type(void* viewer, int is_perspective);
+
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);
 occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size);

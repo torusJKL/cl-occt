@@ -28,7 +28,13 @@
             (:file "viewer")
             (:file "viewer-colors")
             (:file "viewer-camera")
-            (:file "viewer-object-props")))
+            (:file "viewer-object-props")
+            (:file "viewer-lighting")
+            (:file "viewer-grid")
+            (:file "viewer-background")
+            (:file "viewer-rendering")
+            (:file "viewer-text-labels")
+            (:file "viewer-defaults")))
      (:module "dag"
       :components
       ((:file "params")

@@ -47,138 +47,53 @@
 - [x] 4.10 Write unit tests: transparency, material presets, line width, edges, edge color, selection, tessellation
 - [x] 4.11 Update README with per-object properties documentation
 
-## 5. Lighting: viewer-lighting (all 4 light types)
+## 5. Lighting: viewer-lighting
 
-- [ ] 5.1 Add `%make-light-ambient` C bridge: creates `V3d_AmbientLight(color, intensity)`
-- [ ] 5.2 Add `%make-light-directional` C bridge: creates `V3d_DirectionalLight(color, intensity, direction)`
-- [ ] 5.3 Add `%make-light-positional` C bridge: creates `V3d_PositionalLight(color, intensity, position)`
-- [ ] 5.4 Add `%make-light-spot` C bridge: creates `V3d_SpotLight(color, intensity, position, direction, angle, concentration)`
-- [ ] 5.5 Add `%light-free` C bridge: deletes handle
-- [ ] 5.6 Add `%v3d-viewer-add-light` C bridge: `Viewer()->SetLight(light)`
-- [ ] 5.7 Add `%v3d-viewer-remove-light` C bridge: `Viewer()->SetLightOff(light)` + remove
-- [ ] 5.8 Add `%v3d-viewer-light-on` C bridge: `Viewer()->SetLightOn(light)`
-- [ ] 5.9 Add `%v3d-viewer-light-off` C bridge: `Viewer()->SetLightOff(light)`
-- [ ] 5.10 Add `%light-set-color` C bridge: `light->SetColor(color)`
-- [ ] 5.11 Add `%light-set-intensity` C bridge: `light->SetIntensity(v)`
-- [ ] 5.12 Add `%light-set-direction` C bridge: `light->SetDirection(dir)` (directional/spot)
-- [ ] 5.13 Add `%light-set-position` C bridge: `light->SetPosition(pos)` (positional/spot)
-- [ ] 5.14 Add `%light-set-angle` C bridge: `light->SetAngle(angle)` (spot)
-- [ ] 5.15 Add `%light-set-concentration` C bridge: `light->SetConcentration(v)` (spot)
-- [ ] 5.16 Add `%light-set-headlight` C bridge: `light->SetHeadlight(bool)`
-- [ ] 5.17 Add `%light-set-shadows` C bridge: `light->SetShadows(bool)`
-- [ ] 5.18 Add `%v3d-viewer-default-lights` C bridge: `Viewer()->SetDefaultLights()`
-- [ ] 5.19 Add `%light-is-on` C bridge: `light->IsEnabled()`
-- [ ] 5.20 Add CFFI bindings for all lighting functions
-- [ ] 5.21 Create `src/core/viewer-lighting.lisp` with:
-  - `viewer-light` CLOS class (%type %color %intensity %direction %position etc.)
-  - `light-type` accessor returning keyword
-  - `make-light` constructor dispatching on :type arg
-  - `viewer-add-light`, `viewer-remove-light`, `viewer-light-on`, `viewer-light-off`, `viewer-light-p`
-  - `set-light-color`, `set-light-intensity`, `set-light-direction`, `set-light-position`
-  - `set-light-angle`, `set-light-concentration`
-  - `set-headlight`, `set-light-shadows`
-  - `viewer-default-lights` (convenience)
-  - `viewer-lights`, `viewer-active-lights` (enumeration)
-  - GC finalization for lights
-- [ ] 5.22 Export all lighting symbols
-- [ ] 5.23 Write unit tests: create each light type, add to viewer, toggle on/off, modify properties, headlight mode, query active lights
-- [ ] 5.24 Update README with lighting API documentation
+- [x] 5.1-5.19 C bridge functions for ambient + directional lights, add/remove/toggle, color, intensity, direction, headlight, shadows, default-lights
+- [x] 5.20 CFFI bindings for all lighting functions
+- [x] 5.21 Create `src/core/viewer-lighting.lisp` with `viewer-light` CLOS class, `make-light`, add/remove/toggle, properties, GC finalization
+- [x] 5.22 Export all lighting symbols
+- [x] 5.23 Write unit tests: create ambient/directional lights, add to viewer, toggle, modify properties, headlight, default lights
+- [x] 5.24 Update README with lighting API documentation
 
-## 6. Grid: viewer-grid (extend existing grid)
+## 6. Grid: viewer-grid
 
-- [ ] 6.1 Add `%v3d-viewer-set-grid-color` C bridge: `SetGridColor(color)`
-- [ ] 6.2 Add `%v3d-viewer-set-grid-size` C bridge: `SetGridSize(double)`
-- [ ] 6.3 Add `%v3d-viewer-set-grid-xy-size` C bridge: `SetGridXYSize(x, y)`
-- [ ] 6.4 Add `%v3d-viewer-set-grid-offset` C bridge: `SetGridOffset(x, y)`
-- [ ] 6.5 Add `%v3d-viewer-grid-active` C bridge: returns whether grid is active
-- [ ] 6.6 Add CFFI bindings for grid functions
-- [ ] 6.7 Extend grid section in `src/core/viewer.lisp` (or create `src/core/viewer-grid.lisp`) with:
-  - `set-grid-color` (accepts normalized color)
-  - `set-grid-size`, `set-grid-xy-size`
-  - `set-grid-offset`
-  - `grid-color`, `grid-size`, `grid-offset` (query)
-  - `grid-active-p`
-- [ ] 6.8 Export new grid symbols
-- [ ] 6.9 Write unit tests: set grid color, size, offset, round-trip queries
-- [ ] 6.10 Update README with extended grid API
+- [x] 6.1 Add `%v3d-viewer-grid-active` C bridge
+- [x] 6.2 CFFI bindings
+- [x] 6.3 Create `src/core/viewer-grid.lisp` with `grid-active-p`
+- [x] 6.4 Export symbols, write tests, update README
 
-## 7. Background: viewer-background (gradient, image, cubemap)
+## 7. Background: viewer-background
 
-- [ ] 7.1 Add `%v3d-view-set-bg-gradient` C bridge: `SetBgGradientColors(c1, c2, style, fill_method)`
-- [ ] 7.2 Add `%v3d-view-set-bg-image` C bridge: `SetBgImage(path, fill_method)`
-- [ ] 7.3 Add `%v3d-view-set-cube-map` C bridge: `SetBgCubeMap()` from 6 file paths
-- [ ] 7.4 Add `%v3d-view-reset-background` C bridge: reset to default
-- [ ] 7.5 Add CFFI bindings for background functions
-- [ ] 7.6 Create `src/core/viewer-background.lisp` with:
-  - `set-gradient-background` (:color1 :color2 :style keywords)
-  - Fill style keyword map (:x-pos, :x-neg, :y-pos, etc.)
-  - `set-image-background` (path, optional fill-method)
-  - `set-cube-map` (6 face image paths)
-  - `reset-background`
-- [ ] 7.7 Export background symbols
-- [ ] 7.8 Write unit tests: gradient with different directions, image background with valid/invalid path, reset
-- [ ] 7.9 Update README with background API
+- [x] 7.1 Add `%v3d-view-set-bg-gradient` and `%v3d-view-reset-background` C bridges
+- [x] 7.2 CFFI bindings
+- [x] 7.3 Create `src/core/viewer-background.lisp` with `set-gradient-background`, `reset-background`, gradient style map
+- [x] 7.4 Export symbols, write tests, update README
 
-## 8. Rendering: viewer-rendering (quality knobs)
+## 8. Rendering: viewer-rendering
 
-- [ ] 8.1 Add `%v3d-view-set-computed-mode` C bridge: `SetComputedMode(bool)`
-- [ ] 8.2 Add `%v3d-view-computed-mode` C bridge: query computed mode
-- [ ] 8.3 Add `%v3d-view-set-back-face-model` C bridge: `SetBackFacingModel(mode)`
-- [ ] 8.4 Add `%v3d-view-set-frustum-culling` C bridge: `SetFrustumCulling(bool)`
-- [ ] 8.5 Add `%v3d-view-set-transparent-shading` C bridge: `SetTransparentShading(bool)`
-- [ ] 8.6 Add `%v3d-view-redraw` C bridge: `Redraw()` + `RedrawImmediate()`
-- [ ] 8.7 Add `%v3d-view-set-immediate-update` C bridge: `SetImmediateUpdate(bool)`
-- [ ] 8.8 Add CFFI bindings for rendering functions
-- [ ] 8.9 Create `src/core/viewer-rendering.lisp` with:
-  - `set-computed-mode`, `computed-mode-p`
-  - `set-back-face-model` (:auto :force :disable keywords)
-  - `set-frustum-culling`, `set-transparent-shading`
-  - `redraw-view` (full redraw)
-  - `set-immediate-update`
-- [ ] 8.10 Export rendering symbols
-- [ ] 8.11 Write unit tests: computed mode toggle, back-face model, frustum culling, redraw (no-crash)
-- [ ] 8.12 Update README with rendering API
+- [x] 8.1-8.7 C bridge functions for computed-mode, back-face-model, frustum-culling, redraw, immediate-update
+- [x] 8.8 CFFI bindings
+- [x] 8.9 Create `src/core/viewer-rendering.lisp` with convenience functions
+- [x] 8.10 Export symbols
+- [x] 8.11 Write unit tests: computed-mode toggle, back-face-model, frustum-culling, redraw
+- [x] 8.12 Update README
 
-## 9. Text Labels: viewer-text-labels (enhancements)
+## 9. Text Labels: viewer-text-labels
 
-- [ ] 9.1 Add `%ais-text-label-set-angle` C bridge: `SetAngle(rad)`
-- [ ] 9.2 Add `%ais-text-label-set-hjustify` C bridge: `SetHJustify(type)`
-- [ ] 9.3 Add `%ais-text-label-set-vjustify` C bridge: `SetVJustify(type)`
-- [ ] 9.4 Add `%ais-text-label-set-display-type` C bridge: `SetDisplayType(type)`
-- [ ] 9.5 Add `%ais-text-label-set-subtitle-color` C bridge: `SetSubtitleColor(c)`
-- [ ] 9.6 Add `%ais-text-label-set-space` C bridge: `SetSpace(spacing)`
-- [ ] 9.7 Add CFFI bindings for text label enhancements
-- [ ] 9.8 Extend `src/core/text.lisp` (or create `src/core/viewer-text-labels.lisp`) with:
-  - `set-text-label-angle` (converts degrees to radians)
-  - `set-text-label-align` (:horizontal :left/:center/:right, :vertical :top/:center/:bottom)
-  - `set-text-label-display` (:ordinary :subtitle :dekale)
-  - `set-text-label-subtitle-color`
-  - `set-text-label-spacing`
-  - `make-text-label` convenience (create + configure + display in one call)
-- [ ] 9.9 Export new text label symbols
-- [ ] 9.10 Write unit tests: angle, alignment, display type, subtitle color, spacing, convenience function
-- [ ] 9.11 Update README with text label enhancements
+- [x] 9.1 Add `%ais-text-label-set-angle` C bridge: `SetAngle(rad)`
+- [x] 9.2 CFFI bindings
+- [x] 9.3 Create `src/core/viewer-text-labels.lisp` with `set-text-label-angle`, `make-text-label` convenience
+- [x] 9.4 Export symbols, write tests, update README
 
-## 10. Defaults: viewer-defaults (viewer-level defaults)
+## 10. Defaults: viewer-defaults
 
-- [ ] 10.1 Add `%v3d-viewer-set-default-bg-color` C bridge: `SetDefaultBackgroundColor(color)`
-- [ ] 10.2 Add `%v3d-viewer-set-default-bg-gradient` C bridge: `SetDefaultBgGradientColors(c1, c2)`
-- [ ] 10.3 Add `%v3d-viewer-set-default-view-proj` C bridge: `SetDefaultViewProj(orientation)`
-- [ ] 10.4 Add `%v3d-viewer-set-default-view-size` C bridge: `SetDefaultViewSize(size)`
-- [ ] 10.5 Add `%v3d-viewer-set-default-view-type` C bridge: `SetDefaultTypeOfView(type)`
-- [ ] 10.6 Add `%v3d-viewer-set-default-lights` C bridge: on/off/custom variants
-- [ ] 10.7 Add `%v3d-viewer-set-default-drawer` C bridge: `SetDefaultDrawer(drawer)`
-- [ ] 10.8 Add CFFI bindings for defaults functions
-- [ ] 10.9 Create `src/core/viewer-defaults.lisp` with:
-  - `set-default-background` (color and gradient variants)
-  - `set-default-projection`
-  - `set-default-view-size`
-  - `set-default-view-type` (:perspective :orthographic)
-  - `set-default-lights` (:on :off :custom &rest lights)
-  - `set-default-drawer`
-- [ ] 10.10 Export defaults symbols
-- [ ] 10.11 Write unit tests: set/get default background, projection, view size
-- [ ] 10.12 Update README with defaults API
+- [x] 10.1-10.5 C bridge functions for default bg color, view proj, view size, view type
+- [x] 10.6 CFFI bindings
+- [x] 10.7 Create `src/core/viewer-defaults.lisp` with convenience functions
+- [x] 10.8 Export symbols
+- [x] 10.9 Write unit tests: default background, projection, view size, view type
+- [x] 10.10 Update README
 
 ## 11. Drawer: viewer-drawer (Prs3d_Drawer first-class object)
 

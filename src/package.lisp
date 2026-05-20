@@ -88,7 +88,35 @@
        :%v3d-view-rotate
        :%v3d-view-reset
        :%v3d-view-set-msaa
-      :%v3d-view-get-msaa
+       :%v3d-view-get-msaa
+       :%make-light-ambient
+       :%make-light-directional
+       :%light-free
+       :%v3d-viewer-add-light
+       :%v3d-viewer-remove-light
+       :%v3d-viewer-light-on
+       :%v3d-viewer-light-off
+       :%light-is-on
+       :%light-set-color
+       :%light-set-intensity
+       :%light-set-direction
+       :%light-set-headlight
+       :%light-set-shadows
+       :%v3d-viewer-default-lights
+       :%v3d-viewer-grid-active
+       :%v3d-view-set-bg-gradient
+       :%v3d-view-reset-background
+       :%v3d-view-set-computed-mode
+       :%v3d-view-computed-mode
+       :%v3d-view-set-back-face-model
+       :%v3d-view-set-frustum-culling
+       :%v3d-view-redraw
+       :%v3d-view-set-immediate-update
+       :%ais-text-label-set-angle
+       :%v3d-viewer-set-default-bg-color
+       :%v3d-viewer-set-default-view-proj
+       :%v3d-viewer-set-default-view-size
+       :%v3d-viewer-set-default-view-type
       :%v3d-view-set-antialiasing
       :%v3d-view-get-antialiasing
        :%v3d-viewer-activate-grid
@@ -292,6 +320,38 @@
         :ais-set-edge-styling
         :ais-set-selection-mode
         :ais-set-tessellation
+        :viewer-light
+        :viewer-light-p
+        :make-light
+        :free-light
+        :light-type
+        :viewer-add-light
+        :viewer-remove-light
+        :viewer-light-on
+        :viewer-light-off
+        :viewer-light-active-p
+        :set-light-color
+        :set-light-intensity
+        :set-light-direction
+        :set-headlight
+        :set-light-shadows
+        :viewer-default-lights
+        :grid-active-p
+        :set-gradient-background
+        :*gradient-style-map*
+        :reset-background
+        :set-computed-mode
+        :computed-mode-p
+        :set-back-face-model
+        :set-frustum-culling
+        :redraw-view
+        :set-immediate-update
+        :set-text-label-angle
+        :make-text-label
+        :set-default-background
+        :set-default-projection
+        :set-default-view-size
+        :set-default-view-type
         :brep-font
         :brep-font-p
         :make-brep-font-from-file

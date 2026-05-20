@@ -1,0 +1,130 @@
+(in-package :cl-occt)
+
+(defclass viewer-light ()
+  ((%ptr :initarg :ptr :reader %ptr)
+   (%type :initarg :type :reader light-type)))
+
+(defun viewer-light-p (obj)
+  (typep obj 'viewer-light))
+
+(defun make-light (type &key color intensity direction)
+  (let* ((rgb (normalize-color (or color '(1 1 1))))
+         (int-val (coerce (if intensity intensity 1.0) 'double-float)))
+    (destructuring-bind (r g b) rgb
+      (let ((ptr (ecase type
+                   (:ambient
+                    (%make-light-ambient
+                     (coerce r 'double-float) (coerce g 'double-float)
+                     (coerce b 'double-float) int-val))
+                   (:directional
+                    (let ((dir (or direction '(0 0 -1))))
+                      (destructuring-bind (dx dy dz) dir
+                        (%make-light-directional
+                         (coerce r 'double-float) (coerce g 'double-float)
+                         (coerce b 'double-float) int-val
+                         (coerce dx 'double-float) (coerce dy 'double-float)
+                         (coerce dz 'double-float))))))))
+        (when (and ptr (not (cffi:null-pointer-p ptr)))
+          (let ((light (make-instance 'viewer-light :ptr ptr :type type)))
+            (tg:finalize light (lambda () (%light-free ptr)))
+            light))))))
+
+(defun free-light (light)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-free ptr)
+        (setf (slot-value light '%ptr) (cffi:null-pointer))))))
+
+(defun viewer-add-light (viewer light)
+  (when (and (viewer-p viewer) (viewer-light-p light))
+    (let ((v-ptr (%viewer viewer))
+          (l-ptr (%ptr light)))
+      (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
+                 (not (cffi:null-pointer-p l-ptr)))
+        (%v3d-viewer-add-light v-ptr l-ptr)
+        light))))
+
+(defun viewer-remove-light (viewer light)
+  (when (and (viewer-p viewer) (viewer-light-p light))
+    (let ((v-ptr (%viewer viewer))
+          (l-ptr (%ptr light)))
+      (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
+                 (not (cffi:null-pointer-p l-ptr)))
+        (%v3d-viewer-remove-light v-ptr l-ptr)))))
+
+(defun viewer-light-on (viewer light)
+  (when (and (viewer-p viewer) (viewer-light-p light))
+    (let ((v-ptr (%viewer viewer))
+          (l-ptr (%ptr light)))
+      (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
+                 (not (cffi:null-pointer-p l-ptr)))
+        (%v3d-viewer-light-on v-ptr l-ptr)
+        light))))
+
+(defun viewer-light-off (viewer light)
+  (when (and (viewer-p viewer) (viewer-light-p light))
+    (let ((v-ptr (%viewer viewer))
+          (l-ptr (%ptr light)))
+      (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
+                 (not (cffi:null-pointer-p l-ptr)))
+        (%v3d-viewer-light-off v-ptr l-ptr)))))
+
+(defun viewer-light-active-p (viewer light)
+  (when (and (viewer-p viewer) (viewer-light-p light))
+    (let ((v-ptr (%viewer viewer))
+          (l-ptr (%ptr light)))
+      (when (and v-ptr l-ptr (not (cffi:null-pointer-p v-ptr))
+                 (not (cffi:null-pointer-p l-ptr)))
+        (not (zerop (%light-is-on l-ptr)))))))
+
+(defun set-light-color (light color)
+  (when (viewer-light-p light)
+    (let ((rgb (normalize-color color))
+          (ptr (%ptr light)))
+      (when (and rgb ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (r g b) rgb
+          (%light-set-color ptr
+            (coerce r 'double-float)
+            (coerce g 'double-float)
+            (coerce b 'double-float)))
+        light))))
+
+(defun set-light-intensity (light v)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-set-intensity ptr (coerce v 'double-float))
+        light))))
+
+(defun set-light-direction (light direction)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (dx dy dz) direction
+          (%light-set-direction ptr
+            (coerce dx 'double-float)
+            (coerce dy 'double-float)
+            (coerce dz 'double-float)))
+        light))))
+
+(defun set-headlight (light on)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-set-headlight ptr (if on 1 0))
+        light))))
+
+(defun set-light-shadows (light on)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-set-shadows ptr (if on 1 0))
+        light))))
+
+(defun viewer-default-lights (viewer)
+  (when (viewer-p viewer)
+    (let ((v-ptr (%viewer viewer)))
+      (when (and v-ptr (not (cffi:null-pointer-p v-ptr)))
+        (%v3d-viewer-default-lights v-ptr)
+        viewer))))

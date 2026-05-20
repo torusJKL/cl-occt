@@ -878,6 +878,143 @@
 (deftest set-trihedron-text-color-nil-tri
   (assert-nil (set-trihedron-text-color nil :white) "text color on nil trihedron returns nil"))
 
+;; --- Lighting ---
+
+(deftest make-light-ambient-valid
+  (let ((light (make-light :ambient :color :warm-gray :intensity 0.5)))
+    (assert-true (viewer-light-p light) "ambient light should be viewer-light")
+    (free-light light)))
+
+(deftest make-light-directional-valid
+  (let ((light (make-light :directional :color :white :direction '(0 0 -1))))
+    (assert-true (viewer-light-p light) "directional light should be viewer-light")
+    (free-light light)))
+
+(deftest viewer-add-and-toggle-light
+  (with-viewer (v)
+    (let ((light (make-light :ambient :color :warm-gray)))
+      (viewer-add-light v light)
+      (viewer-light-on v light)
+      (assert-true (viewer-light-active-p v light)
+                   "light should be active after set-light-on")
+      (viewer-light-off v light)
+      (free-light light))))
+
+(deftest set-light-color-intensity
+  (let ((light (make-light :ambient)))
+    (assert-true (set-light-color light :red) "set-light-color should work")
+    (assert-true (set-light-intensity light 0.8) "set-light-intensity should work")
+    (free-light light)))
+
+(deftest set-light-direction-valid
+  (let ((light (make-light :directional)))
+    (assert-true (set-light-direction light '(0 -1 0)) "set-light-direction should work")
+    (free-light light)))
+
+(deftest set-headlight-valid
+  (let ((light (make-light :directional)))
+    (assert-true (set-headlight light t) "set-headlight should work")
+    (free-light light)))
+
+(deftest viewer-default-lights-valid
+  (with-viewer (v)
+    (assert-true (viewer-default-lights v) "default lights should restore")))
+
+;; --- Grid ---
+
+(deftest grid-active-p-after-activate
+  (with-viewer (v)
+    (activate-grid v :rectangular :lines)
+    (assert-true (grid-active-p v) "grid should be active after activate")))
+
+(deftest grid-active-p-after-deactivate
+  (with-viewer (v)
+    (activate-grid v :rectangular :lines)
+    (deactivate-grid v)
+    (assert-nil (grid-active-p v) "grid should not be active after deactivate")))
+
+;; --- Background ---
+
+(deftest set-gradient-background-valid
+  (with-viewer (v)
+    (assert-true (set-gradient-background v :color1 '(0.1 0.1 0.3) :color2 '(0.8 0.8 0.9))
+                 "gradient background should work")))
+
+(deftest set-gradient-background-style
+  (with-viewer (v)
+    (assert-true (set-gradient-background v :style :x-neg)
+                 "gradient with style should work")))
+
+(deftest reset-background-valid
+  (with-viewer (v)
+    (assert-true (reset-background v) "reset-background should work")))
+
+;; --- Rendering ---
+
+(deftest set-computed-mode-toggle
+  (with-viewer (v)
+    (set-computed-mode v t)
+    (assert-true (computed-mode-p v) "computed-mode-p should be t")
+    (set-computed-mode v nil)
+    (assert-nil (computed-mode-p v) "computed-mode-p should be nil")))
+
+(deftest set-back-face-model-valid
+  (with-viewer (v)
+    (set-back-face-model v :force)
+    t))
+
+(deftest set-frustum-culling-valid
+  (with-viewer (v)
+    (set-frustum-culling v t)
+    t))
+
+(deftest redraw-view-valid
+  (with-viewer (v)
+    (redraw-view v)
+    t))
+
+(deftest set-immediate-update-valid
+  (with-viewer (v)
+    (set-immediate-update v t)
+    t))
+
+;; --- Text Labels ---
+
+(deftest set-text-label-angle-valid
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-angle label 45.0)
+                 "set-text-label-angle should work")
+    (ais-free-text-label label)))
+
+(deftest make-text-label-convenience
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (label (make-text-label ctx "Hello" '(0 0 0) :color :white :angle 90.0)))
+      (assert-true (ais-text-label-p label)
+                   "make-text-label convenience should return ais-text-label"))))
+
+;; --- Viewer Defaults ---
+
+(deftest set-default-background-valid
+  (with-viewer (v)
+    (assert-true (set-default-background v :dark-slate-gray)
+                 "set-default-background should work")))
+
+(deftest set-default-projection-valid
+  (with-viewer (v)
+    (assert-true (set-default-projection v :iso-pers)
+                 "set-default-projection should work")))
+
+(deftest set-default-view-size-valid
+  (with-viewer (v)
+    (assert-true (set-default-view-size v 200.0)
+                 "set-default-view-size should work")))
+
+(deftest set-default-view-type-valid
+  (with-viewer (v)
+    (assert-true (set-default-view-type v :orthographic)
+                 "set-default-view-type should work")))
+
 ;; --- Colors ---
 
 (deftest named-color-red
@@ -1237,6 +1374,19 @@
                  ais-show-edges-valid ais-set-edge-styling-color
                  ais-set-selection-mode-face ais-set-selection-mode-nil
                  ais-set-tessellation-valid
+                 make-light-ambient-valid make-light-directional-valid
+                 viewer-add-and-toggle-light
+                 set-light-color-intensity set-light-direction-valid
+                 set-headlight-valid viewer-default-lights-valid
+                 grid-active-p-after-activate grid-active-p-after-deactivate
+                 set-gradient-background-valid set-gradient-background-style
+                 reset-background-valid
+                 set-computed-mode-toggle set-back-face-model-valid
+                 set-frustum-culling-valid redraw-view-valid
+                 set-immediate-update-valid
+                 set-text-label-angle-valid make-text-label-convenience
+                 set-default-background-valid set-default-projection-valid
+                 set-default-view-size-valid set-default-view-type-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

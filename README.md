@@ -433,12 +433,67 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(ais-set-selection-mode ctx obj mode)` | Set selection mode (nil = deactivate, 0=shape, 1=face, 2=edge, 3=vertex) |
 | `(ais-set-tessellation obj &key quality deviation)` | Set tessellation quality (lower = finer mesh, default 0.1) |
 
+### Lighting
+
+| Function | Description |
+|----------|-------------|
+| `(make-light type &key color intensity direction)` | Create a light (`:ambient` or `:directional`). `:color` accepts any color format, `:direction` is `(dx dy dz)` for directional lights. |
+| `(viewer-light-p obj)` | Predicate for `viewer-light` instances. |
+| `(free-light light)` | Free a light's C handle. |
+| `(light-type light)` | Return `:ambient` or `:directional`. |
+| `(viewer-add-light viewer light)` | Register a light with a viewer. |
+| `(viewer-remove-light viewer light)` | Unregister a light. |
+| `(viewer-light-on viewer light)` | Enable a registered light. |
+| `(viewer-light-off viewer light)` | Disable a registered light. |
+| `(viewer-light-active-p viewer light)` | Check if a light is enabled. |
+| `(set-light-color light color)` | Change light color (any color format). |
+| `(set-light-intensity light v)` | Set light brightness (0.0-1.0). |
+| `(set-light-direction light direction)` | Set direction for directional lights. |
+| `(set-headlight light bool)` | Attach/detach light from camera. |
+| `(set-light-shadows light bool)` | Enable/disable shadow casting (ray-tracing). |
+| `(viewer-default-lights viewer)` | Restore default ambient + directional lights. |
+
 ### Grid
 
 | Function | Description |
 |----------|-------------|
 | `(activate-grid viewer grid-type draw-mode)` | Show grid (`:rectangular`/`:circular`, `:lines`/`:points`) |
 | `(deactivate-grid viewer)` | Hide grid |
+| `(grid-active-p viewer)` | Return `t` if grid is active, `nil` otherwise |
+
+### Background
+
+| Function | Description |
+|----------|-------------|
+| `(set-gradient-background view &key color1 color2 style)` | Two-color gradient background. `:style` is `:x-pos`, `:x-neg`, `:y-pos`, `:y-neg`, `:z-pos`, or `:z-neg`. |
+| `(reset-background view)` | Reset background to solid black. |
+
+### Rendering
+
+| Function | Description |
+|----------|-------------|
+| `(set-computed-mode view bool)` | Enable/disable ray-traced rendering. |
+| `(computed-mode-p view)` | Return `t` if ray-tracing is enabled. |
+| `(set-back-face-model view model)` | Set back-face model (`:auto`, `:force`, `:disable`). |
+| `(set-frustum-culling view bool)` | Enable/disable frustum culling. |
+| `(redraw-view view)` | Force immediate redraw of main and overlay content. |
+| `(set-immediate-update view bool)` | Control immediate flush of display changes. |
+
+### Text Labels (Viewer)
+
+| Function | Description |
+|----------|-------------|
+| `(set-text-label-angle label degrees)` | Rotate a text label by degrees. |
+| `(make-text-label ctx text position &key color font height angle)` | Create, configure, and display a text label in one call. |
+
+### Viewer Defaults
+
+| Function | Description |
+|----------|-------------|
+| `(set-default-background viewer color)` | Set default background color for new views. |
+| `(set-default-projection viewer orientation)` | Set default view orientation for new views. |
+| `(set-default-view-size viewer size)` | Set default camera distance for new views. |
+| `(set-default-view-type viewer type)` | Set default projection type (`:perspective` or `:orthographic`). |
 
 ### Trihedron
 

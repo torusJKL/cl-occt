@@ -66,7 +66,9 @@
 #include <Aspect_GridType.hxx>
 #include <Aspect_GridDrawMode.hxx>
 #include <V3d_TypeOfOrientation.hxx>
+#include <V3d_TypeOfView.hxx>
 #include <Graphic3d_Camera.hxx>
+#include <Graphic3d_TextureEnv.hxx>
 #include <BRepBndLib.hxx>
 #include <AIS_Trihedron.hxx>
 #include <Geom_Axis2Placement.hxx>
@@ -90,6 +92,9 @@
 #include <StdPrs_BRepTextBuilder.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <AIS_TextLabel.hxx>
+#include <V3d_AmbientLight.hxx>
+#include <V3d_DirectionalLight.hxx>
+#include <V3d_Light.hxx>
 #include <Font_TextFormatter.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Pnt.hxx>
@@ -1793,6 +1798,353 @@ void ais_set_tessellation(void* obj_ptr, double deflection, double deviation) {
         drawer->SetDiscretisation(deflection);
         drawer->SetDeviationCoefficient(deviation);
         (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Lighting ---
+
+void* make_light_ambient(double r, double g, double b, double intensity) {
+    clear_error();
+    try {
+        Handle(V3d_AmbientLight)* h = new Handle(V3d_AmbientLight)();
+        *h = new V3d_AmbientLight(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_light_directional(double r, double g, double b, double intensity, double dx, double dy, double dz) {
+    clear_error();
+    try {
+        Handle(V3d_DirectionalLight)* h = new Handle(V3d_DirectionalLight)();
+        *h = new V3d_DirectionalLight(gp_Dir(dx, dy, dz), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void light_free(void* light_ptr) {
+    if (light_ptr) {
+        delete static_cast<Handle(V3d_Light)*>(light_ptr);
+    }
+}
+
+void v3d_viewer_add_light(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->AddLight(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_remove_light(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->DelLight(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_light_on(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->SetLightOn(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_light_off(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->SetLightOff(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int light_is_on(void* light_ptr) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return 0; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        return (*light)->IsEnabled() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void light_set_color(void* light_ptr, double r, double g, double b) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_intensity(void* light_ptr, double v) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetIntensity(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_direction(void* light_ptr, double dx, double dy, double dz) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetDirection(gp_Dir(dx, dy, dz));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_position(void* light_ptr, double x, double y, double z) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetPosition(gp_Pnt(x, y, z));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_headlight(void* light_ptr, int on) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetHeadlight(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_shadows(void* light_ptr, int on) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetCastShadows(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_default_lights(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultLights();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid Extensions ---
+
+int v3d_viewer_grid_active(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return 0; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        return (*viewer)->IsGridActive() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+// --- Background ---
+
+void v3d_view_set_bg_gradient(void* view_ptr, double r1, double g1, double b1,
+                                double r2, double g2, double b2, int style) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBgGradientColors(
+            Quantity_Color(r1, g1, b1, Quantity_TOC_RGB),
+            Quantity_Color(r2, g2, b2, Quantity_TOC_RGB),
+            static_cast<Aspect_GradientFillMethod>(style),
+            true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_reset_background(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackgroundColor(Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Rendering ---
+
+void v3d_view_set_computed_mode(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetComputedMode(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_computed_mode(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->ComputedMode() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_back_face_model(void* view_ptr, int mode) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackFacingModel(static_cast<Graphic3d_TypeOfBackfacingModel>(mode));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_frustum_culling(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetFrustumCulling(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// SetTransparentShading is not available in OCCT 8.0 V3d_View API.
+
+void v3d_view_redraw(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Redraw();
+        (*view)->RedrawImmediate();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_immediate_update(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetImmediateUpdate(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Text Label Enhancements ---
+
+void ais_text_label_set_angle(void* label_ptr, double rad) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetAngle(rad);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// HJustify, VJustify, SubtitleColor are not available in OCCT 8.0 AIS_TextLabel API.
+
+// --- Viewer Defaults ---
+
+void v3d_viewer_set_default_bg_color(void* viewer_ptr, double r, double g, double b) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultBackgroundColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_proj(void* viewer_ptr, int orientation) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultViewProj(static_cast<V3d_TypeOfOrientation>(orientation));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_size(void* viewer_ptr, double size) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultViewSize(size);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_type(void* viewer_ptr, int is_perspective) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultTypeOfView(is_perspective ? V3d_PERSPECTIVE : V3d_ORTHOGRAPHIC);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
