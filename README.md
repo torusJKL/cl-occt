@@ -368,7 +368,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(make-viewer)` | Create a 3D viewport |
 | `(free-viewer v)` | Explicitly destroy a viewer |
 | `(with-viewer (v) body...)` | Macro: auto-create and auto-free viewer |
-| `(fit-all v)` | Zoom to fit all displayed objects |
+| `(fit-all v &optional shape)` | Zoom to fit all displayed objects, or a specific shape when provided |
 | `(must-be-resized v)` | Call after window resize |
 
 ### Display
@@ -410,22 +410,16 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(reset-view view)` | Restore default view orientation and mapping. |
 | `(fit-all view &optional shape-or-obj)` | Zoom to fit all displayed objects, or a specific shape/ais-object when provided. |
 
-### Rendering
-
-| Function | Description |
-|----------|-------------|
-| `(set-msaa view samples)` | Set MSAA sample count (0, 2, 4, 8) |
-| `(msaa view)` | Get current MSAA sample count |
-| `(set-antialiasing view bool)` | Enable/disable anti-aliasing |
-| `(antialiasing-p view)` | Check if anti-aliasing is enabled |
-| `(invalidate-view view)` | Request view redraw after property changes |
-
 ### Object Properties
 
 | Function | Description |
 |----------|-------------|
 | `(ais-set-transparency ctx obj value)` | Set object transparency (0.0 = opaque, 1.0 = fully transparent) |
 | `(ais-set-material ctx obj preset)` | Set material preset by keyword (`:gold`, `:plastic`, `:glass`, `:chrome`, `:copper`, etc.) |
+| `(make-material &key ambient diffuse specular shininess transparency)` | Create a custom material with ambient/diffuse/specular colors. |
+| `(ais-set-custom-material ctx obj material)` | Apply a custom `material` instance to an object. |
+| `(material-p obj)` | Predicate for material instances. |
+| `(material-ambient mat)`, `(material-diffuse mat)`, `(material-specular mat)`, `(material-shininess mat)`, `(material-transparency mat)` | Access material component colors and shininess. |
 | `(material-preset-list)` | Return list of available material preset keywords |
 | `(ais-set-line-width ctx obj width)` | Set wireframe/edge line width in pixels |
 | `(ais-show-edges ctx obj bool)` | Show/hide edges on shaded display |
@@ -437,10 +431,10 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 
 | Function | Description |
 |----------|-------------|
-| `(make-light type &key color intensity direction)` | Create a light (`:ambient` or `:directional`). `:color` accepts any color format, `:direction` is `(dx dy dz)` for directional lights. |
+| `(make-light type &key color intensity direction position)` | Create a light (`:ambient`, `:directional`, `:positional`, or `:spot`). `:color` accepts any color format, `:direction` is `(dx dy dz)` for directional/spot, `:position` is `(x y z)` for positional/spot. |
 | `(viewer-light-p obj)` | Predicate for `viewer-light` instances. |
 | `(free-light light)` | Free a light's C handle. |
-| `(light-type light)` | Return `:ambient` or `:directional`. |
+| `(light-type light)` | Return `:ambient`, `:directional`, `:positional`, or `:spot`. |
 | `(viewer-add-light viewer light)` | Register a light with a viewer. |
 | `(viewer-remove-light viewer light)` | Unregister a light. |
 | `(viewer-light-on viewer light)` | Enable a registered light. |
@@ -448,7 +442,10 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(viewer-light-active-p viewer light)` | Check if a light is enabled. |
 | `(set-light-color light color)` | Change light color (any color format). |
 | `(set-light-intensity light v)` | Set light brightness (0.0-1.0). |
-| `(set-light-direction light direction)` | Set direction for directional lights. |
+| `(set-light-direction light direction)` | Set direction for directional/spot lights. |
+| `(set-light-position light position)` | Set position for positional/spot lights. |
+| `(set-light-angle light degrees)` | Set spot light cone angle in degrees. |
+| `(set-light-concentration light v)` | Set spot light falloff concentration (0.0-1.0). |
 | `(set-headlight light bool)` | Attach/detach light from camera. |
 | `(set-light-shadows light bool)` | Enable/disable shadow casting (ray-tracing). |
 | `(viewer-default-lights viewer)` | Restore default ambient + directional lights. |
@@ -460,22 +457,34 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(activate-grid viewer grid-type draw-mode)` | Show grid (`:rectangular`/`:circular`, `:lines`/`:points`) |
 | `(deactivate-grid viewer)` | Hide grid |
 | `(grid-active-p viewer)` | Return `t` if grid is active, `nil` otherwise |
+| `(set-rectangular-grid-values viewer &key x-origin y-origin x-step y-step rotation-angle)` | Set grid spacing, offset, and rotation. |
+| `(set-grid-xy-size viewer x y)` | Set grid X and Y spacing. |
+| `(set-grid-offset viewer x y)` | Set grid origin offset. |
+| `(grid-display view &key color size-x size-y)` | Display GPU shader grid with color and cell size. |
 
 ### Background
 
 | Function | Description |
 |----------|-------------|
 | `(set-gradient-background view &key color1 color2 style)` | Two-color gradient background. `:style` is `:x-pos`, `:x-neg`, `:y-pos`, `:y-neg`, `:z-pos`, or `:z-neg`. |
+| `(set-image-background view path)` | Load an image file as the view background. |
+| `(set-background-cubemap view &key pos-x neg-x pos-y neg-y pos-z neg-z)` | Set a cube-map environment from 6 image files (requires ray-tracing). |
 | `(reset-background view)` | Reset background to solid black. |
 
 ### Rendering
 
 | Function | Description |
 |----------|-------------|
+| `(set-msaa view samples)` | Set MSAA sample count (0, 2, 4, 8). |
+| `(msaa view)` | Get current MSAA sample count. |
+| `(set-antialiasing view bool)` | Enable/disable anti-aliasing. |
+| `(antialiasing-p view)` | Check if anti-aliasing is enabled. |
+| `(invalidate-view view)` | Request view redraw after property changes. |
 | `(set-computed-mode view bool)` | Enable/disable ray-traced rendering. |
 | `(computed-mode-p view)` | Return `t` if ray-tracing is enabled. |
 | `(set-back-face-model view model)` | Set back-face model (`:auto`, `:force`, `:disable`). |
 | `(set-frustum-culling view bool)` | Enable/disable frustum culling. |
+| `(set-transparency-method view method)` | Set transparency sorting method (`:blend-unordered`, `:blend-oit`, `:depth-peeling-oit`). |
 | `(redraw-view view)` | Force immediate redraw of main and overlay content. |
 | `(set-immediate-update view bool)` | Control immediate flush of display changes. |
 
@@ -484,6 +493,10 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | Function | Description |
 |----------|-------------|
 | `(set-text-label-angle label degrees)` | Rotate a text label by degrees. |
+| `(set-text-label-hjustification label align)` | Set horizontal alignment (`:left`, `:center`, `:right`). |
+| `(set-text-label-vjustification label align)` | Set vertical alignment (`:top`, `:cap`, `:half`, `:base`, `:bottom`). |
+| `(set-text-label-display-type label type)` | Set display type (`:ordinary`, `:subtitle`, `:dekale`, `:blend`, `:dimension`). |
+| `(set-text-label-subtitle-color label color)` | Set subtitle/background box color. |
 | `(make-text-label ctx text position &key color font height angle)` | Create, configure, and display a text label in one call. |
 
 ### Dimensions
@@ -493,6 +506,11 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(make-dimension type &key from to vertex point1 point2 shape)` | Create a dimension. `:length` takes `:from` `:to` (points), `:angle` takes `:vertex` `:point1` `:point2`, `:diameter`/`:radius` take `:shape`. |
 | `(set-dimension-text-position dim (x y z))` | Set the position of the dimension label text. |
 | `(set-dimension-units dim string)` | Set display units string (e.g. `"mm"`). |
+| `(set-dimension-flyout dim v)` | Set flyout distance between dimension line and measured geometry. |
+| `(set-dimension-arrow-length dim v)` | Set dimension arrow length. |
+| `(set-dimension-extension-size dim v)` | Set dimension extension line length. |
+| `(set-dimension-custom-value dim string)` | Override the displayed dimension text. |
+| `(set-dimension-angle-edges dim edge1 edge2)` | Set measured edges for an angle dimension. |
 
 Dimensions are `ais-object` instances displayed with `ais-display`:
 
@@ -507,9 +525,18 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 
 | Function | Description |
 |----------|-------------|
-| `(ais-set-drawer-line-color obj color)` | Set line/wireframe color on an ais-object's drawer. |
+| `(ais-set-drawer-line-color obj color)` | Set line/wireframe color. |
 | `(ais-set-drawer-line-width obj width)` | Set line/wireframe width in pixels. |
+| `(ais-set-drawer-line-type obj type)` | Set line type (`:solid`, `:dash`, `:dot`, `:dot-dash`). |
 | `(ais-set-drawer-shading-color obj color)` | Set surface shading color. |
+| `(ais-set-drawer-point-color obj color)` | Set vertex/marker color. |
+| `(ais-set-drawer-point-type obj type)` | Set marker type (`:point`, `:plus`, `:star`, `:o`, `:x`, `:ball`, `:ring`). |
+| `(ais-set-drawer-point-scale obj scale)` | Set marker size multiplier. |
+| `(ais-set-drawer-text-color obj color)` | Set text annotation color via drawer. |
+| `(ais-set-drawer-text-font obj font)` | Set text annotation font name. |
+| `(ais-set-drawer-text-height obj height)` | Set text annotation height. |
+| `(ais-set-drawer-iso-display obj &key u-on v-on)` | Show/hide U/V iso-lines. |
+| `(ais-set-drawer-wire-color obj color)` | Set wireframe color. |
 | `(ais-set-drawer-face-boundaries obj bool)` | Show/hide face boundary edges. |
 | `(ais-set-drawer-free-boundaries obj bool)` | Show/hide free boundary edges. |
 
@@ -518,9 +545,11 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | Function | Description |
 |----------|-------------|
 | `(set-default-background viewer color)` | Set default background color for new views. |
+| `(set-default-bg-gradient viewer color1 color2 &key style)` | Set default gradient background for new views. |
 | `(set-default-projection viewer orientation)` | Set default view orientation for new views. |
 | `(set-default-view-size viewer size)` | Set default camera distance for new views. |
 | `(set-default-view-type viewer type)` | Set default projection type (`:perspective` or `:orthographic`). |
+| `(default-lights viewer)` | Restore the viewer's default lights. |
 
 ### Trihedron
 
@@ -674,7 +703,18 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
-│   │   ├── viewer.lisp   viewer class, make-viewer, free-viewer, fit-all, must-be-resized, with-viewer, ais-context, ais-object, ais-display, ais-erase, ais-remove
+│   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
+│   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
+│   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)
+│   │   ├── viewer-object-props.lisp  transparency, materials, line width, edges, selection, tessellation
+│   │   ├── viewer-lighting.lisp   ambient/directional/positional/spot lights
+│   │   ├── viewer-grid.lisp       grid values, offset, GPU shader grid display
+│   │   ├── viewer-background.lisp gradient, image, cube-map background
+│   │   ├── viewer-rendering.lisp  computed mode, back-face, frustum culling, transparency method
+│   │   ├── viewer-text-labels.lisp  text label angle, alignment, display type
+│   │   ├── viewer-defaults.lisp   viewer-level defaults (bg, projection, size)
+│   │   ├── viewer-drawer.lisp    Prs3d drawer: line/point/text/shading aspect control
+│   │   ├── viewer-dimensions.lisp  length, angle, diameter, radius dimensions
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store
