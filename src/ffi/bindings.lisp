@@ -291,3 +291,43 @@
 
 (defcfun (%ais-context-is-displayed "ais_context_is_displayed") :int
   (ctx :pointer) (obj :pointer))
+
+;; --- Visualization — Styling, Camera, MSAA, Grid ---
+
+(defcfun (%v3d-view-set-bg-color "v3d_view_set_bg_color") :void
+  (view :pointer)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-context-set-color "ais_context_set_color") :void
+  (ctx :pointer) (obj :pointer)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-context-unset-color "ais_context_unset_color") :void
+  (ctx :pointer) (obj :pointer))
+
+(defcfun (%ais-context-set-display-mode "ais_context_set_display_mode") :void
+  (ctx :pointer) (obj :pointer) (mode :int))
+
+(defcfun (%v3d-view-set-proj "v3d_view_set_proj") :void
+  (view :pointer) (orientation :int))
+
+(defcfun (%v3d-view-set-msaa "v3d_view_set_msaa") :void
+  (view :pointer) (samples :int))
+
+(defcfun (%v3d-view-get-msaa "v3d_view_get_msaa") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-antialiasing "v3d_view_set_antialiasing") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-get-antialiasing "v3d_view_get_antialiasing") :int
+  (view :pointer))
+
+(defcfun (%v3d-viewer-activate-grid "v3d_viewer_activate_grid") :void
+  (viewer :pointer) (grid-type :int) (draw-mode :int))
+
+(defcfun (%v3d-viewer-deactivate-grid "v3d_viewer_deactivate_grid") :void
+  (viewer :pointer))
+
+(defcfun (%v3d-view-invalidate "v3d_view_invalidate") :void
+  (view :pointer))

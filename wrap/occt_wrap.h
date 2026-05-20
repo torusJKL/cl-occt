@@ -106,6 +106,20 @@ void  ais_context_remove(void* ctx, void* obj, int update);
 void  ais_context_remove_all(void* ctx, int update);
 int   ais_context_is_displayed(void* ctx, void* obj);
 
+// --- Visualization — Styling, Camera, MSAA, Grid ---
+void v3d_view_set_bg_color(void* view, double r, double g, double b);
+void ais_context_set_color(void* ctx, void* obj, double r, double g, double b);
+void ais_context_unset_color(void* ctx, void* obj);
+void ais_context_set_display_mode(void* ctx, void* obj, int mode);
+void v3d_view_set_proj(void* view, int orientation);
+void v3d_view_set_msaa(void* view, int samples);
+int  v3d_view_get_msaa(void* view);
+void v3d_view_set_antialiasing(void* view, int on);
+int  v3d_view_get_antialiasing(void* view);
+void v3d_viewer_activate_grid(void* viewer, int gridType, int drawMode);
+void v3d_viewer_deactivate_grid(void* viewer);
+void v3d_view_invalidate(void* view);
+
 #ifdef __cplusplus
 }
 #endif

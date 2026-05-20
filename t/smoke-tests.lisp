@@ -619,6 +619,53 @@
 (deftest ais-create-shape-nil-input
   (assert-nil (ais-create-shape nil) "ais-create-shape with nil returns nil"))
 
+;; --- Styling / Camera / MSAA / Grid Tests ---
+
+(deftest set-background-valid
+  (with-viewer (v)
+    (set-background v 0.1 0.1 0.2)
+    t))
+
+(deftest ais-set-color-on-displayed-shape
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-color ctx obj '(1.0 0.0 0.0))
+      t)))
+
+(deftest ais-set-display-mode-wireframe
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-display-mode ctx obj :wireframe)
+      t)))
+
+(deftest set-view-projection-iso
+  (with-viewer (v)
+    (set-view-projection v :iso-pers)
+    t))
+
+(deftest set-msaa-roundtrip
+  (with-viewer (v)
+    (set-msaa v 4)
+    (let ((val (msaa v)))
+      (assert-true (integerp val)))))
+
+(deftest set-antialiasing-roundtrip
+  (with-viewer (v)
+    (set-antialiasing v t)
+    (assert-true (antialiasing-p v))))
+
+(deftest activate-grid-rectangular-lines
+  (with-viewer (v)
+    (activate-grid v :rectangular :lines)
+    t))
+
+(deftest activate-grid-circular-points
+  (with-viewer (v)
+    (activate-grid v :circular :points)
+    t))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -676,7 +723,15 @@
                ais-displayed-p-returns-t-after-display
                ais-erase-hides-without-removing
                ais-remove-removes-from-context
-               ais-free-on-nil-safe ais-create-shape-nil-input))
+               ais-free-on-nil-safe ais-create-shape-nil-input
+               set-background-valid
+               ais-set-color-on-displayed-shape
+               ais-set-display-mode-wireframe
+               set-view-projection-iso
+               set-msaa-roundtrip
+               set-antialiasing-roundtrip
+               activate-grid-rectangular-lines
+               activate-grid-circular-points))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

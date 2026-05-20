@@ -215,7 +215,7 @@ Three layers:
  └──────────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 74 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 86 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
@@ -383,6 +383,38 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(ais-displayed-p ctx obj)` | Check if an object is currently displayed |
 | `(ais-free obj)` | Free an ais-object's C handle |
 
+### Styling
+
+| Function | Description |
+|----------|-------------|
+| `(set-background viewer r g b)` | Set viewer background color (RGB in [0,1]) |
+| `(ais-set-color ctx obj color)` | Set object color as `(r g b)` list |
+| `(ais-unset-color ctx obj)` | Revert object to default color |
+| `(ais-set-display-mode ctx obj mode)` | Set display mode (`:wireframe` or `:shaded`) |
+
+### Camera
+
+| Function | Description |
+|----------|-------------|
+| `(set-view-projection view orientation)` | Set camera orientation (`:iso-pers`, `:z-pos`, `:x-pos`, etc.) |
+
+### Rendering
+
+| Function | Description |
+|----------|-------------|
+| `(set-msaa view samples)` | Set MSAA sample count (0, 2, 4, 8) |
+| `(msaa view)` | Get current MSAA sample count |
+| `(set-antialiasing view bool)` | Enable/disable anti-aliasing |
+| `(antialiasing-p view)` | Check if anti-aliasing is enabled |
+| `(invalidate-view view)` | Request view redraw after property changes |
+
+### Grid
+
+| Function | Description |
+|----------|-------------|
+| `(activate-grid viewer grid-type draw-mode)` | Show grid (`:rectangular`/`:circular`, `:lines`/`:points`) |
+| `(deactivate-grid viewer)` | Hide grid |
+
 ### Introspection
 
 ## Project structure
@@ -391,7 +423,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (69 functions)
+│   ├── occt_wrap.h       C header (81 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -421,7 +453,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~113 smoke tests
+│   └── smoke-tests.lisp  ~121 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

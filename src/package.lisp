@@ -69,8 +69,20 @@
      :%ais-context-erase
      :%ais-context-remove
      :%ais-context-remove-all
-     :%ais-context-is-displayed
-      :make-shape
+      :%ais-context-is-displayed
+      :%v3d-view-set-bg-color
+      :%ais-context-set-color
+      :%ais-context-unset-color
+      :%ais-context-set-display-mode
+      :%v3d-view-set-proj
+      :%v3d-view-set-msaa
+      :%v3d-view-get-msaa
+      :%v3d-view-set-antialiasing
+      :%v3d-view-get-antialiasing
+      :%v3d-viewer-activate-grid
+      :%v3d-viewer-deactivate-grid
+      :%v3d-view-invalidate
+       :make-shape
     :make-geom2d
     :*params*
    :model
@@ -183,4 +195,16 @@
      :ais-erase
      :ais-remove
      :ais-remove-all
-     :ais-displayed-p))
+      :ais-displayed-p
+      :set-background
+      :ais-set-color
+      :ais-unset-color
+      :ais-set-display-mode
+      :set-view-projection
+      :set-msaa
+      :msaa
+      :set-antialiasing
+      :antialiasing-p
+      :activate-grid
+      :deactivate-grid
+      :invalidate-view))

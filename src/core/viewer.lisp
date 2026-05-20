@@ -135,6 +135,134 @@
                  (not (cffi:null-pointer-p ctx-ptr)))
         (not (zerop (%ais-context-is-displayed ctx-ptr obj-ptr)))))))
 
+;; --- Enum maps ---
+
+(defparameter *v3d-orientation-map*
+  '((:x-pos . 0) (:y-pos . 1) (:z-pos . 2)
+    (:x-neg . 3) (:y-neg . 4) (:z-neg . 5)
+    (:iso-pers . 10)))
+
+(defparameter *ais-display-mode-map*
+  '((:wireframe . 0) (:shaded . 1)))
+
+(defparameter *grid-type-map*
+  '((:rectangular . 0) (:circular . 1)))
+
+(defparameter *grid-draw-mode-map*
+  '((:lines . 0) (:points . 1)))
+
+(defun %lookup (key map)
+  (cdr (assoc key map)))
+
+;; --- Styling ---
+
+(defun set-background (view r g b)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-bg-color view-ptr
+                                (coerce r 'double-float)
+                                (coerce g 'double-float)
+                                (coerce b 'double-float))))
+    (list r g b)))
+
+(defun ais-set-color (context obj color)
+  (when (and (ais-context-p context) (ais-object-p obj))
+    (destructuring-bind (r g b) color
+      (let ((ctx-ptr (%ptr context))
+            (obj-ptr (%ptr obj)))
+        (when (and ctx-ptr obj-ptr
+                   (not (cffi:null-pointer-p ctx-ptr))
+                   (not (cffi:null-pointer-p obj-ptr)))
+          (%ais-context-set-color ctx-ptr obj-ptr
+                                  (coerce r 'double-float)
+                                  (coerce g 'double-float)
+                                  (coerce b 'double-float)))))))
+
+(defun ais-unset-color (context obj)
+  (when (and (ais-context-p context) (ais-object-p obj))
+    (let ((ctx-ptr (%ptr context))
+          (obj-ptr (%ptr obj)))
+      (when (and ctx-ptr obj-ptr
+                 (not (cffi:null-pointer-p ctx-ptr))
+                 (not (cffi:null-pointer-p obj-ptr)))
+        (%ais-context-unset-color ctx-ptr obj-ptr)))))
+
+;; --- Display Mode ---
+
+(defun ais-set-display-mode (context obj mode)
+  (when (and (ais-context-p context) (ais-object-p obj))
+    (let ((mode-int (%lookup mode *ais-display-mode-map*))
+          (ctx-ptr (%ptr context))
+          (obj-ptr (%ptr obj)))
+      (when (and mode-int ctx-ptr obj-ptr
+                 (not (cffi:null-pointer-p ctx-ptr))
+                 (not (cffi:null-pointer-p obj-ptr)))
+        (%ais-context-set-display-mode ctx-ptr obj-ptr mode-int)))))
+
+;; --- Camera ---
+
+(defun set-view-projection (view orientation)
+  (when (viewer-p view)
+    (let ((orient-int (%lookup orientation *v3d-orientation-map*))
+          (view-ptr (%view view)))
+      (when (and orient-int view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-proj view-ptr orient-int)))))
+
+;; --- MSAA ---
+
+(defun set-msaa (view samples)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-msaa view-ptr samples)))))
+
+(defun msaa (view)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-get-msaa view-ptr)))))
+
+;; --- Antialiasing ---
+
+(defun set-antialiasing (view on)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-antialiasing view-ptr (if on 1 0))))))
+
+(defun antialiasing-p (view)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (not (zerop (%v3d-view-get-antialiasing view-ptr)))))))
+
+;; --- Grid ---
+
+(defun activate-grid (viewer grid-type draw-mode)
+  (when (viewer-p viewer)
+    (let ((gt-int (%lookup grid-type *grid-type-map*))
+          (dm-int (%lookup draw-mode *grid-draw-mode-map*))
+          (v3d-viewer (%viewer viewer)))
+      (when (and gt-int dm-int
+                 v3d-viewer
+                 (not (cffi:null-pointer-p v3d-viewer)))
+        (%v3d-viewer-activate-grid v3d-viewer gt-int dm-int)))))
+
+(defun deactivate-grid (viewer)
+  (when (viewer-p viewer)
+    (let ((v3d-viewer (%viewer viewer)))
+      (when (and v3d-viewer (not (cffi:null-pointer-p v3d-viewer)))
+        (%v3d-viewer-deactivate-grid v3d-viewer)))))
+
+;; --- Invalidate ---
+
+(defun invalidate-view (view)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-invalidate view-ptr)))))
+
 (defmacro with-viewer ((var) &body body)
   `(let ((,var (make-viewer)))
      (unwind-protect (progn ,@body)

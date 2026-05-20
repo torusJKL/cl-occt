@@ -63,6 +63,9 @@
 #include <AIS_InteractiveContext.hxx>
 #include <AIS_Shape.hxx>
 #include <AIS_InteractiveObject.hxx>
+#include <Aspect_GridType.hxx>
+#include <Aspect_GridDrawMode.hxx>
+#include <V3d_TypeOfOrientation.hxx>
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -1200,6 +1203,149 @@ int ais_context_is_displayed(void* ctx_ptr, void* obj_ptr) {
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return 0;
+    }
+}
+
+// --- Visualization — Styling, Camera, MSAA, Grid ---
+
+void v3d_view_set_bg_color(void* view_ptr, double r, double g, double b) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackgroundColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_color(void* ctx_ptr, void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetColor(*obj, Quantity_Color(r, g, b, Quantity_TOC_RGB), false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_unset_color(void* ctx_ptr, void* obj_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->UnsetColor(*obj, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_display_mode(void* ctx_ptr, void* obj_ptr, int mode) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return; }
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetDisplayMode(*obj, mode, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_proj(void* view_ptr, int orientation) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetProj(static_cast<V3d_TypeOfOrientation>(orientation));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_msaa(void* view_ptr, int samples) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->ChangeRenderingParams().NbMsaaSamples = samples;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_get_msaa(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->ChangeRenderingParams().NbMsaaSamples;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_antialiasing(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->ChangeRenderingParams().IsAntialiasingEnabled = (on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_get_antialiasing(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->ChangeRenderingParams().IsAntialiasingEnabled ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_viewer_activate_grid(void* viewer_ptr, int gridType, int drawMode) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->ActivateGrid(static_cast<Aspect_GridType>(gridType),
+                                static_cast<Aspect_GridDrawMode>(drawMode));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_deactivate_grid(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->DeactivateGrid();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_invalidate(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Invalidate();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
     }
 }
 
