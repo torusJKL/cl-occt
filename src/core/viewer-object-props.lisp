@@ -1,5 +1,20 @@
 (in-package :cl-occt)
 
+(defclass material ()
+  ((%ambient :initarg :ambient :reader material-ambient)
+   (%diffuse :initarg :diffuse :reader material-diffuse)
+   (%specular :initarg :specular :reader material-specular)
+   (%shininess :initarg :shininess :initform 0.5 :reader material-shininess)
+   (%transparency :initarg :transparency :initform 0.0 :reader material-transparency)))
+
+(defun material-p (obj) (typep obj 'material))
+
+(defun make-material (&key (ambient '(0.2 0.2 0.2)) (diffuse '(0.8 0.8 0.8))
+                        (specular '(1.0 1.0 1.0)) (shininess 0.5) (transparency 0.0))
+  (make-instance 'material
+    :ambient ambient :diffuse diffuse :specular specular
+    :shininess shininess :transparency transparency))
+
 (defparameter *material-presets*
   '(:brass :bronze :copper :gold :pewter :plastic :silver :steel :stone
     :shiny-plastic :satin :metalized :neon-phc :chrome :aluminium :obsidian
@@ -17,6 +32,29 @@
                  (not (cffi:null-pointer-p obj-ptr)))
         (%ais-set-transparency ctx-ptr obj-ptr (coerce value 'double-float))
         obj))))
+
+(defun ais-set-custom-material (context obj mat)
+  (when (and (ais-context-p context) (ais-object-p obj) (material-p mat))
+    (let ((ctx-ptr (%ptr context))
+          (obj-ptr (%ptr obj)))
+      (when (and ctx-ptr obj-ptr
+                 (not (cffi:null-pointer-p ctx-ptr))
+                 (not (cffi:null-pointer-p obj-ptr)))
+        (let ((mat-ptr (%make-material
+                        (coerce (first (material-ambient mat)) 'double-float)
+                        (coerce (second (material-ambient mat)) 'double-float)
+                        (coerce (third (material-ambient mat)) 'double-float)
+                        (coerce (first (material-diffuse mat)) 'double-float)
+                        (coerce (second (material-diffuse mat)) 'double-float)
+                        (coerce (third (material-diffuse mat)) 'double-float)
+                        (coerce (first (material-specular mat)) 'double-float)
+                        (coerce (second (material-specular mat)) 'double-float)
+                        (coerce (third (material-specular mat)) 'double-float)
+                        (coerce (material-shininess mat) 'double-float)
+                        (coerce (material-transparency mat) 'double-float))))
+          (when (and mat-ptr (not (cffi:null-pointer-p mat-ptr)))
+            (%ais-set-custom-material ctx-ptr obj-ptr mat-ptr)
+            obj))))))
 
 (defun ais-set-material (context obj material)
   (when (and (ais-context-p context) (ais-object-p obj))

@@ -396,6 +396,15 @@
 
 ;; --- Per-Object Properties ---
 
+(defcfun (%make-material "make_material") :pointer
+  (ar :double) (ag :double) (ab :double)
+  (dr :double) (dg :double) (db :double)
+  (sr :double) (sg :double) (sb :double)
+  (shininess :double) (transparency :double))
+
+(defcfun (%ais-set-custom-material "ais_set_custom_material") :void
+  (ctx :pointer) (obj :pointer) (mat :pointer))
+
 (defcfun (%ais-set-transparency "ais_set_transparency") :void
   (ctx :pointer) (obj :pointer) (v :double))
 
@@ -434,6 +443,16 @@
   (r :double) (g :double) (b :double) (intensity :double)
   (dx :double) (dy :double) (dz :double))
 
+(defcfun (%make-light-positional "make_light_positional") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (x :double) (y :double) (z :double))
+
+(defcfun (%make-light-spot "make_light_spot") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (x :double) (y :double) (z :double)
+  (dx :double) (dy :double) (dz :double)
+  (angle :double) (concentration :double))
+
 (defcfun (%light-free "light_free") :void
   (light :pointer))
 
@@ -461,6 +480,15 @@
 (defcfun (%light-set-direction "light_set_direction") :void
   (light :pointer) (dx :double) (dy :double) (dz :double))
 
+(defcfun (%light-set-position "light_set_position") :void
+  (light :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%light-set-angle "light_set_angle") :void
+  (light :pointer) (angle :double))
+
+(defcfun (%light-set-concentration "light_set_concentration") :void
+  (light :pointer) (v :double))
+
 (defcfun (%light-set-headlight "light_set_headlight") :void
   (light :pointer) (on :int))
 
@@ -475,7 +503,13 @@
 (defcfun (%v3d-viewer-grid-active "v3d_viewer_grid_active") :int
   (viewer :pointer))
 
+(defcfun (%v3d-view-set-grid-echo "v3d_view_set_grid_echo") :void
+  (view :pointer) (on :int))
+
 ;; --- Background ---
+
+(defcfun (%v3d-view-set-bg-image "v3d_view_set_bg_image") :void
+  (view :pointer) (path :string))
 
 (defcfun (%v3d-view-set-bg-gradient "v3d_view_set_bg_gradient") :void
   (view :pointer)
@@ -497,6 +531,9 @@
 (defcfun (%v3d-view-set-back-face-model "v3d_view_set_back_face_model") :void
   (view :pointer) (mode :int))
 
+(defcfun (%v3d-view-get-camera-handle "v3d_view_get_camera_handle") :void
+  (view :pointer) (out-camera :pointer))
+
 (defcfun (%v3d-view-set-frustum-culling "v3d_view_set_frustum_culling") :void
   (view :pointer) (on :int))
 
@@ -513,6 +550,9 @@
 
 ;; --- Viewer Defaults ---
 
+(defcfun (%v3d-viewer-set-default-lights "v3d_viewer_set_default_lights") :void
+  (viewer :pointer) (on :int))
+
 (defcfun (%v3d-viewer-set-default-bg-color "v3d_viewer_set_default_bg_color") :void
   (viewer :pointer) (r :double) (g :double) (b :double))
 
@@ -526,6 +566,34 @@
   (viewer :pointer) (is-perspective :int))
 
 ;; --- Drawer ---
+
+(defcfun (%ais-object-attributes "ais_object_attributes") :pointer
+  (obj :pointer))
+
+(defcfun (%drawer-shading-aspect "drawer_shading_aspect") :pointer
+  (drawer :pointer))
+
+(defcfun (%drawer-line-aspect "drawer_line_aspect") :pointer
+  (drawer :pointer))
+
+(defcfun (%line-aspect-set-color "line_aspect_set_color") :void
+  (aspect :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%line-aspect-set-width "line_aspect_set_width") :void
+  (aspect :pointer) (w :double))
+
+(defcfun (%line-aspect-set-type "line_aspect_set_type") :void
+  (aspect :pointer) (type :int))
+
+(defcfun (%shading-aspect-set-color "shading_aspect_set_color") :void
+  (aspect :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%shading-aspect-set-material "shading_aspect_set_material") :void
+  (aspect :pointer)
+  (ar :double) (ag :double) (ab :double)
+  (dr :double) (dg :double) (db :double)
+  (sr :double) (sg :double) (sb :double)
+  (shininess :double) (transparency :double))
 
 (defcfun (%ais-object-set-line-color "ais_object_set_line_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
@@ -564,6 +632,9 @@
 
 (defcfun (%prsdim-set-display-units "prsdim_set_display_units") :void
   (dim :pointer) (units :string))
+
+(defcfun (%prsdim-set-flyout "prsdim_set_flyout") :void
+  (dim :pointer) (v :double))
 
 ;; --- Font & Text ---
 

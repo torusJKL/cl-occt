@@ -91,7 +91,12 @@
        :%v3d-view-get-msaa
        :%make-light-ambient
        :%make-light-directional
+       :%make-light-positional
+       :%make-light-spot
        :%light-free
+       :%light-set-angle
+       :%light-set-concentration
+       :%light-set-position
        :%v3d-viewer-add-light
        :%v3d-viewer-remove-light
        :%v3d-viewer-light-on
@@ -123,16 +128,31 @@
        :%prsdim-make-radius
        :%prsdim-set-text-position
        :%prsdim-set-display-units
+       :%prsdim-set-flyout
+       :%ais-object-attributes
+       :%drawer-shading-aspect
+       :%drawer-line-aspect
+       :%line-aspect-set-color
+       :%line-aspect-set-width
+       :%line-aspect-set-type
+       :%shading-aspect-set-color
+       :%shading-aspect-set-material
        :%ais-object-set-line-color
        :%ais-object-set-line-width
        :%ais-object-set-shading-color
        :%ais-object-set-face-boundary-draw
        :%ais-object-set-free-boundary-draw
-      :%v3d-view-set-antialiasing
-      :%v3d-view-get-antialiasing
+       :%v3d-view-set-antialiasing
+       :%v3d-view-get-antialiasing
+       :%v3d-view-set-bg-image
+       :%v3d-view-get-camera-handle
+       :%v3d-view-set-grid-echo
+       :%v3d-viewer-set-default-lights
        :%v3d-viewer-activate-grid
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
+       :%make-material
+       :%ais-set-custom-material
        :%ais-set-transparency
        :%ais-set-material-by-name
        :%ais-material-preset-count
@@ -324,6 +344,8 @@
         :set-trihedron-text-color
         :ais-set-transparency
         :ais-set-material
+        :ais-set-custom-material
+        :make-material
         :material-preset-list
         :*material-presets*
         :ais-set-line-width
@@ -348,6 +370,7 @@
         :set-light-shadows
         :viewer-default-lights
         :grid-active-p
+        :set-image-background
         :set-gradient-background
         :*gradient-style-map*
         :reset-background
@@ -363,9 +386,19 @@
         :set-default-projection
         :set-default-view-size
         :set-default-view-type
+        :default-lights
         :make-dimension
         :set-dimension-text-position
         :set-dimension-units
+        :set-dimension-flyout
+        :ais-drawer
+        :drawer-p
+        :drawer-shading-aspect
+        :drawer-line-aspect
+        :line-aspect-color
+        :line-aspect-width
+        :line-aspect-type
+        :shading-aspect-color
         :ais-set-drawer-line-color
         :ais-set-drawer-line-width
         :ais-set-drawer-shading-color

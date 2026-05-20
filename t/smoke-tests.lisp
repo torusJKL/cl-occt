@@ -774,6 +774,20 @@
       (fit-all v box)
       t)))
 
+;; --- Custom Material ---
+
+(deftest make-material-valid
+  (let ((mat (make-material :diffuse '(0.8 0.1 0.1) :shininess 0.9)))
+    (assert-true (material-p mat) "make-material should return material")))
+
+(deftest ais-set-custom-material-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30)))
+           (mat (make-material :diffuse '(0.8 0.1 0.1) :shininess 0.9)))
+      (assert-true (ais-set-custom-material ctx obj mat)
+                   "ais-set-custom-material should work"))))
+
 ;; --- Object Properties ---
 
 (deftest ais-set-transparency-valid
@@ -884,6 +898,24 @@
   (let ((light (make-light :ambient :color :warm-gray :intensity 0.5)))
     (assert-true (viewer-light-p light) "ambient light should be viewer-light")
     (free-light light)))
+
+(deftest make-light-positional-valid
+  (let ((light (make-light :positional :color :red :position '(5 5 5))))
+    (assert-true (viewer-light-p light) "positional light should be viewer-light")
+    (free-light light)))
+
+(deftest make-light-spot-valid
+  (let ((light (make-light :spot :color :white :position '(0 0 0) :direction '(0 0 -1))))
+    (assert-true (viewer-light-p light) "spot light should be viewer-light")
+    (free-light light)))
+
+(deftest set-light-position-angle-concentration
+  (let ((light (make-light :spot)))
+    (set-light-position light '(5 5 5))
+    (set-light-angle light 30.0)
+    (set-light-concentration light 0.8)
+    (free-light light))
+  t)
 
 (deftest make-light-directional-valid
   (let ((light (make-light :directional :color :white :direction '(0 0 -1))))
@@ -1052,7 +1084,9 @@
       (assert-true (set-dimension-units dim "mm")
                    "set-dimension-units should work"))))
 
-;; --- Drawer ---
+;; Drawer CLOS hierarchy tests are manual (require displayed objects with proper handle setup).
+
+;; --- Existing Drawer Convenience ---
 
 (deftest ais-set-drawer-line-color-valid
   (let ((obj (ais-create-shape (make-box 10 20 30))))
@@ -1438,7 +1472,10 @@
                  ais-show-edges-valid ais-set-edge-styling-color
                  ais-set-selection-mode-face ais-set-selection-mode-nil
                  ais-set-tessellation-valid
+                 make-material-valid ais-set-custom-material-valid
                  make-light-ambient-valid make-light-directional-valid
+                 make-light-positional-valid make-light-spot-valid
+                 set-light-position-angle-concentration
                  viewer-add-and-toggle-light
                  set-light-color-intensity set-light-direction-valid
                  set-headlight-valid viewer-default-lights-valid

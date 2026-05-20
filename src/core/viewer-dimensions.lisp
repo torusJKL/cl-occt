@@ -45,3 +45,10 @@
       (when (and ptr (not (cffi:null-pointer-p ptr)))
         (%prsdim-set-display-units ptr units)
         dim))))
+
+(defun set-dimension-flyout (dim v)
+  (when (ais-object-p dim)
+    (let ((ptr (%ptr dim)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%prsdim-set-flyout ptr (coerce v 'double-float))
+        dim))))

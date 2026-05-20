@@ -27,6 +27,13 @@
         (%v3d-viewer-set-default-view-size v-ptr (coerce size 'double-float))
         viewer))))
 
+(defun default-lights (viewer)
+  (when (viewer-p viewer)
+    (let ((v-ptr (%viewer viewer)))
+      (when (and v-ptr (not (cffi:null-pointer-p v-ptr)))
+        (%v3d-viewer-set-default-lights v-ptr 1)
+        viewer))))
+
 (defun set-default-view-type (viewer type)
   (when (viewer-p viewer)
     (let ((v-ptr (%viewer viewer)))

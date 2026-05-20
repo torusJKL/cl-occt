@@ -18,6 +18,13 @@
               style-int)))
         view))))
 
+(defun set-image-background (view path)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-bg-image view-ptr path)
+        view))))
+
 (defun reset-background (view)
   (when (viewer-p view)
     (let ((view-ptr (%view view)))

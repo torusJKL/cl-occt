@@ -95,7 +95,11 @@
 #include <AIS_TextLabel.hxx>
 #include <V3d_AmbientLight.hxx>
 #include <V3d_DirectionalLight.hxx>
+#include <V3d_PositionalLight.hxx>
+#include <V3d_SpotLight.hxx>
 #include <V3d_Light.hxx>
+#include <Prs3d_PointAspect.hxx>
+#include <Prs3d_TextAspect.hxx>
 #include <Font_TextFormatter.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Pnt.hxx>
@@ -2297,6 +2301,267 @@ void prsdim_set_display_units(void* dim_ptr, const char* units) {
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
         (**dim).SetDisplayUnits(TCollection_AsciiString(units));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Custom Material ---
+
+void* make_material(double ar, double ag, double ab, double dr, double dg, double db,
+                     double sr, double sg, double sb, double shininess, double transparency) {
+    clear_error();
+    try {
+        Graphic3d_MaterialAspect* mat = new Graphic3d_MaterialAspect(Graphic3d_NOM_DEFAULT);
+        mat->SetAmbientColor(Quantity_Color(ar, ag, ab, Quantity_TOC_RGB));
+        mat->SetDiffuseColor(Quantity_Color(dr, dg, db, Quantity_TOC_RGB));
+        mat->SetSpecularColor(Quantity_Color(sr, sg, sb, Quantity_TOC_RGB));
+        mat->SetShininess(shininess);
+        mat->SetTransparency(transparency);
+        return mat;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_set_custom_material(void* ctx_ptr, void* obj_ptr, void* mat_ptr) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr || !mat_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        auto* mat = static_cast<Graphic3d_MaterialAspect*>(mat_ptr);
+        (*ctx)->SetMaterial(*obj, *mat, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Positional & Spot Lights ---
+
+void* make_light_positional(double r, double g, double b, double intensity, double x, double y, double z) {
+    clear_error();
+    try {
+        Handle(V3d_PositionalLight)* h = new Handle(V3d_PositionalLight)();
+        *h = new V3d_PositionalLight(gp_Pnt(x, y, z), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_light_spot(double r, double g, double b, double intensity, double x, double y, double z, double dx, double dy, double dz, double angle, double concentration) {
+    clear_error();
+    try {
+        Handle(V3d_SpotLight)* h = new Handle(V3d_SpotLight)();
+        *h = new V3d_SpotLight(gp_Pnt(x, y, z), gp_Dir(dx, dy, dz), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        if (angle > 0.0) (**h).SetAngle(angle * M_PI / 180.0);
+        (**h).SetConcentration(concentration);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void light_set_angle(void* light_ptr, double angle_deg) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        V3d_SpotLight* spot = dynamic_cast<V3d_SpotLight*>(light->get());
+        if (spot) spot->SetAngle(angle_deg * M_PI / 180.0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_concentration(void* light_ptr, double v) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        V3d_SpotLight* spot = dynamic_cast<V3d_SpotLight*>(light->get());
+        if (spot) spot->SetConcentration(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid Echo ---
+
+void v3d_view_set_grid_echo(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetGridActivity(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Background Image ---
+
+void v3d_view_set_bg_image(void* view_ptr, const char* path) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (!path) { set_error("null path", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackgroundImage(path);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Camera handle ---
+
+void v3d_view_get_camera_handle(void* view_ptr, void** out_camera) {
+    clear_error();
+    if (!view_ptr || !out_camera) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        Handle(Graphic3d_Camera)* h = new Handle(Graphic3d_Camera)((*view)->Camera());
+        *out_camera = h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        *out_camera = nullptr;
+    }
+}
+
+// --- Viewer Defaults ---
+
+void v3d_viewer_set_default_lights(void* viewer_ptr, int on) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        if (on) (*viewer)->SetDefaultLights();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+
+
+// --- Drawer (Prs3d) ---
+
+void* ais_object_attributes(void* obj_ptr) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return nullptr; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer)* h = new Handle(Prs3d_Drawer)((*obj)->Attributes());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* drawer_shading_aspect(void* drawer_ptr) {
+    clear_error();
+    if (!drawer_ptr) { set_error("null drawer", 2); return nullptr; }
+    try {
+        auto* drawer = static_cast<Handle(Prs3d_Drawer)*>(drawer_ptr);
+        Handle(Prs3d_ShadingAspect)* h = new Handle(Prs3d_ShadingAspect)((*drawer)->ShadingAspect());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* drawer_line_aspect(void* drawer_ptr) {
+    clear_error();
+    if (!drawer_ptr) { set_error("null drawer", 2); return nullptr; }
+    try {
+        auto* drawer = static_cast<Handle(Prs3d_Drawer)*>(drawer_ptr);
+        Handle(Prs3d_LineAspect)* h = new Handle(Prs3d_LineAspect)((*drawer)->LineAspect());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void line_aspect_set_color(void* aspect_ptr, double r, double g, double b) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void line_aspect_set_width(void* aspect_ptr, double w) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetWidth(w);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void line_aspect_set_type(void* aspect_ptr, int type) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetTypeOfLine(static_cast<Aspect_TypeOfLine>(type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void shading_aspect_set_color(void* aspect_ptr, double r, double g, double b) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_ShadingAspect)*>(aspect_ptr);
+        (*aspect)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void shading_aspect_set_material(void* aspect_ptr, double ar, double ag, double ab,
+                                  double dr, double dg, double db,
+                                  double sr, double sg, double sb,
+                                  double shininess, double transparency) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_ShadingAspect)*>(aspect_ptr);
+        Graphic3d_MaterialAspect mat(Graphic3d_NOM_DEFAULT);
+        mat.SetAmbientColor(Quantity_Color(ar, ag, ab, Quantity_TOC_RGB));
+        mat.SetDiffuseColor(Quantity_Color(dr, dg, db, Quantity_TOC_RGB));
+        mat.SetSpecularColor(Quantity_Color(sr, sg, sb, Quantity_TOC_RGB));
+        mat.SetShininess(shininess);
+        mat.SetTransparency(transparency);
+        (*aspect)->SetMaterial(mat);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension Styling ---
+
+void prsdim_set_flyout(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetFlyout(v);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }

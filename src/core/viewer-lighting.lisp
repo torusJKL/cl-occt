@@ -7,7 +7,7 @@
 (defun viewer-light-p (obj)
   (typep obj 'viewer-light))
 
-(defun make-light (type &key color intensity direction)
+(defun make-light (type &key color intensity direction position)
   (let* ((rgb (normalize-color (or color '(1 1 1))))
          (int-val (coerce (if intensity intensity 1.0) 'double-float)))
     (destructuring-bind (r g b) rgb
@@ -23,9 +23,30 @@
                          (coerce r 'double-float) (coerce g 'double-float)
                          (coerce b 'double-float) int-val
                          (coerce dx 'double-float) (coerce dy 'double-float)
-                         (coerce dz 'double-float))))))))
-        (when (and ptr (not (cffi:null-pointer-p ptr)))
-          (let ((light (make-instance 'viewer-light :ptr ptr :type type)))
+                         (coerce dz 'double-float)))))
+                   (:positional
+                    (let ((pos (or position '(0 0 0))))
+                      (destructuring-bind (x y z) pos
+                        (%make-light-positional
+                         (coerce r 'double-float) (coerce g 'double-float)
+                         (coerce b 'double-float) int-val
+                         (coerce x 'double-float) (coerce y 'double-float)
+                         (coerce z 'double-float)))))
+                   (:spot
+                    (let ((pos (or position '(0 0 0)))
+                          (dir (or direction '(0 0 -1))))
+                      (destructuring-bind (x y z) pos
+                        (destructuring-bind (dx dy dz) dir
+                          (%make-light-spot
+                           (coerce r 'double-float) (coerce g 'double-float)
+                           (coerce b 'double-float) int-val
+                           (coerce x 'double-float) (coerce y 'double-float)
+                           (coerce z 'double-float)
+                           (coerce dx 'double-float) (coerce dy 'double-float)
+                           (coerce dz 'double-float)
+                           30.0d0 0.5d0))))))))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (let ((light (make-instance 'viewer-light :ptr ptr :type type)))
             (tg:finalize light (lambda () (%light-free ptr)))
             light))))))
 
@@ -106,6 +127,31 @@
             (coerce dx 'double-float)
             (coerce dy 'double-float)
             (coerce dz 'double-float)))
+        light))))
+
+(defun set-light-position (light position)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (x y z) position
+          (%light-set-position ptr
+            (coerce x 'double-float)
+            (coerce y 'double-float)
+            (coerce z 'double-float)))
+        light))))
+
+(defun set-light-angle (light angle-degrees)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-set-angle ptr (coerce angle-degrees 'double-float))
+        light))))
+
+(defun set-light-concentration (light v)
+  (when (viewer-light-p light)
+    (let ((ptr (%ptr light)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%light-set-concentration ptr (coerce v 'double-float))
         light))))
 
 (defun set-headlight (light on)
