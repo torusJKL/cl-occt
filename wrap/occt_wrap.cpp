@@ -2725,6 +2725,49 @@ void prsdim_set_arrow_length(void* dim_ptr, double v) {
     }
 }
 
+// --- Text Label: SetDisplayType ---
+
+void ais_text_label_set_display_type(void* label_ptr, int type) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetDisplayType(static_cast<Aspect_TypeOfDisplayText>(type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: SetCustomValue ---
+
+void prsdim_set_custom_value(void* dim_ptr, const char* value) {
+    clear_error();
+    if (!dim_ptr || !value) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetCustomValue(TCollection_ExtendedString(value));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: set angle measured edges ---
+
+void prsdim_set_angle_edges(void* dim_ptr, void* edge1_ptr, void* edge2_ptr) {
+    clear_error();
+    if (!dim_ptr || !edge1_ptr || !edge2_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_AngleDimension)*>(dim_ptr);
+        auto* edge1 = static_cast<TopoDS_Shape*>(edge1_ptr);
+        auto* edge2 = static_cast<TopoDS_Shape*>(edge2_ptr);
+        (**dim).SetMeasuredGeometry(TopoDS::Edge(*edge1), TopoDS::Edge(*edge2));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: set extension size ---
+
 void prsdim_set_extension_size(void* dim_ptr, double v) {
     clear_error();
     if (!dim_ptr) { set_error("null dimension argument", 2); return; }

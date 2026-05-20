@@ -555,6 +555,9 @@
 (defcfun (%ais-text-label-set-color-sub-title "ais_text_label_set_color_sub_title") :void
   (label :pointer) (r :double) (g :double) (b :double))
 
+(defcfun (%ais-text-label-set-display-type "ais_text_label_set_display_type") :void
+  (label :pointer) (type :int))
+
 (defcfun (%v3d-viewer-set-rectangular-grid-values "v3d_viewer_set_rectangular_grid_values") :void
   (viewer :pointer) (x-origin :double) (y-origin :double)
   (x-step :double) (y-step :double) (rotation-angle :double))
@@ -570,6 +573,12 @@
   (dim :pointer) (shape :pointer)
   (px :double) (py :double) (pz :double)
   (nx :double) (ny :double) (nz :double))
+
+(defcfun (%prsdim-set-custom-value "prsdim_set_custom_value") :void
+  (dim :pointer) (value :string))
+
+(defcfun (%prsdim-set-angle-edges "prsdim_set_angle_edges") :void
+  (dim :pointer) (edge1 :pointer) (edge2 :pointer))
 
 (defcfun (%prsdim-set-arrow-length "prsdim_set_arrow_length") :void
   (dim :pointer) (v :double))

@@ -215,6 +215,7 @@ void ais_text_label_set_angle(void* label, double rad);
 void ais_text_label_set_hjustification(void* label, int align);
 void ais_text_label_set_vjustification(void* label, int align);
 void ais_text_label_set_color_sub_title(void* label, double r, double g, double b);
+void ais_text_label_set_display_type(void* label, int type);
 
 // --- Viewer Defaults ---
 void v3d_viewer_set_default_lights(void* viewer, int on);
@@ -249,6 +250,8 @@ void  prsdim_set_flyout(void* dim, double v);
 void  prsdim_set_measured_edge(void* dim, void* shape, double px, double py, double pz, double nx, double ny, double nz);
 void  prsdim_set_arrow_length(void* dim, double v);
 void  prsdim_set_extension_size(void* dim, double v);
+void  prsdim_set_custom_value(void* dim, const char* value);
+void  prsdim_set_angle_edges(void* dim, void* edge1, void* edge2);
 
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);

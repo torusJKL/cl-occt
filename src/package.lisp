@@ -121,6 +121,7 @@
        :%ais-text-label-set-hjustification
        :%ais-text-label-set-vjustification
        :%ais-text-label-set-color-sub-title
+       :%ais-text-label-set-display-type
        :%v3d-viewer-set-default-bg-color
        :%v3d-viewer-set-default-view-proj
        :%v3d-viewer-set-default-view-size
@@ -135,6 +136,8 @@
        :%prsdim-set-measured-edge
        :%prsdim-set-arrow-length
        :%prsdim-set-extension-size
+       :%prsdim-set-custom-value
+       :%prsdim-set-angle-edges
        :%ais-context-default-drawer
        :%ais-object-attributes
        :%drawer-shading-aspect
@@ -400,6 +403,7 @@
         :set-text-label-hjustification
         :set-text-label-vjustification
         :set-text-label-subtitle-color
+        :set-text-label-display-type
         :make-text-label
         :set-default-background
         :set-default-projection
@@ -412,6 +416,8 @@
         :set-dimension-flyout
         :set-dimension-arrow-length
         :set-dimension-extension-size
+        :set-dimension-custom-value
+        :set-dimension-angle-edges
         :ais-drawer
         :drawer-p
         :drawer-shading-aspect

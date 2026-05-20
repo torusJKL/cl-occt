@@ -1029,6 +1029,12 @@
                  "set-text-label-vjustification should work")
     (ais-free-text-label label)))
 
+(deftest set-text-label-display-type-valid
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-display-type label :subtitle)
+                 "set-text-label-display-type should work")
+    (ais-free-text-label label)))
+
 (deftest set-text-label-subtitle-color-valid
   (let ((label (make-ais-text-label "Test")))
     (assert-true (set-text-label-subtitle-color label :dark-grey)
@@ -1121,6 +1127,14 @@
       (ais-display ctx dim)
       (assert-true (set-dimension-arrow-length dim 5.0)
                    "set-dimension-arrow-length should work"))))
+
+(deftest set-dimension-custom-value-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-custom-value dim "Custom")
+                   "set-dimension-custom-value should work"))))
 
 (deftest set-dimension-extension-size-valid
   (with-viewer (v)
@@ -1541,6 +1555,7 @@
                  set-immediate-update-valid
                  set-text-label-angle-valid set-text-label-hjustification-valid
                  set-text-label-vjustification-valid set-text-label-subtitle-color-valid
+                 set-text-label-display-type-valid
                  make-text-label-convenience
                  set-default-background-valid set-default-projection-valid
                  set-default-view-size-valid set-default-view-type-valid
@@ -1552,6 +1567,7 @@
                  make-length-dimension-2p make-angle-dimension-3p
                  set-dimension-text-position-valid set-dimension-units-valid
                  set-dimension-arrow-length-valid set-dimension-extension-size-valid
+                 set-dimension-custom-value-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

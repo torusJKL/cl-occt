@@ -60,6 +60,25 @@
         (%prsdim-set-arrow-length ptr (coerce v 'double-float))
         dim))))
 
+(defun set-dimension-custom-value (dim value)
+  (when (ais-object-p dim)
+    (let ((ptr (%ptr dim)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%prsdim-set-custom-value ptr (if (stringp value) value (princ-to-string value)))
+        dim))))
+
+(defun set-dimension-angle-edges (dim edge1 edge2)
+  (when (and (ais-object-p dim) (shape-p edge1) (shape-p edge2))
+    (let ((ptr (%ptr dim))
+          (e1-ptr (%ptr edge1))
+          (e2-ptr (%ptr edge2)))
+      (when (and ptr e1-ptr e2-ptr
+                 (not (cffi:null-pointer-p ptr))
+                 (not (cffi:null-pointer-p e1-ptr))
+                 (not (cffi:null-pointer-p e2-ptr)))
+        (%prsdim-set-angle-edges ptr e1-ptr e2-ptr)
+        dim))))
+
 (defun set-dimension-extension-size (dim v)
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))

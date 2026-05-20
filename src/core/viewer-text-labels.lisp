@@ -24,6 +24,17 @@
         (%ais-text-label-set-vjustification ptr align-int)
         label))))
 
+(defparameter *text-display-type-map*
+  '((:ordinary . 0) (:subtitle . 1) (:dekale . 2) (:blend . 3) (:dimension . 4)))
+
+(defun set-text-label-display-type (label type)
+  (when (ais-text-label-p label)
+    (let ((type-int (cdr (assoc type *text-display-type-map*)))
+          (ptr (%ptr label)))
+      (when (and type-int ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-text-label-set-display-type ptr type-int)
+        label))))
+
 (defun set-text-label-subtitle-color (label color)
   (when (ais-text-label-p label)
     (let ((rgb (normalize-color color))

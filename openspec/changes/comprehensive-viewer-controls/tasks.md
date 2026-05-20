@@ -190,7 +190,7 @@
 - [x] 9.1 Add `%ais-text-label-set-angle` C bridge: `SetAngle(rad)`
 - [x] 9.2 Add `%ais-text-label-set-hjustify` C bridge: `SetHJustify(type)`
 - [x] 9.3 Add `%ais-text-label-set-vjustify` C bridge: `SetVJustify(type)`
-- [ ] 9.4 Add `%ais-text-label-set-display-type` C bridge: `SetDisplayType(type)`
+- [x] 9.4 Add `%ais-text-label-set-display-type` C bridge: `SetDisplayType(type)`
 - [x] 9.5 Add `%ais-text-label-set-subtitle-color` C bridge: `SetSubtitleColor(c)`
 - [ ] 9.6 Add `%ais-text-label-set-space` C bridge: `SetSpace(spacing)`
 - [x] 9.7 Add CFFI bindings for text label enhancements
@@ -286,10 +286,10 @@
 - [x] 12.1 Add `%ais-make-length-dimension-2p` C bridge: `AIS_LengthDimension(p1, p2)`
 - [x] 12.2 Add `%ais-make-length-dimension-edge` C bridge: `AIS_LengthDimension(edge)`
 - [x] 12.3 Add `%ais-make-angle-dimension-3p` C bridge: `AIS_AngleDimension(vertex, p1, p2)`
-- [ ] 12.4 Add `%ais-make-angle-dimension-2e` C bridge: `AIS_AngleDimension(edge1, edge2)`
+- [x] 12.4 Add `%ais-make-angle-dimension-2e` C bridge: `AIS_AngleDimension(edge1, edge2)`
 - [x] 12.5 Add `%ais-make-diameter-dimension` C bridge: `AIS_DiameterDimension(edge)`
 - [x] 12.6 Add `%ais-make-radius-dimension` C bridge: `AIS_RadiusDimension(edge_or_face)`
-- [ ] 12.7 Add `%dimension-set-text` C bridge: `SetText(string, font, height)`
+- [x] 12.7 Add `%dimension-set-text` C bridge: `SetText(string, font, height)`
 - [x] 12.8 Add `%dimension-set-arrow-style` C bridge: arrow type and size
 - [x] 12.9 Add `%dimension-set-extension` C bridge: offset and length
 - [x] 12.10 Add `%dimension-set-flyout` C bridge: flyout distance
