@@ -83,6 +83,51 @@ void xde_add_part(xde_doc doc, const char* parent_path, occt_shape shape,
                   const char* name, int color_type, double r, double g, double b, double a,
                   const double* matrix, char* buf, int buf_size);
 
+// --- Visualization (Graphic Driver, Viewer, View, Window) ---
+void* create_graphic_driver(void);
+void  free_graphic_driver(void* driver);
+void* v3d_create_viewer(void* driver);
+void  v3d_free_viewer(void* viewer);
+void* v3d_create_view(void* viewer);
+void  v3d_free_view(void* view);
+void  v3d_fit_all(void* view);
+void  v3d_view_must_be_resized(void* view);
+void* create_neutral_window(void* native_handle);
+  void  free_neutral_window(void* window);
+
+// --- AIS Visualization (Display Objects) ---
+void* ais_create_context(void* viewer);
+void  ais_free_context(void*);
+void* ais_create_shape(void* shape);
+void  ais_free_shape(void*);
+void  ais_context_display(void* ctx, void* obj, int update);
+void  ais_context_erase(void* ctx, void* obj, int update);
+void  ais_context_remove(void* ctx, void* obj, int update);
+void  ais_context_remove_all(void* ctx, int update);
+int   ais_context_is_displayed(void* ctx, void* obj);
+
+// --- Visualization — Styling, Camera, MSAA, Grid ---
+void v3d_view_set_bg_color(void* view, double r, double g, double b);
+void ais_context_set_color(void* ctx, void* obj, double r, double g, double b);
+void ais_context_unset_color(void* ctx, void* obj);
+void ais_context_set_display_mode(void* ctx, void* obj, int mode);
+void v3d_view_set_proj(void* view, int orientation);
+void v3d_view_set_msaa(void* view, int samples);
+int  v3d_view_get_msaa(void* view);
+void v3d_view_set_antialiasing(void* view, int on);
+int  v3d_view_get_antialiasing(void* view);
+void v3d_viewer_activate_grid(void* viewer, int gridType, int drawMode);
+void v3d_viewer_deactivate_grid(void* viewer);
+void v3d_view_invalidate(void* view);
+
+void* ais_create_trihedron(double ox, double oy, double oz,
+                           double dx, double dy, double dz,
+                           double ux, double uy, double uz);
+void  ais_trihedron_set_datum_mode(void* obj, int mode);
+void  ais_trihedron_set_draw_arrows(void* obj, int on);
+void  ais_trihedron_set_size(void* obj, double size);
+void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
+
 #ifdef __cplusplus
 }
 #endif

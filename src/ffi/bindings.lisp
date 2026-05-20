@@ -231,3 +231,122 @@
 (defcfun (%get-error-code "get_error_code") :int)
 
 (defcfun (%get-error-message "get_error_message") :string)
+
+;; --- Visualization ---
+
+(defcfun (%create-graphic-driver "create_graphic_driver") :pointer)
+
+(defcfun (%free-graphic-driver "free_graphic_driver") :void
+  (driver :pointer))
+
+(defcfun (%v3d-create-viewer "v3d_create_viewer") :pointer
+  (driver :pointer))
+
+(defcfun (%v3d-free-viewer "v3d_free_viewer") :void
+  (viewer :pointer))
+
+(defcfun (%v3d-create-view "v3d_create_view") :pointer
+  (viewer :pointer))
+
+(defcfun (%v3d-free-view "v3d_free_view") :void
+  (view :pointer))
+
+(defcfun (%v3d-fit-all "v3d_fit_all") :void
+  (view :pointer))
+
+(defcfun (%v3d-view-must-be-resized "v3d_view_must_be_resized") :void
+  (view :pointer))
+
+(defcfun (%create-neutral-window "create_neutral_window") :pointer
+  (native-handle :pointer))
+
+(defcfun (%free-neutral-window "free_neutral_window") :void
+  (window :pointer))
+
+;; --- AIS Visualization (Display Objects) ---
+
+(defcfun (%ais-create-context "ais_create_context") :pointer
+  (viewer :pointer))
+
+(defcfun (%ais-free-context "ais_free_context") :void
+  (ctx :pointer))
+
+(defcfun (%ais-create-shape "ais_create_shape") :pointer
+  (shape :pointer))
+
+(defcfun (%ais-free-shape "ais_free_shape") :void
+  (obj :pointer))
+
+(defcfun (%ais-context-display "ais_context_display") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-erase "ais_context_erase") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-remove "ais_context_remove") :void
+  (ctx :pointer) (obj :pointer) (update :int))
+
+(defcfun (%ais-context-remove-all "ais_context_remove_all") :void
+  (ctx :pointer) (update :int))
+
+(defcfun (%ais-context-is-displayed "ais_context_is_displayed") :int
+  (ctx :pointer) (obj :pointer))
+
+;; --- Visualization — Styling, Camera, MSAA, Grid ---
+
+(defcfun (%v3d-view-set-bg-color "v3d_view_set_bg_color") :void
+  (view :pointer)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-context-set-color "ais_context_set_color") :void
+  (ctx :pointer) (obj :pointer)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-context-unset-color "ais_context_unset_color") :void
+  (ctx :pointer) (obj :pointer))
+
+(defcfun (%ais-context-set-display-mode "ais_context_set_display_mode") :void
+  (ctx :pointer) (obj :pointer) (mode :int))
+
+(defcfun (%v3d-view-set-proj "v3d_view_set_proj") :void
+  (view :pointer) (orientation :int))
+
+(defcfun (%v3d-view-set-msaa "v3d_view_set_msaa") :void
+  (view :pointer) (samples :int))
+
+(defcfun (%v3d-view-get-msaa "v3d_view_get_msaa") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-antialiasing "v3d_view_set_antialiasing") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-get-antialiasing "v3d_view_get_antialiasing") :int
+  (view :pointer))
+
+(defcfun (%v3d-viewer-activate-grid "v3d_viewer_activate_grid") :void
+  (viewer :pointer) (grid-type :int) (draw-mode :int))
+
+(defcfun (%v3d-viewer-deactivate-grid "v3d_viewer_deactivate_grid") :void
+  (viewer :pointer))
+
+(defcfun (%v3d-view-invalidate "v3d_view_invalidate") :void
+  (view :pointer))
+
+;; --- Trihedron ---
+
+(defcfun (%ais-create-trihedron "ais_create_trihedron") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double)
+  (ux :double) (uy :double) (uz :double))
+
+(defcfun (%ais-trihedron-set-datum-mode "ais_trihedron_set_datum_mode") :void
+  (obj :pointer) (mode :int))
+
+(defcfun (%ais-trihedron-set-draw-arrows "ais_trihedron_set_draw_arrows") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-trihedron-set-size "ais_trihedron_set_size") :void
+  (obj :pointer) (size :double))
+
+(defcfun (%ais-trihedron-set-transform-pers "ais_trihedron_set_transform_pers") :void
+  (obj :pointer) (corner :int) (x-off :int) (y-off :int))

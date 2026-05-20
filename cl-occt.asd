@@ -22,8 +22,9 @@
          (:file "booleans")
           (:file "compounds")
           (:file "transforms")
-         (:file "assembly")
-         (:file "io")))
+          (:file "assembly")
+          (:file "io")
+          (:file "viewer")))
      (:module "dag"
       :components
       ((:file "params")
@@ -47,4 +48,7 @@
   :perform (test-op (o c)
              (let ((*package* (find-package :cl-occt)))
                (asdf:load-system :cl-occt/tests)
-               (funcall (find-symbol "RUN-TESTS" :cl-occt)))))
+               (multiple-value-bind (pass fail)
+                   (funcall (find-symbol "RUN-TESTS" :cl-occt))
+                  (unless (zerop fail)
+                    (uiop:quit 1))))))

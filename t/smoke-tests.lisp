@@ -301,6 +301,14 @@
 (deftest read-step-nonexistent
   (assert-nil (read-step "/tmp/clocct-nonexistent.step")))
 
+(deftest read-step-corrupted
+  (with-open-file (s "/tmp/clocct-corrupted.step"
+                     :direction :output
+                     :if-exists :supersede
+                     :element-type '(unsigned-byte 8))
+    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+  (assert-nil (read-step "/tmp/clocct-corrupted.step")))
+
 ;; --- STL I/O ---
 
 (deftest write-stl-valid
@@ -318,6 +326,14 @@
 
 (deftest read-stl-nonexistent
   (assert-nil (read-stl "/tmp/clocct-nonexistent.stl")))
+
+(deftest read-stl-corrupted
+  (with-open-file (s "/tmp/clocct-corrupted.stl"
+                     :direction :output
+                     :if-exists :supersede
+                     :element-type '(unsigned-byte 8))
+    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+  (assert-nil (read-stl "/tmp/clocct-corrupted.stl")))
 
 (deftest write-stl-deflection
   (let ((result (write-stl (make-sphere 10) "/tmp/clocct-test-sphere.stl" :deflection 0.05)))
@@ -551,6 +567,160 @@
 (deftest read-step-into-dag-valid
   (assert-true (read-step-into-dag "/tmp/clocct-test-dag-export.step")))
 
+;; --- Viewer ---
+
+(deftest make-viewer-returns-viewer
+  (let ((v (make-viewer)))
+    (assert-true (viewer-p v) "make-viewer should return a viewer")
+    (free-viewer v)))
+
+(deftest with-viewer-creates-and-cleans-up
+  (with-viewer (v)
+    (assert-true (viewer-p v) "with-viewer should provide a viewer"))
+  ;; After the macro, the viewer should be freed (can't easily check handles,
+  ;; but no error means success)
+  t)
+
+(deftest free-viewer-double-free-safe
+  (let ((v (make-viewer)))
+    (free-viewer v)
+    ;; Second free should be safe
+    (free-viewer v))
+  t)
+
+;; --- AIS Display ---
+
+(deftest ais-create-context-returns-ais-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (assert-true (ais-context-p ctx) "ais-create-context should return ais-context"))))
+
+(deftest ais-create-shape-from-box
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-object-p obj) "ais-create-shape from box should return ais-object")))
+
+(deftest ais-create-shape-nil-shape
+  (assert-nil (ais-create-shape nil) "ais-create-shape with nil should return nil"))
+
+(deftest ais-display-shape-in-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (let ((obj (ais-display ctx (make-box 10 20 30))))
+        (assert-true (ais-object-p obj) "ais-display shape should return ais-object")))))
+
+(deftest ais-displayed-p-returns-t-after-display
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-displayed-p ctx obj) "ais-displayed-p should return t after display"))))
+
+(deftest ais-erase-hides-without-removing
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-erase ctx obj)
+      (assert-nil (ais-displayed-p ctx obj) "ais-erase should hide without removing"))))
+
+(deftest ais-remove-removes-from-context
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-remove ctx obj)
+      (assert-nil (ais-displayed-p ctx obj) "ais-remove should remove from context"))))
+
+(deftest ais-free-on-nil-safe
+  (ais-free nil)
+  t)
+
+(deftest ais-create-shape-nil-input
+  (assert-nil (ais-create-shape nil) "ais-create-shape with nil returns nil"))
+
+;; --- Styling / Camera / MSAA / Grid Tests ---
+
+(deftest set-background-valid
+  (with-viewer (v)
+    (set-background v 0.1 0.1 0.2)
+    t))
+
+(deftest ais-set-color-on-displayed-shape
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-color ctx obj '(1.0 0.0 0.0))
+      t)))
+
+(deftest ais-set-display-mode-wireframe
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-display-mode ctx obj :wireframe)
+      t)))
+
+(deftest set-view-projection-iso
+  (with-viewer (v)
+    (set-view-projection v :iso-pers)
+    t))
+
+(deftest set-msaa-roundtrip
+  (with-viewer (v)
+    (set-msaa v 4)
+    (let ((val (msaa v)))
+      (assert-true (integerp val)))))
+
+(deftest set-antialiasing-roundtrip
+  (with-viewer (v)
+    (set-antialiasing v t)
+    (assert-true (antialiasing-p v))))
+
+(deftest activate-grid-rectangular-lines
+  (with-viewer (v)
+    (activate-grid v :rectangular :lines)
+    t))
+
+(deftest activate-grid-circular-points
+  (with-viewer (v)
+    (activate-grid v :circular :points)
+    t))
+
+;; --- Trihedron Tests ---
+
+(deftest make-trihedron-defaults
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri) "make-trihedron with defaults should return ais-object")))
+
+(deftest make-trihedron-zero-normal
+  (assert-nil (make-trihedron :normal '(0 0 0)) "make-trihedron with zero normal should return nil"))
+
+(deftest set-trihedron-mode-shaded
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-mode tri :shaded)
+    t))
+
+(deftest set-trihedron-arrows-nil
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-arrows tri nil)
+    t))
+
+(deftest set-trihedron-size-100
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-size tri 100)
+    t))
+
+(deftest set-trihedron-corner-lower-right
+  (let ((tri (make-trihedron)))
+    (assert-true (ais-object-p tri))
+    (set-trihedron-corner tri :lower-right)
+    t))
+
+(deftest show-trihedron-in-context
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (let ((tri (show-trihedron ctx v :corner :lower-left :size 50)))
+        (assert-true (ais-object-p tri) "show-trihedron should return ais-object")))))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -579,9 +749,9 @@
                translate-shape translate-preserves-original translate-nil
                rotate-shape
                write-step-valid write-step-nil
-               read-step-roundtrip read-step-nonexistent
+               read-step-roundtrip read-step-nonexistent read-step-corrupted
                write-stl-valid write-stl-nil
-               read-stl-roundtrip read-stl-nonexistent write-stl-deflection
+               read-stl-roundtrip read-stl-nonexistent read-stl-corrupted write-stl-deflection
                make-compound-two-boxes make-compound-skips-nil
                make-compound-all-nil make-compound-empty-list
                add-to-compound-valid add-to-compound-nil-shape add-to-compound-nil-compound
@@ -599,7 +769,31 @@
                param-function-global with-params-local with-params-does-not-leak
                defmodel-static-metadata defmodel-metadata-from-params
                defmodel-no-metadata defmodel-metadata-re-evaluation
-               write-dag-models-to-step-valid read-step-into-dag-valid))
+               write-dag-models-to-step-valid read-step-into-dag-valid
+               make-viewer-returns-viewer with-viewer-creates-and-cleans-up
+               free-viewer-double-free-safe
+               ais-create-context-returns-ais-context
+               ais-create-shape-from-box ais-create-shape-nil-shape
+               ais-display-shape-in-context
+               ais-displayed-p-returns-t-after-display
+               ais-erase-hides-without-removing
+               ais-remove-removes-from-context
+               ais-free-on-nil-safe ais-create-shape-nil-input
+               set-background-valid
+               ais-set-color-on-displayed-shape
+               ais-set-display-mode-wireframe
+               set-view-projection-iso
+               set-msaa-roundtrip
+               set-antialiasing-roundtrip
+               activate-grid-rectangular-lines
+               activate-grid-circular-points
+               make-trihedron-defaults
+               make-trihedron-zero-normal
+               set-trihedron-mode-shaded
+               set-trihedron-arrows-nil
+               set-trihedron-size-100
+               set-trihedron-corner-lower-right
+               show-trihedron-in-context))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

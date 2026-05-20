@@ -49,9 +49,45 @@
     :%xde-get-shape-at
     :%xde-get-name-at
     :%xde-get-color-at
-    :%xde-get-location-at
-    :%xde-add-part
-     :make-shape
+     :%xde-get-location-at
+     :%xde-add-part
+     :%create-graphic-driver
+     :%free-graphic-driver
+     :%v3d-create-viewer
+     :%v3d-free-viewer
+     :%v3d-create-view
+     :%v3d-free-view
+     :%v3d-fit-all
+     :%v3d-view-must-be-resized
+     :%create-neutral-window
+     :%free-neutral-window
+     :%ais-create-context
+     :%ais-free-context
+     :%ais-create-shape
+     :%ais-free-shape
+     :%ais-context-display
+     :%ais-context-erase
+     :%ais-context-remove
+     :%ais-context-remove-all
+      :%ais-context-is-displayed
+      :%v3d-view-set-bg-color
+      :%ais-context-set-color
+      :%ais-context-unset-color
+      :%ais-context-set-display-mode
+      :%v3d-view-set-proj
+      :%v3d-view-set-msaa
+      :%v3d-view-get-msaa
+      :%v3d-view-set-antialiasing
+      :%v3d-view-get-antialiasing
+       :%v3d-viewer-activate-grid
+       :%v3d-viewer-deactivate-grid
+       :%v3d-view-invalidate
+       :%ais-create-trihedron
+       :%ais-trihedron-set-datum-mode
+       :%ais-trihedron-set-draw-arrows
+       :%ais-trihedron-set-size
+       :%ais-trihedron-set-transform-pers
+       :make-shape
     :make-geom2d
     :*params*
    :model
@@ -141,7 +177,45 @@
    :*local-params*
    :help
    :*params*
-   :*model-registry*
-   :find-model
-   :register-model
-   :unregister-model))
+    :*model-registry*
+    :find-model
+    :register-model
+    :unregister-model
+    :viewer
+    :viewer-p
+    :make-viewer
+    :free-viewer
+    :fit-all
+     :must-be-resized
+     :with-viewer
+     :ais-context
+     :ais-context-p
+     :ais-object
+     :ais-object-p
+     :ais-create-context
+     :ais-free-context
+     :ais-create-shape
+     :ais-free
+     :ais-display
+     :ais-erase
+     :ais-remove
+     :ais-remove-all
+      :ais-displayed-p
+      :set-background
+      :ais-set-color
+      :ais-unset-color
+      :ais-set-display-mode
+      :set-view-projection
+      :set-msaa
+      :msaa
+      :set-antialiasing
+      :antialiasing-p
+       :activate-grid
+       :deactivate-grid
+       :invalidate-view
+       :make-trihedron
+       :set-trihedron-mode
+       :set-trihedron-arrows
+       :set-trihedron-size
+       :set-trihedron-corner
+       :show-trihedron))

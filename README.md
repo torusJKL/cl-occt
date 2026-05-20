@@ -2,7 +2,8 @@
 
 A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
 Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
-a reactive DAG engine, and a parametric DSL (`defmodel`, `param`, `model-ref`).
+a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), a full 3D viewer with object display,
+styling, camera control, and a trihedron orientation aid.
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
@@ -37,7 +38,7 @@ just setup
 
 This configures an OCCT build with:
 - Shared libraries only
-- No Visualization (TKV3d, TKOpenGl)
+- Visualization enabled (TKV3d, TKOpenGl, TKService linked)
 - ApplicationFramework (TKCAF) enabled for XDE color/assembly support
 - Installs to `.local/`
 
@@ -139,6 +140,24 @@ Models carry optional metadata that round-trips through STEP export.
 (read-step-into-dag "models.step")
 ```
 
+### 3D Viewer (requires a GUI window)
+
+```lisp
+;; Native window handle from Qt/GLFW/etc.
+;; On Qt: (cffi:pointer-to-int (widget-win-id widget))
+;; On GLFW: glfwGetWin32Window or glfwGetX11Window
+;; Pass as :native-window-handle to make-viewer
+(with-viewer (v)
+  (fit-all v))
+
+;; Display a shape in the 3D view
+(with-viewer (v)
+  (let ((ctx (ais-create-context v)))
+    (ais-display ctx (make-box 10 20 30))
+    (show-trihedron ctx v :corner :lower-left)
+    (fit-all v)))
+```
+
 ### Run the test suite
 
 ```lisp
@@ -182,12 +201,25 @@ Models carry optional metadata that round-trips through STEP export.
 Three layers:
 
 ```
- SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
+ ┌──────────────────────────────────────────────────────┐
+ │  SBCL + CFFI (viewer CLOS, ais-context, ais-object,  │
+ │              ais-display, ais-erase, ais-remove, ...) │
+ └──────────────────────┬───────────────────────────────┘
+                        ↓
+ ┌──────────────────────────────────────────────────────┐
+ │  libocctwrap.so (graphic-driver, viewer, view,       │
+ │                  neutral-window, fit-all, resize,     │
+ │                  ais_* context + shape functions)     │
+ └──────────────────────┬───────────────────────────────┘
+                        ↓
+ ┌──────────────────────────────────────────────────────┐
+ │  OCCT shared libs (TKV3d, TKOpenGl, TKService, AIS)  │
+ └──────────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 57 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 91 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
+- `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -329,6 +361,73 @@ Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
 
 Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`/`make-revol` to create solids from 2D profiles.
 
+### Viewer
+
+| Function | Description |
+|----------|-------------|
+| `(make-viewer)` | Create a 3D viewport |
+| `(free-viewer v)` | Explicitly destroy a viewer |
+| `(with-viewer (v) body...)` | Macro: auto-create and auto-free viewer |
+| `(fit-all v)` | Zoom to fit all displayed objects |
+| `(must-be-resized v)` | Call after window resize |
+
+### Display
+
+| Function | Description |
+|----------|-------------|
+| `(ais-create-context viewer)` | Create an AIS interactive context from a viewer |
+| `(ais-free-context ctx)` | Destroy an AIS context |
+| `(ais-create-shape shape)` | Create an interactive shape object from a geometry shape |
+| `(ais-display ctx shape-or-obj &key update)` | Display a shape or ais-object; returns ais-object |
+| `(ais-erase ctx obj &key update)` | Hide an object (remains in context) |
+| `(ais-remove ctx obj &key update)` | Permanently remove an object from context |
+| `(ais-remove-all ctx &key update)` | Remove all objects from context |
+| `(ais-displayed-p ctx obj)` | Check if an object is currently displayed |
+| `(ais-free obj)` | Free an ais-object's C handle |
+
+### Styling
+
+| Function | Description |
+|----------|-------------|
+| `(set-background viewer r g b)` | Set viewer background color (RGB in [0,1]) |
+| `(ais-set-color ctx obj color)` | Set object color as `(r g b)` list |
+| `(ais-unset-color ctx obj)` | Revert object to default color |
+| `(ais-set-display-mode ctx obj mode)` | Set display mode (`:wireframe` or `:shaded`) |
+
+### Camera
+
+| Function | Description |
+|----------|-------------|
+| `(set-view-projection view orientation)` | Set camera orientation (`:iso-pers`, `:z-pos`, `:x-pos`, etc.) |
+
+### Rendering
+
+| Function | Description |
+|----------|-------------|
+| `(set-msaa view samples)` | Set MSAA sample count (0, 2, 4, 8) |
+| `(msaa view)` | Get current MSAA sample count |
+| `(set-antialiasing view bool)` | Enable/disable anti-aliasing |
+| `(antialiasing-p view)` | Check if anti-aliasing is enabled |
+| `(invalidate-view view)` | Request view redraw after property changes |
+
+### Grid
+
+| Function | Description |
+|----------|-------------|
+| `(activate-grid viewer grid-type draw-mode)` | Show grid (`:rectangular`/`:circular`, `:lines`/`:points`) |
+| `(deactivate-grid viewer)` | Hide grid |
+
+### Trihedron
+
+| Function | Description |
+|----------|-------------|
+| `(make-trihedron &key origin normal x-direction)` | Create a 3D axis indicator |
+| `(set-trihedron-mode obj mode)` | Set datum mode (`:wireframe` or `:shaded`) |
+| `(set-trihedron-arrows obj bool)` | Show/hide arrowheads |
+| `(set-trihedron-size obj size)` | Set visual size |
+| `(set-trihedron-corner obj corner &key x-offset y-offset)` | Pin to screen corner (`:lower-left`, `:upper-right`, etc.) |
+| `(show-trihedron ctx viewer &key corner size)` | Create, configure, and display a trihedron in one call |
+
 ### Introspection
 
 ## Project structure
@@ -337,7 +436,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (44 functions)
+│   ├── occt_wrap.h       C header (86 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -355,6 +454,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
+│   │   ├── viewer.lisp   viewer class, make-viewer, free-viewer, fit-all, must-be-resized, with-viewer, ais-context, ais-object, ais-display, ais-erase, ais-remove
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store
@@ -366,7 +466,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  101 smoke tests
+│   └── smoke-tests.lisp  ~128 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```
