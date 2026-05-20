@@ -217,7 +217,7 @@ Three layers:
  └──────────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 91 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 95 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
@@ -428,6 +428,43 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(set-trihedron-corner obj corner &key x-offset y-offset)` | Pin to screen corner (`:lower-left`, `:upper-right`, etc.) |
 | `(show-trihedron ctx viewer &key corner size)` | Create, configure, and display a trihedron in one call |
 
+### 3D Text
+
+| Function | Description |
+|----------|-------------|
+| `(make-brep-font-from-file path size &optional face-id)` | Load a TrueType/OpenType font from a file path. Returns `brep-font` or nil. |
+| `(make-brep-font-from-name name size &key aspect)` | Look up a system font by name. `aspect` is `:regular`, `:bold`, `:italic`, or `:bold-italic` (default `:regular`). Returns `brep-font` or nil. |
+| `(brep-font-p obj)` | Predicate: returns t for `brep-font` objects, nil otherwise |
+| `(make-text-shape font text &key h-align v-align)` | Render text as a flat BRep shape on the XY plane. `h-align`: `:left`, `:center`, `:right`. `v-align`: `:bottom`, `:center`, `:top`, `:top-first-line`. Returns a `shape` compound of positioned glyph faces or nil. |
+| `(make-text-shape-3d font text depth &key h-align v-align)` | Render text and extrude it by `depth` in Z. Convenience wrapper around `make-text-shape` + `make-prism`. Returns a `shape` or nil. |
+
+Font size is in **model units** (e.g., millimeters). To convert from typographic points: `sizeInMeters = 0.0254 * pt / 72.0`.
+
+```lisp
+;; From a font file — create flat text
+(let* ((font  (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
+       (flat  (make-text-shape font "Hello 3D!")))
+  (write-step flat "flat-text.step"))
+
+;; From a font file — create 3D text (one step)
+(let* ((font   (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
+       (text3d (make-text-shape-3d font "Hello 3D!" 2.0)))
+  (write-step text3d "hello-3d.step")
+  (write-stl text3d "hello-3d.stl" :deflection 0.05))
+
+;; Flat text + manual extrusion (composable)
+(let* ((font     (make-brep-font-from-file "font.ttf" 10.0))
+       (flat     (make-text-shape font "Hello"))
+       (extruded (make-prism flat 0 0 3.0)))
+  (write-step extruded "extruded.step"))
+
+;; System font with bold style
+(let* ((font   (make-brep-font-from-name "Arial" 12.0 :aspect :bold))
+       (text3d (make-text-shape-3d font "Centered" 1.5
+                                    :h-align :center :v-align :center)))
+  (write-step text3d "centered.step"))
+```
+
 ### Introspection
 
 ## Project structure
@@ -447,6 +484,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── shape.lisp    CLOS shape class
 │   │   ├── errors.lisp   OCCT error condition
 │   │   ├── primitives.lisp make-shape, make-box, make-cylinder, make-cone, make-torus, make-prism, make-revol
+│   │   ├── text.lisp      brep-font, make-brep-font-from-file, make-brep-font-from-name, make-text-shape, make-text-shape-3d
 │   │   ├── geom2d.lisp    geom2d class, make-pnt2d, make-vec2d, make-dir2d, make-line2d, make-circle2d
 │   │   ├── faces.lisp     make-edge, make-edge-3d, make-circle-edge, make-circular-arc, make-wire, make-face, make-face-on-plane
 │   │   ├── booleans.lisp cut, fuse, common, section
@@ -491,3 +529,8 @@ which is licensed under **LGPL 2.1 with the Open CASCADE Exception v1.0**.
 OCCT is dynamically linked via `lib/libocctwrap.so`; end users can relink
 with modified OCCT builds. See `NOTICE` for details and attribution of other
 dependencies.
+
+The test font bundled in `t/fonts/Cousine-Regular.ttf` is part of the
+[Croscore font family](https://github.com/google/fonts/tree/main/apache/croscore)
+by Google Inc., licensed under the **SIL Open Font License v1.1**.
+See `licenses/COUSINE-FONT-OFL.txt` for the full license text.

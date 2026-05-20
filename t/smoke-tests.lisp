@@ -33,6 +33,10 @@
 (defun assert-geom2d (val &optional msg)
   (assert-true (geom2d-p val) (or msg "expected geom2d")))
 
+(defparameter *test-font-path*
+  (namestring (merge-pathnames "t/fonts/Cousine-Regular.ttf"
+                               (asdf:system-source-directory :cl-occt/tests))))
+
 ;; --- Primitives ---
 
 (deftest make-box-valid
@@ -721,6 +725,61 @@
       (let ((tri (show-trihedron ctx v :corner :lower-left :size 50)))
         (assert-true (ais-object-p tri) "show-trihedron should return ais-object")))))
 
+;; --- Font & Text ---
+
+(deftest make-brep-font-from-file-valid
+  (let ((font (make-brep-font-from-file *test-font-path* 10.0)))
+    (assert-true (brep-font-p font) "expected brep-font-p from valid font file")))
+
+(deftest make-brep-font-from-file-nonexistent
+  (assert-nil (make-brep-font-from-file "/nonexistent/font.ttf" 10.0)))
+
+(deftest make-brep-font-from-file-zero-size
+  (assert-nil (make-brep-font-from-file *test-font-path* 0.0)))
+
+(deftest make-text-shape-valid
+  (let* ((font (make-brep-font-from-file *test-font-path* 10.0))
+         (text (make-text-shape font "Hello")))
+    (assert-shape text)))
+
+(deftest make-text-shape-nil-font
+  (assert-nil (make-text-shape nil "Hello")))
+
+(deftest make-text-shape-empty-string
+  (let ((font (make-brep-font-from-file *test-font-path* 10.0)))
+    (assert-nil (make-text-shape font ""))))
+
+(deftest make-text-shape-3d-valid
+  (let* ((font (make-brep-font-from-file *test-font-path* 10.0))
+         (text (make-text-shape-3d font "Hello 3D!" 2.0)))
+    (assert-shape text "expected shape from make-text-shape-3d")))
+
+(deftest make-text-shape-3d-nil-font
+  (assert-nil (make-text-shape-3d nil "Hello" 2.0)))
+
+(deftest make-text-shape-3d-zero-depth
+  (let ((font (make-brep-font-from-file *test-font-path* 10.0)))
+    (assert-nil (make-text-shape-3d font "Hello" 0.0))))
+
+(deftest brep-font-p-valid
+  (let ((font (make-brep-font-from-file *test-font-path* 10.0)))
+    (assert-true (brep-font-p font))))
+
+(deftest brep-font-p-nil
+  (assert-nil (brep-font-p nil)))
+
+(deftest text-step-roundtrip
+  (let* ((font (make-brep-font-from-file *test-font-path* 10.0))
+         (text (make-text-shape-3d font "Export" 2.0)))
+    (assert-true (write-step text "/tmp/clocct-text-test.step"))
+    (assert-true (probe-file "/tmp/clocct-text-test.step"))))
+
+(deftest text-stl-export
+  (let* ((font (make-brep-font-from-file *test-font-path* 10.0))
+         (text (make-text-shape-3d font "Export" 2.0)))
+    (assert-true (write-stl text "/tmp/clocct-text-test.stl"))
+    (assert-true (probe-file "/tmp/clocct-text-test.stl"))))
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -787,13 +846,26 @@
                set-antialiasing-roundtrip
                activate-grid-rectangular-lines
                activate-grid-circular-points
-               make-trihedron-defaults
-               make-trihedron-zero-normal
-               set-trihedron-mode-shaded
-               set-trihedron-arrows-nil
-               set-trihedron-size-100
-               set-trihedron-corner-lower-right
-               show-trihedron-in-context))
+                make-trihedron-defaults
+                make-trihedron-zero-normal
+                set-trihedron-mode-shaded
+                set-trihedron-arrows-nil
+                set-trihedron-size-100
+                set-trihedron-corner-lower-right
+                show-trihedron-in-context
+                make-brep-font-from-file-valid
+                make-brep-font-from-file-nonexistent
+                make-brep-font-from-file-zero-size
+                make-text-shape-valid
+                make-text-shape-nil-font
+                make-text-shape-empty-string
+                make-text-shape-3d-valid
+                make-text-shape-3d-nil-font
+                make-text-shape-3d-zero-depth
+                brep-font-p-valid
+                brep-font-p-nil
+                text-step-roundtrip
+                text-stl-export))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

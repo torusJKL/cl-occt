@@ -73,6 +73,14 @@
 #include <Graphic3d_TransformPers.hxx>
 #include <Prs3d_DatumMode.hxx>
 #include <Aspect_TypeOfTriedronPosition.hxx>
+#include <Font_FontAspect.hxx>
+#include <Font_StrictLevel.hxx>
+#include <Graphic3d_HorizontalTextAlignment.hxx>
+#include <Graphic3d_VerticalTextAlignment.hxx>
+#include <NCollection_String.hxx>
+#include <StdPrs_BRepFont.hxx>
+#include <StdPrs_BRepTextBuilder.hxx>
+#include <TCollection_AsciiString.hxx>
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -1445,6 +1453,76 @@ void v3d_view_invalidate(void* view_ptr) {
 void free_shape(occt_shape shape) {
     if (shape) {
         delete to_shape(shape);
+    }
+}
+
+// --- Font & Text ---
+
+typedef opencascade::handle<StdPrs_BRepFont> BRepFontHandle;
+
+occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id) {
+    clear_error();
+    if (!font_path || !*font_path) { set_error("null or empty font path", 2); return nullptr; }
+    if (size < Precision::Confusion()) { set_error("non-positive font size", 2); return nullptr; }
+    try {
+        BRepFontHandle* h = new BRepFontHandle;
+        *h = new StdPrs_BRepFont;
+        if (!(*h)->Init(NCollection_String(font_path), size, face_id)) {
+            delete h;
+            set_error("failed to load font from path");
+            return nullptr;
+        }
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size) {
+    clear_error();
+    if (!font_name || !*font_name) { set_error("null or empty font name", 2); return nullptr; }
+    if (size < Precision::Confusion()) { set_error("non-positive font size", 2); return nullptr; }
+    try {
+        BRepFontHandle* h = new BRepFontHandle;
+        *h = StdPrs_BRepFont::FindAndCreate(
+            TCollection_AsciiString(font_name),
+            static_cast<Font_FontAspect>(font_aspect),
+            size,
+            Font_StrictLevel_Any);
+        if (h->IsNull()) { delete h; set_error("font not found by name"); return nullptr; }
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void free_brep_font(occt_brep_font font) {
+    if (font) {
+        delete static_cast<BRepFontHandle*>(font);
+    }
+}
+
+occt_shape make_text_shape(occt_brep_font font, const char* text, int h_align, int v_align) {
+    clear_error();
+    if (!font) { set_error("null font argument", 2); return nullptr; }
+    if (!text || !*text) { set_error("null or empty text", 2); return nullptr; }
+    try {
+        BRepFontHandle& hFont = *static_cast<BRepFontHandle*>(font);
+        StdPrs_BRepTextBuilder builder;
+        TopoDS_Shape result = builder.Perform(
+            *hFont,
+            NCollection_String(text),
+            gp_Ax3(),
+            static_cast<Graphic3d_HorizontalTextAlignment>(h_align),
+            static_cast<Graphic3d_VerticalTextAlignment>(v_align));
+        if (result.IsNull()) { set_error("text rendering produced null shape"); return nullptr; }
+        if (is_empty_shape(result)) { set_error("text rendering produced empty shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
     }
 }
 

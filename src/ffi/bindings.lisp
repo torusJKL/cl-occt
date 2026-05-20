@@ -350,3 +350,24 @@
 
 (defcfun (%ais-trihedron-set-transform-pers "ais_trihedron_set_transform_pers") :void
   (obj :pointer) (corner :int) (x-off :int) (y-off :int))
+
+;; --- Font & Text ---
+
+(defcfun (%make-brep-font-from-file "make_brep_font_from_file") :pointer
+  (font-path :string)
+  (size :double)
+  (face-id :int))
+
+(defcfun (%make-brep-font-from-name "make_brep_font_from_name") :pointer
+  (font-name :string)
+  (font-aspect :int)
+  (size :double))
+
+(defcfun (%free-brep-font "free_brep_font") :void
+  (font :pointer))
+
+(defcfun (%make-text-shape "make_text_shape") :pointer
+  (font :pointer)
+  (text :string)
+  (h-align :int)
+  (v-align :int))

@@ -82,13 +82,21 @@
        :%v3d-viewer-activate-grid
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
-       :%ais-create-trihedron
-       :%ais-trihedron-set-datum-mode
-       :%ais-trihedron-set-draw-arrows
-       :%ais-trihedron-set-size
-       :%ais-trihedron-set-transform-pers
-       :make-shape
-    :make-geom2d
+        :%ais-create-trihedron
+        :%ais-trihedron-set-datum-mode
+        :%ais-trihedron-set-draw-arrows
+        :%ais-trihedron-set-size
+        :%ais-trihedron-set-transform-pers
+        :%make-brep-font-from-file
+        :%make-brep-font-from-name
+        :%free-brep-font
+        :%make-text-shape
+        :%font-aspect-value
+        :%h-align-value
+        :%v-align-value
+        :make-shape
+     :make-geom2d
+     :make-brep-font
     :*params*
    :model
    :make-model
@@ -217,5 +225,11 @@
        :set-trihedron-mode
        :set-trihedron-arrows
        :set-trihedron-size
-       :set-trihedron-corner
-       :show-trihedron))
+        :set-trihedron-corner
+        :show-trihedron
+        :brep-font
+        :brep-font-p
+        :make-brep-font-from-file
+        :make-brep-font-from-name
+        :make-text-shape
+        :make-text-shape-3d))

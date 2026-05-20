@@ -8,6 +8,7 @@ extern "C" {
 typedef void* occt_shape;
 typedef void* occt_shape_ptr;
 typedef void* occt_geom2d;
+typedef void* occt_brep_font;
 
 occt_shape make_box(double dx, double dy, double dz);
 occt_shape make_cylinder(double radius, double height);
@@ -127,6 +128,12 @@ void  ais_trihedron_set_datum_mode(void* obj, int mode);
 void  ais_trihedron_set_draw_arrows(void* obj, int on);
 void  ais_trihedron_set_size(void* obj, double size);
 void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
+
+// --- Font & Text ---
+occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);
+occt_brep_font make_brep_font_from_name(const char* font_name, int font_aspect, double size);
+void free_brep_font(occt_brep_font font);
+occt_shape make_text_shape(occt_brep_font font, const char* text, int h_align, int v_align);
 
 #ifdef __cplusplus
 }

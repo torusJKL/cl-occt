@@ -13,18 +13,19 @@
       ((:file "loader")
        (:file "bindings")))
       (:module "core"
-       :components
-       ((:file "shape")
-        (:file "errors")
-        (:file "primitives")
-        (:file "geom2d")
-        (:file "faces")
-         (:file "booleans")
-          (:file "compounds")
-          (:file "transforms")
-          (:file "assembly")
-          (:file "io")
-          (:file "viewer")))
+        :components
+        ((:file "shape")
+         (:file "errors")
+         (:file "primitives")
+         (:file "text")
+         (:file "geom2d")
+         (:file "faces")
+          (:file "booleans")
+           (:file "compounds")
+           (:file "transforms")
+           (:file "assembly")
+           (:file "io")
+           (:file "viewer")))
      (:module "dag"
       :components
       ((:file "params")
