@@ -226,6 +226,14 @@ void v3d_viewer_set_default_view_type(void* viewer, int is_perspective);
 
 // --- Drawer (Prs3d) ---
 void* ais_object_attributes(void* obj);
+void ais_object_set_point_color(void* obj, double r, double g, double b);
+void ais_object_set_point_type(void* obj, int type);
+void ais_object_set_point_scale(void* obj, double scale);
+void ais_object_set_text_color(void* obj, double r, double g, double b);
+void ais_object_set_text_font(void* obj, const char* font);
+void ais_object_set_text_height(void* obj, double h);
+void ais_object_set_iso_display(void* obj, int uOn, int vOn);
+void ais_object_set_wire_color(void* obj, double r, double g, double b);
 void* drawer_shading_aspect(void* drawer);
 void* drawer_line_aspect(void* drawer);
 void  line_aspect_set_color(void* aspect, double r, double g, double b);

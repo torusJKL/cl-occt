@@ -244,12 +244,12 @@
   - `%line-aspect-set-color`
   - `%line-aspect-set-type` (:solid :dash :dot :dot-dash)
   - `%line-aspect-set-width`
-- [ ] 11.4 Add point aspect bridge functions:
+- [x] 11.4 Add point aspect bridge functions:
   - `%drawer-point-aspect`: returns handle
   - `%point-aspect-set-color`
   - `%point-aspect-set-type` (:point :plus :star :o :x :ball)
   - `%point-aspect-set-scale`
-- [ ] 11.5 Add text aspect bridge functions:
+- [x] 11.5 Add text aspect bridge functions:
   - `%drawer-text-aspect`: returns handle
   - `%text-aspect-set-color`
   - `%text-aspect-set-font`
@@ -259,7 +259,7 @@
   - `%text-aspect-set-display-type`
   - `%text-aspect-set-subtitle-color`
   - `%text-aspect-set-space`
-- [ ] 11.6 Add boundary/iso/wire aspect bridge functions:
+- [x] 11.6 Add boundary/iso/wire aspect bridge functions:
   - `%drawer-free-boundary-aspect`
   - `%drawer-face-boundary-aspect`
   - `%drawer-u-iso-aspect`
@@ -267,8 +267,8 @@
   - `%drawer-wire-aspect`
   - `%drawer-set-free-boundary-draw`
   - `%drawer-set-face-boundary-draw`
-- [ ] 11.7 Add CFFI bindings for all drawer functions
-- [ ] 11.8 Create `src/core/viewer-drawer.lisp` with:
+- [x] 11.7 Add CFFI bindings for all drawer functions
+- [x] 11.8 Create `src/core/viewer-drawer.lisp` with:
   - `drawer` CLOS class wrapping Prs3d_Drawer handle
   - `ais-drawer` accessor on ais-object
   - Sub-aspect CLOS classes: `shading-aspect`, `line-aspect`, `point-aspect`, `text-aspect`, `boundary-aspect`

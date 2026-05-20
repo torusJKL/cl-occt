@@ -1186,6 +1186,46 @@
     (assert-true (ais-set-drawer-shading-color obj :steel-blue)
                  "drawer shading color should work")))
 
+(deftest ais-set-drawer-point-color-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-point-color obj :red)
+                 "drawer point color should work")))
+
+(deftest ais-set-drawer-point-type-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-point-type obj :x)
+                 "drawer point type should work")))
+
+(deftest ais-set-drawer-point-scale-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-point-scale obj 2.0)
+                 "drawer point scale should work")))
+
+(deftest ais-set-drawer-text-color-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-text-color obj :white)
+                 "drawer text color should work")))
+
+(deftest ais-set-drawer-text-font-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-text-font obj "Arial")
+                 "drawer text font should work")))
+
+(deftest ais-set-drawer-text-height-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-text-height obj 12.0)
+                 "drawer text height should work")))
+
+(deftest ais-set-drawer-iso-display-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-iso-display obj)
+                 "drawer iso display should work")))
+
+(deftest ais-set-drawer-wire-color-valid
+  (let ((obj (ais-create-shape (make-box 10 20 30))))
+    (assert-true (ais-set-drawer-wire-color obj :cyan)
+                 "drawer wire color should work")))
+
 (deftest ais-set-drawer-face-boundaries-valid
   (let ((obj (ais-create-shape (make-box 10 20 30))))
     (assert-true (ais-set-drawer-face-boundaries obj t)
@@ -1578,6 +1618,9 @@
                  set-rectangular-grid-values-valid set-grid-xy-size-valid
                  set-grid-offset-valid grid-display-valid
                  ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid ais-set-drawer-line-type-valid
+                 ais-set-drawer-point-color-valid ais-set-drawer-point-type-valid ais-set-drawer-point-scale-valid
+                 ais-set-drawer-text-color-valid ais-set-drawer-text-font-valid ais-set-drawer-text-height-valid
+                 ais-set-drawer-iso-display-valid ais-set-drawer-wire-color-valid
                  ais-set-drawer-shading-color-valid
                  ais-set-drawer-face-boundaries-valid                  ais-set-drawer-free-boundaries-valid
                  make-length-dimension-2p make-angle-dimension-3p

@@ -2205,6 +2205,144 @@ void ais_object_set_line_type(void* obj_ptr, int type) {
     }
 }
 
+void ais_object_set_point_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(Aspect_TOM_POINT, Quantity_Color(r, g, b, Quantity_TOC_RGB), 1.0);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_point_type(void* obj_ptr, int type) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(static_cast<Aspect_TypeOfMarker>(type),
+                                            Quantity_Color(1, 1, 1, Quantity_TOC_RGB), 1.0);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetTypeOfMarker(static_cast<Aspect_TypeOfMarker>(type));
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_point_scale(void* obj_ptr, double scale) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(Aspect_TOM_POINT, Quantity_Color(1,1,1,Quantity_TOC_RGB), scale);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetScale(scale);
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_font(void* obj_ptr, const char* font) {
+    clear_error();
+    if (!obj_ptr || !font) { set_error("null argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetFont(font);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_height(void* obj_ptr, double h) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetHeight(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_iso_display(void* obj_ptr, int uOn, int vOn) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetIsoOnPlane(uOn != 0);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_wire_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = drawer->WireAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_LineAspect(Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0);
+            drawer->SetWireAspect(aspect);
+        } else {
+            aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        }
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 void ais_object_set_shading_color(void* obj_ptr, double r, double g, double b) {
     clear_error();
     if (!obj_ptr) { set_error("null object argument", 2); return; }

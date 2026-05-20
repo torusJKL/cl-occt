@@ -656,6 +656,30 @@
 (defcfun (%ais-object-set-line-type "ais_object_set_line_type") :void
   (obj :pointer) (type :int))
 
+(defcfun (%ais-object-set-point-color "ais_object_set_point_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-point-type "ais_object_set_point_type") :void
+  (obj :pointer) (type :int))
+
+(defcfun (%ais-object-set-point-scale "ais_object_set_point_scale") :void
+  (obj :pointer) (scale :double))
+
+(defcfun (%ais-object-set-text-color "ais_object_set_text_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-text-font "ais_object_set_text_font") :void
+  (obj :pointer) (font :string))
+
+(defcfun (%ais-object-set-text-height "ais_object_set_text_height") :void
+  (obj :pointer) (h :double))
+
+(defcfun (%ais-object-set-iso-display "ais_object_set_iso_display") :void
+  (obj :pointer) (u-on :int) (v-on :int))
+
+(defcfun (%ais-object-set-wire-color "ais_object_set_wire_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
 (defcfun (%ais-object-set-shading-color "ais_object_set_shading_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
 

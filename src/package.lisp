@@ -150,6 +150,14 @@
        :%ais-object-set-line-color
        :%ais-object-set-line-width
        :%ais-object-set-line-type
+       :%ais-object-set-point-color
+       :%ais-object-set-point-type
+       :%ais-object-set-point-scale
+       :%ais-object-set-text-color
+       :%ais-object-set-text-font
+       :%ais-object-set-text-height
+       :%ais-object-set-iso-display
+       :%ais-object-set-wire-color
        :%ais-object-set-shading-color
        :%ais-object-set-face-boundary-draw
        :%ais-object-set-free-boundary-draw
@@ -432,6 +440,14 @@
         :ais-set-drawer-line-color
         :ais-set-drawer-line-width
         :ais-set-drawer-line-type
+        :ais-set-drawer-point-color
+        :ais-set-drawer-point-type
+        :ais-set-drawer-point-scale
+        :ais-set-drawer-text-color
+        :ais-set-drawer-text-font
+        :ais-set-drawer-text-height
+        :ais-set-drawer-iso-display
+        :ais-set-drawer-wire-color
         :ais-set-drawer-shading-color
         :ais-set-drawer-face-boundaries
         :ais-set-drawer-free-boundaries
