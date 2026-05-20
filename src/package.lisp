@@ -82,13 +82,41 @@
        :%v3d-viewer-activate-grid
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
-       :%ais-create-trihedron
-       :%ais-trihedron-set-datum-mode
-       :%ais-trihedron-set-draw-arrows
-       :%ais-trihedron-set-size
-       :%ais-trihedron-set-transform-pers
-       :make-shape
-    :make-geom2d
+        :%ais-create-trihedron
+        :%ais-trihedron-set-datum-mode
+        :%ais-trihedron-set-draw-arrows
+        :%ais-trihedron-set-size
+        :%ais-trihedron-set-transform-pers
+        :%make-brep-font-from-file
+        :%make-brep-font-from-name
+        :%free-brep-font
+        :%make-text-shape
+        :%make-text-shape-on-plane
+        :%make-text-shape-on-plane-full
+        :%text-bounding-box
+        :%enumerate-fonts
+        :%query-font-info
+        :%ais-text-label-create
+        :%ais-text-label-free
+        :%ais-text-label-set-text
+        :%ais-text-label-set-position
+        :%ais-text-label-set-color
+        :%ais-text-label-set-font
+        :%ais-text-label-set-height
+        :%font-render-glyph
+        :%font-ascender
+        :%font-descender
+        :%font-line-spacing
+        :%font-advance-x
+        :%font-advance-y
+        :%font-set-width-scaling
+        :%font-set-composite-curve-mode
+        :%font-aspect-value
+        :%h-align-value
+        :%v-align-value
+        :make-shape
+     :make-geom2d
+     :make-brep-font
     :*params*
    :model
    :make-model
@@ -217,5 +245,31 @@
        :set-trihedron-mode
        :set-trihedron-arrows
        :set-trihedron-size
-       :set-trihedron-corner
-       :show-trihedron))
+        :set-trihedron-corner
+        :show-trihedron
+        :brep-font
+        :brep-font-p
+        :make-brep-font-from-file
+        :make-brep-font-from-name
+        :make-text-shape
+        :make-text-shape-3d
+        :make-text-shape-on-plane
+        :text-bounding-box
+        :list-available-fonts
+        :font-info
+        :ais-text-label
+        :ais-text-label-p
+        :make-ais-text-label
+        :ais-free-text-label
+        :text-glyph-as-shape
+        :text-glyph-as-shape-3d
+        :text-font-ascender
+        :text-font-descender
+        :text-font-line-spacing
+        :text-font-advance-x
+        :text-font-advance-y
+        :text-font-set-width-scaling
+        :text-font-set-composite-curve-mode
+        :make-multi-line-text
+        :make-formatted-text
+        :text))
