@@ -118,6 +118,9 @@
        :%v3d-view-redraw
        :%v3d-view-set-immediate-update
        :%ais-text-label-set-angle
+       :%ais-text-label-set-hjustification
+       :%ais-text-label-set-vjustification
+       :%ais-text-label-set-color-sub-title
        :%v3d-viewer-set-default-bg-color
        :%v3d-viewer-set-default-view-proj
        :%v3d-viewer-set-default-view-size
@@ -129,6 +132,10 @@
        :%prsdim-set-text-position
        :%prsdim-set-display-units
        :%prsdim-set-flyout
+       :%prsdim-set-measured-edge
+       :%prsdim-set-arrow-length
+       :%prsdim-set-extension-size
+       :%ais-context-default-drawer
        :%ais-object-attributes
        :%drawer-shading-aspect
        :%drawer-line-aspect
@@ -146,8 +153,13 @@
        :%v3d-view-get-antialiasing
        :%v3d-view-set-bg-image
        :%v3d-view-get-camera-handle
+       :%v3d-view-set-camera
+       :%v3d-view-set-transparency-method
        :%v3d-view-set-grid-echo
        :%v3d-viewer-set-default-lights
+       :%v3d-viewer-set-default-bg-gradient
+       :%v3d-viewer-set-rectangular-grid-values
+       :%v3d-view-grid-display
        :%v3d-viewer-activate-grid
        :%v3d-viewer-deactivate-grid
        :%v3d-view-invalidate
@@ -370,17 +382,24 @@
         :set-light-shadows
         :viewer-default-lights
         :grid-active-p
+        :set-rectangular-grid-values
+        :grid-display
         :set-image-background
         :set-gradient-background
+        :set-default-bg-gradient
         :*gradient-style-map*
         :reset-background
         :set-computed-mode
         :computed-mode-p
         :set-back-face-model
         :set-frustum-culling
+        :set-transparency-method
         :redraw-view
         :set-immediate-update
         :set-text-label-angle
+        :set-text-label-hjustification
+        :set-text-label-vjustification
+        :set-text-label-subtitle-color
         :make-text-label
         :set-default-background
         :set-default-projection
@@ -391,6 +410,8 @@
         :set-dimension-text-position
         :set-dimension-units
         :set-dimension-flyout
+        :set-dimension-arrow-length
+        :set-dimension-extension-size
         :ais-drawer
         :drawer-p
         :drawer-shading-aspect

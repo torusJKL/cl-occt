@@ -1,5 +1,8 @@
 (in-package :cl-occt)
 
+(defparameter *transparency-method-map*
+  '((:blend-unordered . 0) (:blend-oit . 1) (:depth-peeling-oit . 2)))
+
 (defparameter *back-face-model-map*
   '((:auto . 0) (:force . 1) (:disable . 2)))
 
@@ -22,6 +25,14 @@
           (view-ptr (%view view)))
       (when (and mode-int view-ptr (not (cffi:null-pointer-p view-ptr)))
         (%v3d-view-set-back-face-model view-ptr mode-int)
+        view))))
+
+(defun set-transparency-method (view method)
+  (when (viewer-p view)
+    (let ((method-int (cdr (assoc method *transparency-method-map*)))
+          (view-ptr (%view view)))
+      (when (and method-int view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-transparency-method view-ptr method-int)
         view))))
 
 (defun set-frustum-culling (view on)

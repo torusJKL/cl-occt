@@ -2567,6 +2567,175 @@ void prsdim_set_flyout(void* dim_ptr, double v) {
     }
 }
 
+// --- Camera handle set ---
+
+void v3d_view_set_camera(void* view_ptr, void* camera_ptr) {
+    clear_error();
+    if (!view_ptr || !camera_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        auto* camera = static_cast<Handle(Graphic3d_Camera)*>(camera_ptr);
+        (*view)->SetCamera(*camera);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Transparency method ---
+
+void v3d_view_set_transparency_method(void* view_ptr, int method) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->ChangeRenderingParams().TransparencyMethod =
+            static_cast<Graphic3d_RenderTransparentMethod>(method);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Default bg gradient ---
+
+void v3d_viewer_set_default_bg_gradient(void* viewer_ptr, double r1, double g1, double b1,
+                                          double r2, double g2, double b2, int style) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultBgGradientColors(
+            Quantity_Color(r1, g1, b1, Quantity_TOC_RGB),
+            Quantity_Color(r2, g2, b2, Quantity_TOC_RGB),
+            static_cast<Aspect_GradientFillMethod>(style));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Text Label Enhancements ---
+
+void ais_text_label_set_hjustification(void* label_ptr, int align) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetHJustification(static_cast<Graphic3d_HorizontalTextAlignment>(align));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_text_label_set_vjustification(void* label_ptr, int align) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetVJustification(static_cast<Graphic3d_VerticalTextAlignment>(align));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_text_label_set_color_sub_title(void* label_ptr, double r, double g, double b) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetColorSubTitle(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid: rectangular grid values ---
+
+void v3d_viewer_set_rectangular_grid_values(void* viewer_ptr, double xOrigin, double yOrigin,
+                                              double xStep, double yStep, double rotationAngle) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetRectangularGridValues(xOrigin, yOrigin, xStep, yStep, rotationAngle);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid: GPU shader grid display ---
+
+#include <Aspect_GridParams.hxx>
+
+void v3d_view_grid_display(void* view_ptr, double r, double g, double b, double sizeX, double sizeY) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        Aspect_GridParams params;
+        params.SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        params.SetAccentColor(Quantity_Color(1, 1, 1, Quantity_TOC_RGB));
+        if (sizeX > 0) params.SetScale(sizeX);
+        if (sizeY > 0) params.SetScaleY(sizeY);
+        params.SetDrawMode(Aspect_GDM_Lines);
+        (*view)->GridDisplay(params, gp_Ax3(gp_Pnt(0,0,0), gp_Dir(0,0,1)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Default drawer via AIS context ---
+
+void* ais_context_default_drawer(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        Handle(Prs3d_Drawer)* h = new Handle(Prs3d_Drawer)((*ctx)->DefaultDrawer());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Dimension styling: edge-based measurement, arrows, extension ---
+
+#include <Prs3d_DimensionAspect.hxx>
+#include <Prs3d_ArrowAspect.hxx>
+
+void prsdim_set_measured_edge(void* dim_ptr, void* shape_ptr, double px, double py, double pz, double nx, double ny, double nz) {
+    clear_error();
+    if (!dim_ptr || !shape_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_LengthDimension)*>(dim_ptr);
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        (**dim).SetMeasuredGeometry(TopoDS::Edge(*shape), gp_Pln(gp_Pnt(px, py, pz), gp_Dir(nx, ny, nz)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void prsdim_set_arrow_length(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).DimensionAspect()->ArrowAspect()->SetLength(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void prsdim_set_extension_size(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).DimensionAspect()->SetExtensionSize(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 // --- Font & Text ---
 
 typedef opencascade::handle<StdPrs_BRepFont> BRepFontHandle;

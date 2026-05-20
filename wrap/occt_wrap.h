@@ -184,6 +184,8 @@ void  v3d_viewer_default_lights(void* viewer);
 // --- Grid Extensions ---
 int  v3d_viewer_grid_active(void* viewer);
 void v3d_view_set_grid_echo(void* view, int on);
+void v3d_viewer_set_rectangular_grid_values(void* viewer, double xOrigin, double yOrigin, double xStep, double yStep, double rotationAngle);
+void v3d_view_grid_display(void* view, double r, double g, double b, double sizeX, double sizeY);
 
 // --- Background ---
 void v3d_view_set_bg_gradient(void* view, double r1, double g1, double b1, double r2, double g2, double b2, int style);
@@ -193,6 +195,13 @@ void v3d_view_reset_background(void* view);
 // --- Rendering ---
 void v3d_view_set_transparent_shading(void* view, int on);
 void v3d_view_get_camera_handle(void* view, void** out_camera);
+void v3d_view_set_camera(void* view, void* camera);
+
+void v3d_view_set_transparency_method(void* view, int method);
+
+void v3d_viewer_set_default_bg_gradient(void* viewer, double r1, double g1, double b1, double r2, double g2, double b2, int style);
+
+void* ais_context_default_drawer(void* ctx);
 void v3d_view_set_computed_mode(void* view, int on);
 int  v3d_view_computed_mode(void* view);
 void v3d_view_set_back_face_model(void* view, int mode);
@@ -203,6 +212,9 @@ void v3d_view_set_immediate_update(void* view, int on);
 
 // --- Text Label Enhancements ---
 void ais_text_label_set_angle(void* label, double rad);
+void ais_text_label_set_hjustification(void* label, int align);
+void ais_text_label_set_vjustification(void* label, int align);
+void ais_text_label_set_color_sub_title(void* label, double r, double g, double b);
 
 // --- Viewer Defaults ---
 void v3d_viewer_set_default_lights(void* viewer, int on);
@@ -234,6 +246,9 @@ void* prsdim_make_radius(void* shape);
 void  prsdim_set_text_position(void* dim, double x, double y, double z);
 void  prsdim_set_display_units(void* dim, const char* units);
 void  prsdim_set_flyout(void* dim, double v);
+void  prsdim_set_measured_edge(void* dim, void* shape, double px, double py, double pz, double nx, double ny, double nz);
+void  prsdim_set_arrow_length(void* dim, double v);
+void  prsdim_set_extension_size(void* dim, double v);
 
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);

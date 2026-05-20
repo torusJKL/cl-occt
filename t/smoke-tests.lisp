@@ -995,6 +995,11 @@
     (set-back-face-model v :force)
     t))
 
+(deftest set-transparency-method-valid
+  (with-viewer (v)
+    (set-transparency-method v :blend-oit)
+    t))
+
 (deftest set-frustum-culling-valid
   (with-viewer (v)
     (set-frustum-culling v t)
@@ -1012,6 +1017,24 @@
 
 ;; --- Text Labels ---
 
+(deftest set-text-label-hjustification-valid
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-hjustification label :center)
+                 "set-text-label-hjustification should work")
+    (ais-free-text-label label)))
+
+(deftest set-text-label-vjustification-valid
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-vjustification label :top)
+                 "set-text-label-vjustification should work")
+    (ais-free-text-label label)))
+
+(deftest set-text-label-subtitle-color-valid
+  (let ((label (make-ais-text-label "Test")))
+    (assert-true (set-text-label-subtitle-color label :dark-grey)
+                 "set-text-label-subtitle-color should work")
+    (ais-free-text-label label)))
+
 (deftest set-text-label-angle-valid
   (let ((label (make-ais-text-label "Test")))
     (assert-true (set-text-label-angle label 45.0)
@@ -1026,6 +1049,21 @@
                    "make-text-label convenience should return ais-text-label"))))
 
 ;; --- Viewer Defaults ---
+
+(deftest set-rectangular-grid-values-valid
+  (with-viewer (v)
+    (assert-true (set-rectangular-grid-values v :x-step 5.0 :y-step 5.0)
+                 "set-rectangular-grid-values should work")))
+
+(deftest grid-display-valid
+  (with-viewer (v)
+    (assert-true (grid-display v :color :grey :size-x 10.0 :size-y 10.0)
+                 "grid-display should work")))
+
+(deftest set-default-bg-gradient-valid
+  (with-viewer (v)
+    (assert-true (set-default-bg-gradient v :dark-blue :sky-blue)
+                 "set-default-bg-gradient should work")))
 
 (deftest set-default-background-valid
   (with-viewer (v)
@@ -1075,6 +1113,22 @@
       (ais-display ctx dim)
       (assert-true (set-dimension-text-position dim '(5 5 0))
                    "set-dimension-text-position should work"))))
+
+(deftest set-dimension-arrow-length-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-arrow-length dim 5.0)
+                   "set-dimension-arrow-length should work"))))
+
+(deftest set-dimension-extension-size-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+      (ais-display ctx dim)
+      (assert-true (set-dimension-extension-size dim 3.0)
+                   "set-dimension-extension-size should work"))))
 
 (deftest set-dimension-units-valid
   (with-viewer (v)
@@ -1483,16 +1537,21 @@
                  set-gradient-background-valid set-gradient-background-style
                  reset-background-valid
                  set-computed-mode-toggle set-back-face-model-valid
-                 set-frustum-culling-valid redraw-view-valid
+                 set-frustum-culling-valid set-transparency-method-valid redraw-view-valid
                  set-immediate-update-valid
-                 set-text-label-angle-valid make-text-label-convenience
+                 set-text-label-angle-valid set-text-label-hjustification-valid
+                 set-text-label-vjustification-valid set-text-label-subtitle-color-valid
+                 make-text-label-convenience
                  set-default-background-valid set-default-projection-valid
-                 set-default-view-size-valid                  set-default-view-type-valid
+                 set-default-view-size-valid set-default-view-type-valid
+                 set-default-bg-gradient-valid
+                 set-rectangular-grid-values-valid grid-display-valid
                  ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid
                  ais-set-drawer-shading-color-valid
                  ais-set-drawer-face-boundaries-valid                  ais-set-drawer-free-boundaries-valid
                  make-length-dimension-2p make-angle-dimension-3p
                  set-dimension-text-position-valid set-dimension-units-valid
+                 set-dimension-arrow-length-valid set-dimension-extension-size-valid
                  set-camera-eye-target-up set-camera-partial-eye-only
                  set-perspective-toggles
                  set-fov-valid set-fov-zero

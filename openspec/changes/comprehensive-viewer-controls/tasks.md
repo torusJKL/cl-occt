@@ -34,7 +34,7 @@
 - [x] 2.10 Add `%v3d-view-rotate` C bridge: `Rotate(ax, ay, az)`
 - [x] 2.11 Add `%v3d-view-reset` C bridge: `SetViewOrientationDefault()` + `SetViewMappingDefault()`
 - [x] 2.12 Add `%v3d-view-camera` C bridge: returns handle to `Graphic3d_Camera`
-- [ ] 2.13 Add `%v3d-view-set-camera` C bridge: `SetCamera(handle)`
+- [x] 2.13 Add `%v3d-view-set-camera` C bridge: `SetCamera(handle)`
 - [x] 2.14 Add CFFI bindings for all camera functions
 - [x] 2.15 Create `src/core/viewer-camera.lisp` with:
   - `set-camera` convenience (:eye :target :up keyword args)
@@ -132,8 +132,8 @@
 
 ## 6. Grid: viewer-grid (extend existing grid)
 
-- [ ] 6.1 Add `%v3d-viewer-set-grid-color` C bridge: `SetGridColor(color)`
-- [ ] 6.2 Add `%v3d-viewer-set-grid-size` C bridge: `SetGridSize(double)`
+- [x] 6.1 Add grid display via Aspect_GridParams (GPU shader grid): `SetGridColor(color)`
+- [x] 6.2 Add grid via SetRectangularGridValues + v3d_view_grid_display: `SetGridSize(double)`
 - [ ] 6.3 Add `%v3d-viewer-set-grid-xy-size` C bridge: `SetGridXYSize(x, y)`
 - [ ] 6.4 Add `%v3d-viewer-set-grid-offset` C bridge: `SetGridOffset(x, y)`
 - [x] 6.5 Add `%v3d-viewer-grid-active` C bridge: returns whether grid is active
@@ -171,7 +171,7 @@
 - [x] 8.2 Add `%v3d-view-computed-mode` C bridge: query computed mode
 - [x] 8.3 Add `%v3d-view-set-back-face-model` C bridge: `SetBackFacingModel(mode)`
 - [x] 8.4 Add `%v3d-view-set-frustum-culling` C bridge: `SetFrustumCulling(bool)`
-- [ ] 8.5 Add `%v3d-view-set-transparent-shading` C bridge: `SetTransparentShading(bool)`
+- [x] 8.5 Add `%v3d-view-set-transparent-shading` C bridge: `SetTransparentShading(bool)`
 - [x] 8.6 Add `%v3d-view-redraw` C bridge: `Redraw()` + `RedrawImmediate()`
 - [x] 8.7 Add `%v3d-view-set-immediate-update` C bridge: `SetImmediateUpdate(bool)`
 - [x] 8.8 Add CFFI bindings for rendering functions
@@ -188,10 +188,10 @@
 ## 9. Text Labels: viewer-text-labels (enhancements)
 
 - [x] 9.1 Add `%ais-text-label-set-angle` C bridge: `SetAngle(rad)`
-- [ ] 9.2 Add `%ais-text-label-set-hjustify` C bridge: `SetHJustify(type)`
-- [ ] 9.3 Add `%ais-text-label-set-vjustify` C bridge: `SetVJustify(type)`
+- [x] 9.2 Add `%ais-text-label-set-hjustify` C bridge: `SetHJustify(type)`
+- [x] 9.3 Add `%ais-text-label-set-vjustify` C bridge: `SetVJustify(type)`
 - [ ] 9.4 Add `%ais-text-label-set-display-type` C bridge: `SetDisplayType(type)`
-- [ ] 9.5 Add `%ais-text-label-set-subtitle-color` C bridge: `SetSubtitleColor(c)`
+- [x] 9.5 Add `%ais-text-label-set-subtitle-color` C bridge: `SetSubtitleColor(c)`
 - [ ] 9.6 Add `%ais-text-label-set-space` C bridge: `SetSpace(spacing)`
 - [x] 9.7 Add CFFI bindings for text label enhancements
 - [x] 9.8 Extend `src/core/text.lisp` (or create `src/core/viewer-text-labels.lisp`) with:
@@ -208,12 +208,12 @@
 ## 10. Defaults: viewer-defaults (viewer-level defaults)
 
 - [x] 10.1 Add `%v3d-viewer-set-default-bg-color` C bridge: `SetDefaultBackgroundColor(color)`
-- [ ] 10.2 Add `%v3d-viewer-set-default-bg-gradient` C bridge: `SetDefaultBgGradientColors(c1, c2)`
+- [x] 10.2 Add `%v3d-viewer-set-default-bg-gradient` C bridge: `SetDefaultBgGradientColors(c1, c2)`
 - [x] 10.3 Add `%v3d-viewer-set-default-view-proj` C bridge: `SetDefaultViewProj(orientation)`
 - [x] 10.4 Add `%v3d-viewer-set-default-view-size` C bridge: `SetDefaultViewSize(size)`
 - [x] 10.5 Add `%v3d-viewer-set-default-view-type` C bridge: `SetDefaultTypeOfView(type)`
 - [x] 10.6 Add `%v3d-viewer-set-default-lights` C bridge: on/off/custom variants
-- [ ] 10.7 Add `%v3d-viewer-set-default-drawer` C bridge: `SetDefaultDrawer(drawer)`
+- [x] 10.7 Add `%v3d-viewer-set-default-drawer` C bridge: `SetDefaultDrawer(drawer)`
 - [x] 10.8 Add CFFI bindings for defaults functions
 - [x] 10.9 Create `src/core/viewer-defaults.lisp` with:
   - `set-default-background` (color and gradient variants)
@@ -284,14 +284,14 @@
 ## 12. Dimensions: viewer-dimensions (length, angle, diameter, radius)
 
 - [x] 12.1 Add `%ais-make-length-dimension-2p` C bridge: `AIS_LengthDimension(p1, p2)`
-- [ ] 12.2 Add `%ais-make-length-dimension-edge` C bridge: `AIS_LengthDimension(edge)`
+- [x] 12.2 Add `%ais-make-length-dimension-edge` C bridge: `AIS_LengthDimension(edge)`
 - [x] 12.3 Add `%ais-make-angle-dimension-3p` C bridge: `AIS_AngleDimension(vertex, p1, p2)`
 - [ ] 12.4 Add `%ais-make-angle-dimension-2e` C bridge: `AIS_AngleDimension(edge1, edge2)`
 - [x] 12.5 Add `%ais-make-diameter-dimension` C bridge: `AIS_DiameterDimension(edge)`
 - [x] 12.6 Add `%ais-make-radius-dimension` C bridge: `AIS_RadiusDimension(edge_or_face)`
 - [ ] 12.7 Add `%dimension-set-text` C bridge: `SetText(string, font, height)`
-- [ ] 12.8 Add `%dimension-set-arrow-style` C bridge: arrow type and size
-- [ ] 12.9 Add `%dimension-set-extension` C bridge: offset and length
+- [x] 12.8 Add `%dimension-set-arrow-style` C bridge: arrow type and size
+- [x] 12.9 Add `%dimension-set-extension` C bridge: offset and length
 - [x] 12.10 Add `%dimension-set-flyout` C bridge: flyout distance
 - [x] 12.11 Add CFFI bindings for all dimension functions
 - [x] 12.12 Create `src/core/viewer-dimensions.lisp` with:

@@ -52,3 +52,30 @@
       (when (and ptr (not (cffi:null-pointer-p ptr)))
         (%prsdim-set-flyout ptr (coerce v 'double-float))
         dim))))
+
+(defun set-dimension-arrow-length (dim v)
+  (when (ais-object-p dim)
+    (let ((ptr (%ptr dim)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%prsdim-set-arrow-length ptr (coerce v 'double-float))
+        dim))))
+
+(defun set-dimension-extension-size (dim v)
+  (when (ais-object-p dim)
+    (let ((ptr (%ptr dim)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (%prsdim-set-extension-size ptr (coerce v 'double-float))
+        dim))))
+
+(defun set-dimension-measured-edge (dim edge &key (plane-origin '(0 0 0)) (plane-normal '(0 0 1)))
+  (when (and (ais-object-p dim) (shape-p edge))
+    (let ((ptr (%ptr dim))
+          (shape-ptr (%ptr edge)))
+      (when (and ptr shape-ptr (not (cffi:null-pointer-p ptr))
+                 (not (cffi:null-pointer-p shape-ptr)))
+        (destructuring-bind (px py pz) plane-origin
+          (destructuring-bind (nx ny nz) plane-normal
+            (%prsdim-set-measured-edge ptr shape-ptr
+              (coerce px 'double-float) (coerce py 'double-float) (coerce pz 'double-float)
+              (coerce nx 'double-float) (coerce ny 'double-float) (coerce nz 'double-float))))
+        dim))))

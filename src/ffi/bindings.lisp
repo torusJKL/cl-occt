@@ -534,6 +534,49 @@
 (defcfun (%v3d-view-get-camera-handle "v3d_view_get_camera_handle") :void
   (view :pointer) (out-camera :pointer))
 
+(defcfun (%v3d-view-set-camera "v3d_view_set_camera") :void
+  (view :pointer) (camera :pointer))
+
+(defcfun (%v3d-view-set-transparency-method "v3d_view_set_transparency_method") :void
+  (view :pointer) (method :int))
+
+(defcfun (%v3d-viewer-set-default-bg-gradient "v3d_viewer_set_default_bg_gradient") :void
+  (viewer :pointer)
+  (r1 :double) (g1 :double) (b1 :double)
+  (r2 :double) (g2 :double) (b2 :double)
+  (style :int))
+
+(defcfun (%ais-text-label-set-hjustification "ais_text_label_set_hjustification") :void
+  (label :pointer) (align :int))
+
+(defcfun (%ais-text-label-set-vjustification "ais_text_label_set_vjustification") :void
+  (label :pointer) (align :int))
+
+(defcfun (%ais-text-label-set-color-sub-title "ais_text_label_set_color_sub_title") :void
+  (label :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%v3d-viewer-set-rectangular-grid-values "v3d_viewer_set_rectangular_grid_values") :void
+  (viewer :pointer) (x-origin :double) (y-origin :double)
+  (x-step :double) (y-step :double) (rotation-angle :double))
+
+(defcfun (%v3d-view-grid-display "v3d_view_grid_display") :void
+  (view :pointer) (r :double) (g :double) (b :double)
+  (size-x :double) (size-y :double))
+
+(defcfun (%ais-context-default-drawer "ais_context_default_drawer") :pointer
+  (ctx :pointer))
+
+(defcfun (%prsdim-set-measured-edge "prsdim_set_measured_edge") :void
+  (dim :pointer) (shape :pointer)
+  (px :double) (py :double) (pz :double)
+  (nx :double) (ny :double) (nz :double))
+
+(defcfun (%prsdim-set-arrow-length "prsdim_set_arrow_length") :void
+  (dim :pointer) (v :double))
+
+(defcfun (%prsdim-set-extension-size "prsdim_set_extension_size") :void
+  (dim :pointer) (v :double))
+
 (defcfun (%v3d-view-set-frustum-culling "v3d_view_set_frustum_culling") :void
   (view :pointer) (on :int))
 

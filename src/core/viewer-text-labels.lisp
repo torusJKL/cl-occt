@@ -8,6 +8,34 @@
           (coerce (* degrees (/ pi 180)) 'double-float))
         label))))
 
+(defun set-text-label-hjustification (label align)
+  (when (ais-text-label-p label)
+    (let ((ptr (%ptr label))
+          (align-int (cdr (assoc align '((:left . 0) (:center . 1) (:right . 2)) :test #'eq))))
+      (when (and align-int ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-text-label-set-hjustification ptr align-int)
+        label))))
+
+(defun set-text-label-vjustification (label align)
+  (when (ais-text-label-p label)
+    (let ((ptr (%ptr label))
+          (align-int (cdr (assoc align '((:top . 0) (:cap . 1) (:half . 2) (:base . 3) (:bottom . 4)) :test #'eq))))
+      (when (and align-int ptr (not (cffi:null-pointer-p ptr)))
+        (%ais-text-label-set-vjustification ptr align-int)
+        label))))
+
+(defun set-text-label-subtitle-color (label color)
+  (when (ais-text-label-p label)
+    (let ((rgb (normalize-color color))
+          (ptr (%ptr label)))
+      (when (and rgb ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (r g b) rgb
+          (%ais-text-label-set-color-sub-title ptr
+            (coerce r 'double-float)
+            (coerce g 'double-float)
+            (coerce b 'double-float)))
+        label))))
+
 (defun make-text-label (ctx text position &key color font height angle)
   (let* ((normalized-color (and color (normalize-color color)))
          (label (make-ais-text-label text
