@@ -79,6 +79,7 @@
 #include <string>
 #include <sstream>
 #include <cstdio>
+#include <unistd.h>
 
 static thread_local int g_error_code = 0;
 static thread_local char g_error_message[512];
@@ -335,6 +336,10 @@ int write_step(occt_shape shape, const char* filename) {
 
 occt_shape read_step(const char* filename) {
     clear_error();
+    if (!filename || access(filename, F_OK) != 0) {
+        set_error("file not found");
+        return nullptr;
+    }
     try {
         STEPControl_Reader reader;
         IFSelect_ReturnStatus stat = reader.ReadFile(filename);
@@ -410,6 +415,10 @@ void xde_free_doc(xde_doc doc) {
 
 xde_doc xde_read_step(const char* filename) {
     clear_error();
+    if (!filename || access(filename, F_OK) != 0) {
+        set_error("file not found");
+        return nullptr;
+    }
     try {
         Handle(TDocStd_Document)* h = new Handle(TDocStd_Document);
         *h = new TDocStd_Document("MDTV-XCAF");
@@ -456,6 +465,10 @@ int xde_write_step(xde_doc doc, const char* filename) {
 
 occt_shape read_stl(const char* filename) {
     clear_error();
+    if (!filename || access(filename, F_OK) != 0) {
+        set_error("file not found");
+        return nullptr;
+    }
     try {
         StlAPI_Reader reader;
         TopoDS_Shape shape;

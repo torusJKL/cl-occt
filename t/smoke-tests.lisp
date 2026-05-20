@@ -301,6 +301,14 @@
 (deftest read-step-nonexistent
   (assert-nil (read-step "/tmp/clocct-nonexistent.step")))
 
+(deftest read-step-corrupted
+  (with-open-file (s "/tmp/clocct-corrupted.step"
+                     :direction :output
+                     :if-exists :supersede
+                     :element-type '(unsigned-byte 8))
+    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+  (assert-nil (read-step "/tmp/clocct-corrupted.step")))
+
 ;; --- STL I/O ---
 
 (deftest write-stl-valid
@@ -318,6 +326,14 @@
 
 (deftest read-stl-nonexistent
   (assert-nil (read-stl "/tmp/clocct-nonexistent.stl")))
+
+(deftest read-stl-corrupted
+  (with-open-file (s "/tmp/clocct-corrupted.stl"
+                     :direction :output
+                     :if-exists :supersede
+                     :element-type '(unsigned-byte 8))
+    (write-sequence s (make-array 64 :element-type '(unsigned-byte 8) :initial-element 255)))
+  (assert-nil (read-stl "/tmp/clocct-corrupted.stl")))
 
 (deftest write-stl-deflection
   (let ((result (write-stl (make-sphere 10) "/tmp/clocct-test-sphere.stl" :deflection 0.05)))
@@ -733,9 +749,9 @@
                translate-shape translate-preserves-original translate-nil
                rotate-shape
                write-step-valid write-step-nil
-               read-step-roundtrip read-step-nonexistent
+               read-step-roundtrip read-step-nonexistent read-step-corrupted
                write-stl-valid write-stl-nil
-               read-stl-roundtrip read-stl-nonexistent write-stl-deflection
+               read-stl-roundtrip read-stl-nonexistent read-stl-corrupted write-stl-deflection
                make-compound-two-boxes make-compound-skips-nil
                make-compound-all-nil make-compound-empty-list
                add-to-compound-valid add-to-compound-nil-shape add-to-compound-nil-compound
