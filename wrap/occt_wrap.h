@@ -83,6 +83,18 @@ void xde_add_part(xde_doc doc, const char* parent_path, occt_shape shape,
                   const char* name, int color_type, double r, double g, double b, double a,
                   const double* matrix, char* buf, int buf_size);
 
+// --- Visualization (Graphic Driver, Viewer, View, Window) ---
+void* create_graphic_driver(void);
+void  free_graphic_driver(void* driver);
+void* v3d_create_viewer(void* driver);
+void  v3d_free_viewer(void* viewer);
+void* v3d_create_view(void* viewer);
+void  v3d_free_view(void* view);
+void  v3d_fit_all(void* view);
+void  v3d_view_must_be_resized(void* view);
+void* create_neutral_window(void* native_handle);
+void  free_neutral_window(void* window);
+
 #ifdef __cplusplus
 }
 #endif

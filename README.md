@@ -2,7 +2,7 @@
 
 A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
 Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
-a reactive DAG engine, and a parametric DSL (`defmodel`, `param`, `model-ref`).
+a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), and a 3D viewer.
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
@@ -37,7 +37,7 @@ just setup
 
 This configures an OCCT build with:
 - Shared libraries only
-- No Visualization (TKV3d, TKOpenGl)
+- Visualization enabled (TKV3d, TKOpenGl, TKService linked)
 - ApplicationFramework (TKCAF) enabled for XDE color/assembly support
 - Installs to `.local/`
 
@@ -139,6 +139,17 @@ Models carry optional metadata that round-trips through STEP export.
 (read-step-into-dag "models.step")
 ```
 
+### 3D Viewer (requires a GUI window)
+
+```lisp
+;; Native window handle from Qt/GLFW/etc.
+;; On Qt: (cffi:pointer-to-int (widget-win-id widget))
+;; On GLFW: glfwGetWin32Window or glfwGetX11Window
+;; Pass as :native-window-handle to make-viewer
+(with-viewer (v)
+  (fit-all v))
+```
+
 ### Run the test suite
 
 ```lisp
@@ -182,12 +193,23 @@ Models carry optional metadata that round-trips through STEP export.
 Three layers:
 
 ```
- SBCL + CFFI  →  libocctwrap.so  →  OCCT shared libs
+ ┌──────────────────────────────────────────────────┐
+ │  SBCL + CFFI (viewer CLOS, with-viewer, fit-all) │
+ └──────────────────────┬───────────────────────────┘
+                        ↓
+ ┌──────────────────────────────────────────────────┐
+ │  libocctwrap.so (graphic-driver, viewer, view,   │
+ │                  neutral-window, fit-all, resize) │
+ └──────────────────────┬───────────────────────────┘
+                        ↓
+ ┌──────────────────────────────────────────────────┐
+ │  OCCT shared libs (TKV3d, TKOpenGl, TKService)   │
+ └──────────────────────────────────────────────────┘
 ```
 
-- `wrap/occt_wrap.cpp` — 57 `extern "C"` functions wrapping OCCT. No business logic.
+- `wrap/occt_wrap.cpp` — 65 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
-- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction.
+- `src/core/` — CLOS `shape` and `geom2d` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer.
 - `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
 - `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
@@ -329,6 +351,16 @@ Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
 
 Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`/`make-revol` to create solids from 2D profiles.
 
+### Viewer
+
+| Function | Description |
+|----------|-------------|
+| `(make-viewer)` | Create a 3D viewport |
+| `(free-viewer v)` | Explicitly destroy a viewer |
+| `(with-viewer (v) body...)` | Macro: auto-create and auto-free viewer |
+| `(fit-all v)` | Zoom to fit all displayed objects |
+| `(must-be-resized v)` | Call after window resize |
+
 ### Introspection
 
 ## Project structure
@@ -337,7 +369,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 ├── justfile              Build recipes (setup, wrap, start, clean)
 ├── cl-occt.asd           ASDF system definition
 ├── wrap/
-│   ├── occt_wrap.h       C header (44 functions)
+│   ├── occt_wrap.h       C header (52 functions)
 │   └── occt_wrap.cpp     C wrapper implementation
 ├── src/
 │   ├── package.lisp      Package definitions
@@ -355,6 +387,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
+│   │   ├── viewer.lisp   viewer class, make-viewer, free-viewer, fit-all, must-be-resized, with-viewer
 │   │   └── api.lisp      set-param!, set-params!
 │   ├── dag/
 │   │   ├── params.lisp   *params* global parameter store
@@ -366,7 +399,7 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  101 smoke tests
+│   └── smoke-tests.lisp  ~104 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

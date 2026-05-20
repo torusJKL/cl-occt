@@ -551,6 +551,27 @@
 (deftest read-step-into-dag-valid
   (assert-true (read-step-into-dag "/tmp/clocct-test-dag-export.step")))
 
+;; --- Viewer ---
+
+(deftest make-viewer-returns-viewer
+  (let ((v (make-viewer)))
+    (assert-true (viewer-p v) "make-viewer should return a viewer")
+    (free-viewer v)))
+
+(deftest with-viewer-creates-and-cleans-up
+  (with-viewer (v)
+    (assert-true (viewer-p v) "with-viewer should provide a viewer"))
+  ;; After the macro, the viewer should be freed (can't easily check handles,
+  ;; but no error means success)
+  t)
+
+(deftest free-viewer-double-free-safe
+  (let ((v (make-viewer)))
+    (free-viewer v)
+    ;; Second free should be safe
+    (free-viewer v))
+  t)
+
 (defun run-tests ()
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
@@ -599,7 +620,9 @@
                param-function-global with-params-local with-params-does-not-leak
                defmodel-static-metadata defmodel-metadata-from-params
                defmodel-no-metadata defmodel-metadata-re-evaluation
-               write-dag-models-to-step-valid read-step-into-dag-valid))
+               write-dag-models-to-step-valid read-step-into-dag-valid
+               make-viewer-returns-viewer with-viewer-creates-and-cleans-up
+               free-viewer-double-free-safe))
       (funcall test-sym))
     (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

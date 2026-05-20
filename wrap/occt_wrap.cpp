@@ -55,6 +55,11 @@
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <Precision.hxx>
+#include <OpenGl_GraphicDriver.hxx>
+#include <Aspect_DisplayConnection.hxx>
+#include <Aspect_NeutralWindow.hxx>
+#include <V3d_Viewer.hxx>
+#include <V3d_View.hxx>
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -984,6 +989,109 @@ int shape_is_compound(occt_shape shape) {
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return 0;
+    }
+}
+
+// --- Visualization ---
+
+void* create_graphic_driver(void) {
+    clear_error();
+    try {
+        Handle(OpenGl_GraphicDriver)* h = new Handle(OpenGl_GraphicDriver);
+        Handle(Aspect_DisplayConnection) display = new Aspect_DisplayConnection();
+        *h = new OpenGl_GraphicDriver(display);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void free_graphic_driver(void* driver) {
+    if (driver) {
+        delete static_cast<Handle(OpenGl_GraphicDriver)*>(driver);
+    }
+}
+
+void* v3d_create_viewer(void* driver_ptr) {
+    clear_error();
+    if (!driver_ptr) { set_error("null driver argument", 2); return nullptr; }
+    try {
+        auto* driver = static_cast<Handle(OpenGl_GraphicDriver)*>(driver_ptr);
+        Handle(V3d_Viewer)* h = new Handle(V3d_Viewer);
+        *h = new V3d_Viewer(*driver);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void v3d_free_viewer(void* viewer) {
+    if (viewer) {
+        delete static_cast<Handle(V3d_Viewer)*>(viewer);
+    }
+}
+
+void* v3d_create_view(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return nullptr; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        Handle(V3d_View)* h = new Handle(V3d_View);
+        *h = (*viewer)->CreateView();
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void v3d_free_view(void* view) {
+    if (view) {
+        delete static_cast<Handle(V3d_View)*>(view);
+    }
+}
+
+void v3d_fit_all(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->FitAll();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_must_be_resized(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->MustBeResized();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* create_neutral_window(void* native_handle) {
+    clear_error();
+    try {
+        Handle(Aspect_NeutralWindow)* h = new Handle(Aspect_NeutralWindow)(new Aspect_NeutralWindow());
+        if (native_handle) {
+            (*h)->SetNativeHandle(reinterpret_cast<Aspect_Drawable>(native_handle));
+        }
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void free_neutral_window(void* window) {
+    if (window) {
+        delete static_cast<Handle(Aspect_NeutralWindow)*>(window);
     }
 }
 

@@ -22,8 +22,9 @@
          (:file "booleans")
           (:file "compounds")
           (:file "transforms")
-         (:file "assembly")
-         (:file "io")))
+          (:file "assembly")
+          (:file "io")
+          (:file "viewer")))
      (:module "dag"
       :components
       ((:file "params")

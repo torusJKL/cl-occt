@@ -49,9 +49,19 @@
     :%xde-get-shape-at
     :%xde-get-name-at
     :%xde-get-color-at
-    :%xde-get-location-at
-    :%xde-add-part
-     :make-shape
+     :%xde-get-location-at
+     :%xde-add-part
+     :%create-graphic-driver
+     :%free-graphic-driver
+     :%v3d-create-viewer
+     :%v3d-free-viewer
+     :%v3d-create-view
+     :%v3d-free-view
+     :%v3d-fit-all
+     :%v3d-view-must-be-resized
+     :%create-neutral-window
+     :%free-neutral-window
+      :make-shape
     :make-geom2d
     :*params*
    :model
@@ -141,7 +151,14 @@
    :*local-params*
    :help
    :*params*
-   :*model-registry*
-   :find-model
-   :register-model
-   :unregister-model))
+    :*model-registry*
+    :find-model
+    :register-model
+    :unregister-model
+    :viewer
+    :viewer-p
+    :make-viewer
+    :free-viewer
+    :fit-all
+    :must-be-resized
+    :with-viewer))
