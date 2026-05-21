@@ -430,6 +430,41 @@ Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`
 | `(ais-set-selection-mode ctx obj mode)` | Set selection mode (nil = deactivate, 0=shape, 1=face, 2=edge, 3=vertex). Accepts keywords: `:shape`, `:face`, `:edge`, `:vertex`. |
 | `(ais-set-tessellation obj &key quality deviation)` | Set tessellation quality (lower = finer mesh, default 0.1) |
 
+### Selection
+
+| Function | Description |
+|----------|-------------|
+| `(ais-set-selected ctx obj &key update)` | Replace selection with a single object |
+| `(ais-add-or-remove-selected ctx obj &key update)` | Toggle object in/out of selection |
+| `(ais-clear-selected ctx &key update)` | Deselect all objects |
+| `(ais-is-selected ctx obj)` | Check if object is selected |
+| `(ais-nb-selected ctx)` | Return number of selected objects |
+| `(ais-selected-objects ctx)` | Return list of all selected `ais-object` instances |
+| `(ais-selected-shapes ctx)` | Return list of all selected `shape` instances |
+| `(ais-selected-interactive ctx)` | Return current `ais-object` during iteration |
+| `(ais-selected-shape ctx)` | Return current `shape` during iteration |
+| `(ais-has-selected-shape ctx)` | Check if current selection holds a shape |
+| `(ais-init-selected ctx)` | Begin iteration over selected objects |
+| `(ais-more-selected ctx)` | Check if more selected objects remain |
+| `(ais-next-selected ctx)` | Advance to next selected object |
+| `(ais-move-to ctx view x y)` | Detect objects under pixel `(x, y)`. Returns `AIS_StatusOfDetection` int. |
+| `(ais-select-detected ctx &optional scheme)` | Confirm detected object as selected. Returns `AIS_StatusOfPick` int. |
+| `(ais-select-point ctx view x y &optional scheme)` | Select topmost object at pixel `(x, y)`. Returns `AIS_StatusOfPick` int. |
+| `(ais-hilight-selected ctx &key update)` | Highlight all selected objects |
+| `(ais-unhilight-selected ctx &key update)` | Remove highlight from selected objects |
+| `(ais-fit-selected ctx view &optional margin)` | Zoom camera to fit selected objects |
+| `(ais-detected-interactive ctx)` | Return the currently detected `ais-object` |
+| `(ais-has-detected ctx)` | Check if an object is detected |
+| `(ais-clear-detected ctx)` | Clear detected (pre-selection) state |
+| `(ais-set-selection-sensitivity ctx obj mode sensitivity)` | Set selection sensitivity for object+mode |
+| `(ais-set-pixel-tolerance ctx pixels)` | Set pixel tolerance for mouse detection |
+| `(ais-set-automatic-hilight ctx bool)` | Enable/disable automatic highlighting |
+| `(ais-set-to-hilight-selected ctx bool)` | Enable/disable hilight-on-detection |
+
+Selection schemes (`scheme` parameter above): `:replace` (default), `:add`, `:remove`, `:xor`, `:clear`, `:replace-extra`. See `*selection-scheme-map*`.
+
+Status return values from `ais-move-to` can be decoded with `*status-of-detection-map*`. Status from `ais-select-detected`/`ais-select-point` with `*status-of-pick-map*`.
+
 ### Lighting
 
 | Function | Description |

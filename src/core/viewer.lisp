@@ -161,6 +161,18 @@
 (defparameter *grid-draw-mode-map*
   '((:lines . 0) (:points . 1)))
 
+(defparameter *selection-scheme-map*
+  '((:replace . 0) (:add . 1) (:remove . 2) (:xor . 3)
+    (:clear . 4) (:replace-extra . 5)))
+
+(defparameter *status-of-detection-map*
+  '((:error . 0) (:nothing . 1) (:all-bad . 2) (:selected . 3)
+    (:only-one-detected . 4) (:only-one-good . 5) (:several-good . 6)))
+
+(defparameter *status-of-pick-map*
+  '((:error . 0) (:nothing-selected . 1) (:removed . 2)
+    (:one-selected . 3) (:several-selected . 4)))
+
 (defun %lookup (key map)
   (cdr (assoc key map)))
 

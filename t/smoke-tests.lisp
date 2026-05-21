@@ -869,6 +869,78 @@
     (assert-true (ais-set-tessellation obj :quality 0.1)
                  "ais-set-tessellation should work on ais-object")))
 
+;; --- Selection Tests ---
+
+(deftest selection-baseline-zero
+  (with-viewer (v)
+    (let ((ctx (ais-create-context v)))
+      (assert-true (= 0 (ais-nb-selected ctx)) "nb-selected should be 0 initially"))))
+
+(deftest selection-set-selected
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-true (ais-set-selected ctx obj) "ais-set-selected should return object")
+      (assert-true (= 1 (ais-nb-selected ctx)) "nb-selected should be 1 after set-selected"))))
+
+(deftest selection-clear-selected
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-selected ctx obj)
+      (ais-clear-selected ctx)
+      (assert-true (= 0 (ais-nb-selected ctx)) "nb-selected should be 0 after clear"))))
+
+(deftest selection-is-selected
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (assert-nil (ais-is-selected ctx obj) "should not be selected initially")
+      (ais-set-selected ctx obj)
+      (assert-true (ais-is-selected ctx obj) "should be selected after set-selected"))))
+
+(deftest selection-add-or-remove
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-add-or-remove-selected ctx obj)
+      (assert-true (= 1 (ais-nb-selected ctx)) "should add to selection")
+      (ais-add-or-remove-selected ctx obj)
+      (assert-true (= 0 (ais-nb-selected ctx)) "should remove from selection"))))
+
+(deftest selection-selected-objects
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj1 (ais-display ctx (make-box 10 20 30)))
+           (obj2 (ais-display ctx (make-sphere 15))))
+      (ais-set-selected ctx obj1)
+      (ais-add-or-remove-selected ctx obj2)
+      (let ((objs (ais-selected-objects ctx)))
+        (assert-true (= 2 (length objs)) "should return 2 selected objects")
+        (assert-true (every #'ais-object-p objs) "all elements should be ais-object")))))
+
+(deftest selection-selected-shapes
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (shape1 (make-box 10 20 30))
+           (obj1 (ais-display ctx shape1)))
+      (ais-set-selected ctx obj1)
+      (ais-init-selected ctx)
+      (assert-true (ais-more-selected ctx) "should have at least one selected")
+      (assert-true (ais-has-selected-shape ctx) "should have selected shape")
+      (let ((s (ais-selected-shape ctx)))
+        (assert-true (shape-p s) "selected-shape should return a shape")))))
+
+(deftest selection-hilight
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-selected ctx obj)
+      (ais-init-selected ctx)
+      (assert-true (ais-more-selected ctx) "should have selection after set")
+      (assert-nil (ais-hilight-selected ctx) "ais-hilight-selected should work")
+      (assert-nil (ais-unhilight-selected ctx) "ais-unhilight-selected should work"))))
+
 ;; --- Trihedron Extended ---
 
 (deftest set-trihedron-axis-colors-red-blue-green
@@ -1849,6 +1921,14 @@
                set-grid-size-convenience
                grid-getter-stubs
                ais-set-selection-mode-keywords
+               selection-baseline-zero
+               selection-set-selected
+               selection-clear-selected
+               selection-is-selected
+               selection-add-or-remove
+               selection-selected-objects
+               selection-selected-shapes
+               selection-hilight
                set-text-label-align-convenience
                set-transparent-shading-alias))
       (funcall test-sym))

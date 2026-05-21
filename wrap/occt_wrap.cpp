@@ -1930,6 +1930,295 @@ void ais_deactivate_selection(void* ctx_ptr, void* obj_ptr) {
     }
 }
 
+// --- Selection (AIS_InteractiveContext) ---
+
+int ais_context_nb_selected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return (*ctx)->NbSelected();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_context_init_selected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->InitSelected();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int ais_context_more_selected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return (*ctx)->MoreSelected() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_context_next_selected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->NextSelected();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_context_selected_interactive(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        Handle(AIS_InteractiveObject)* h = new Handle(AIS_InteractiveObject);
+        *h = (*ctx)->SelectedInteractive();
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_context_selected_shape(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return new TopoDS_Shape((*ctx)->SelectedShape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int ais_context_has_selected_shape(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return (*ctx)->HasSelectedShape() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_context_set_selected(void* ctx_ptr, void* obj_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetSelected(*obj, update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_add_or_remove_selected(void* ctx_ptr, void* obj_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->AddOrRemoveSelected(*obj, update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_clear_selected(void* ctx_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->ClearSelected(update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int ais_context_is_selected(void* ctx_ptr, void* obj_ptr) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        return (*ctx)->IsSelected(*obj) ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int ais_context_move_to(void* ctx_ptr, void* view_ptr, int x, int y) {
+    clear_error();
+    if (!ctx_ptr || !view_ptr) { set_error("null argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return static_cast<int>((*ctx)->MoveTo(x, y, *view, true));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int ais_context_select_detected(void* ctx_ptr, int scheme) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return static_cast<int>((*ctx)->SelectDetected(static_cast<AIS_SelectionScheme>(scheme)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int ais_context_select_point(void* ctx_ptr, void* view_ptr, int x, int y, int scheme) {
+    clear_error();
+    if (!ctx_ptr || !view_ptr) { set_error("null argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        NCollection_Vec2<int> pnt(x, y);
+        return static_cast<int>((*ctx)->SelectPoint(pnt, *view, static_cast<AIS_SelectionScheme>(scheme)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_context_hilight_selected(void* ctx_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->HilightSelected(update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_unhilight_selected(void* ctx_ptr, int update) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->UnhilightSelected(update != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_fit_selected(void* ctx_ptr, void* view_ptr, double margin) {
+    clear_error();
+    if (!ctx_ptr || !view_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*ctx)->FitSelected(*view, margin, true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_context_detected_interactive(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        Handle(AIS_InteractiveObject)* h = new Handle(AIS_InteractiveObject);
+        *h = (*ctx)->DetectedInteractive();
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int ais_context_has_detected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        return (*ctx)->HasDetected() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_context_clear_detected(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->ClearDetected(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_selection_sensitivity(void* ctx_ptr, void* obj_ptr, int mode, int sensitivity) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetSelectionSensitivity(*obj, mode, sensitivity);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_pixel_tolerance(void* ctx_ptr, int pixels) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->SetPixelTolerance(pixels);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_automatic_hilight(void* ctx_ptr, int on) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->SetAutomaticHilight(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_set_to_hilight_selected(void* ctx_ptr, int on) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        (*ctx)->SetToHilightSelected(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
 void ais_set_tessellation(void* obj_ptr, double deflection, double deviation) {
     clear_error();
     if (!obj_ptr) { set_error("null object argument", 2); return; }

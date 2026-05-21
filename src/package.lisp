@@ -197,9 +197,33 @@
        :%ais-set-line-width
        :%ais-set-edges-display
        :%ais-set-edge-color
-       :%ais-set-selection-mode
-       :%ais-deactivate-selection
-       :%ais-set-tessellation
+        :%ais-set-selection-mode
+        :%ais-deactivate-selection
+        :%ais-context-nb-selected
+        :%ais-context-init-selected
+        :%ais-context-more-selected
+        :%ais-context-next-selected
+        :%ais-context-selected-interactive
+        :%ais-context-selected-shape
+        :%ais-context-has-selected-shape
+        :%ais-context-set-selected
+        :%ais-context-add-or-remove-selected
+        :%ais-context-clear-selected
+        :%ais-context-is-selected
+        :%ais-context-move-to
+        :%ais-context-select-detected
+        :%ais-context-select-point
+        :%ais-context-hilight-selected
+        :%ais-context-unhilight-selected
+        :%ais-context-fit-selected
+        :%ais-context-detected-interactive
+        :%ais-context-has-detected
+        :%ais-context-clear-detected
+        :%ais-context-set-selection-sensitivity
+        :%ais-context-set-pixel-tolerance
+        :%ais-context-set-automatic-hilight
+        :%ais-context-set-to-hilight-selected
+        :%ais-set-tessellation
          :%ais-create-trihedron
          :%ais-trihedron-set-datum-mode
          :%ais-trihedron-set-draw-arrows
@@ -394,6 +418,35 @@
         :ais-show-edges
         :ais-set-edge-styling
         :ais-set-selection-mode
+        :ais-set-selected
+        :ais-add-or-remove-selected
+        :ais-clear-selected
+        :ais-is-selected
+        :ais-nb-selected
+        :ais-init-selected
+        :ais-more-selected
+        :ais-next-selected
+        :ais-selected-interactive
+        :ais-selected-shape
+        :ais-has-selected-shape
+        :ais-selected-objects
+        :ais-selected-shapes
+        :ais-move-to
+        :ais-select-detected
+        :ais-select-point
+        :ais-hilight-selected
+        :ais-unhilight-selected
+        :ais-fit-selected
+        :ais-detected-interactive
+        :ais-has-detected
+        :ais-clear-detected
+        :ais-set-selection-sensitivity
+        :ais-set-pixel-tolerance
+        :ais-set-automatic-hilight
+        :ais-set-to-hilight-selected
+        :*selection-scheme-map*
+        :*status-of-detection-map*
+        :*status-of-pick-map*
         :ais-set-tessellation
         :viewer-light
         :viewer-light-p
