@@ -66,12 +66,22 @@
 #include <Aspect_GridType.hxx>
 #include <Aspect_GridDrawMode.hxx>
 #include <V3d_TypeOfOrientation.hxx>
+#include <V3d_TypeOfView.hxx>
+#include <Graphic3d_Camera.hxx>
+#include <Graphic3d_TextureEnv.hxx>
+#include <Graphic3d_CubeMapSeparate.hxx>
+#include <BRepBndLib.hxx>
 #include <AIS_Trihedron.hxx>
 #include <Geom_Axis2Placement.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Dir.hxx>
 #include <Graphic3d_TransformPers.hxx>
 #include <Prs3d_DatumMode.hxx>
+#include <Prs3d_Drawer.hxx>
+#include <Prs3d_DatumParts.hxx>
+#include <Prs3d_TextAspect.hxx>
+#include <Prs3d_LineAspect.hxx>
+#include <Prs3d_ShadingAspect.hxx>
 #include <Aspect_TypeOfTriedronPosition.hxx>
 #include <Font_FontAspect.hxx>
 #include <Font_StrictLevel.hxx>
@@ -84,6 +94,13 @@
 #include <StdPrs_BRepTextBuilder.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <AIS_TextLabel.hxx>
+#include <V3d_AmbientLight.hxx>
+#include <V3d_DirectionalLight.hxx>
+#include <V3d_PositionalLight.hxx>
+#include <V3d_SpotLight.hxx>
+#include <V3d_Light.hxx>
+#include <Prs3d_PointAspect.hxx>
+#include <Prs3d_TextAspect.hxx>
 #include <Font_TextFormatter.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Pnt.hxx>
@@ -1299,6 +1316,55 @@ void ais_trihedron_set_size(void* obj_ptr, double size) {
     }
 }
 
+// Prs3d_DatumPart indices: 0=XAxis, 1=YAxis, 2=ZAxis
+int ais_trihedron_set_datum_part_color(void* obj_ptr, int part, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return 0; }
+    if (part < 0 || part > 2) { set_error("invalid datum part (0=X, 1=Y, 2=Z)", 2); return 0; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        static const Prs3d_DatumParts parts[] = {
+            Prs3d_DatumParts_XAxis,
+            Prs3d_DatumParts_YAxis,
+            Prs3d_DatumParts_ZAxis
+        };
+        (**obj).SetDatumPartColor(parts[part], Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void ais_trihedron_set_text_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        (**obj).Attributes()->TextAspect()->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_trihedron_set_wireframe_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Trihedron)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (**obj).Attributes();
+        Handle(Prs3d_LineAspect) aspect = new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0);
+        drawer->SetWireAspect(aspect);
+        (**obj).Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// draw-names is not available in OCCT 8.0 AIS_Trihedron API.
+// Labels are always shown as part of the datum presentation.
+
 void ais_trihedron_set_transform_pers(void* obj_ptr, int corner, int xOff, int yOff) {
     clear_error();
     if (!obj_ptr) { set_error("null trihedron argument", 2); return; }
@@ -1372,6 +1438,273 @@ void v3d_view_set_proj(void* view_ptr, int orientation) {
     try {
         auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
         (*view)->SetProj(static_cast<V3d_TypeOfOrientation>(orientation));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_eye(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetEye(gp_Pnt(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+double v3d_view_get_eye_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_eye_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_eye_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Eye().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_target(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetCenter(gp_Pnt(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+double v3d_view_get_target_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_target_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_target_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Center().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_up(void* view_ptr, double x, double y, double z) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetUp(gp_Dir(x, y, z));
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+double v3d_view_get_up_x(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().X();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_up_y(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().Y();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double v3d_view_get_up_z(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->Up().Z();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_projection_type(void* view_ptr, int is_perspective) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetProjectionType(
+            is_perspective ? Graphic3d_Camera::Projection_Perspective
+                           : Graphic3d_Camera::Projection_Orthographic);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_get_projection_type(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->ProjectionType() == Graphic3d_Camera::Projection_Perspective ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_fov(void* view_ptr, double fov_rad) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetFOVy(fov_rad);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+double v3d_view_get_fov(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->Camera()->FOVy();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_clip_planes(void* view_ptr, double near, double far) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (far <= near) { set_error("far must be greater than near", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Camera()->SetZRange(near, far);
+        (*view)->Update();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_fit_all_shape(void* view_ptr, void* shape_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (!shape_ptr) { set_error("null shape argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Bnd_Box box;
+        BRepBndLib::Add(*shape, box);
+        (*view)->FitAll(box);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_pan(void* view_ptr, double dx, double dy) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Pan(dx, dy, 0.0, 0.0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_zoom(void* view_ptr, double factor) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetScale(factor);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_rotate(void* view_ptr, double ax, double ay, double az) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Rotate(ax, ay, az);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_reset(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetViewOrientationDefault();
+        (*view)->SetViewMappingDefault();
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
@@ -1460,6 +1793,1325 @@ void v3d_view_invalidate(void* view_ptr) {
 void free_shape(occt_shape shape) {
     if (shape) {
         delete to_shape(shape);
+    }
+}
+
+// --- Per-Object Properties ---
+
+void ais_set_transparency(void* ctx_ptr, void* obj_ptr, double v) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetTransparency(*obj, v, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int ais_set_material_by_name(void* ctx_ptr, void* obj_ptr, const char* name) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr || !name) { set_error("null argument", 2); return 0; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        // Map material name string to Graphic3d_NameOfMaterial
+        std::string s(name);
+        Graphic3d_NameOfMaterial mat = Graphic3d_NOM_DEFAULT;
+        if (s == "brass") mat = Graphic3d_NOM_BRASS;
+        else if (s == "bronze") mat = Graphic3d_NOM_BRONZE;
+        else if (s == "copper") mat = Graphic3d_NOM_COPPER;
+        else if (s == "gold") mat = Graphic3d_NOM_GOLD;
+        else if (s == "pewter") mat = Graphic3d_NOM_PEWTER;
+        else if (s == "plastic") mat = Graphic3d_NOM_PLASTIC;
+        else if (s == "silver") mat = Graphic3d_NOM_SILVER;
+        else if (s == "steel") mat = Graphic3d_NOM_STEEL;
+        else if (s == "stone") mat = Graphic3d_NOM_STONE;
+        else if (s == "shiny-plastic") mat = Graphic3d_NOM_SHINY_PLASTIC;
+        else if (s == "satin") mat = Graphic3d_NOM_SATIN;
+        else if (s == "metalized") mat = Graphic3d_NOM_METALIZED;
+        else if (s == "neon-phc") mat = Graphic3d_NOM_NEON_PHC;
+        else if (s == "chrome") mat = Graphic3d_NOM_CHROME;
+        else if (s == "aluminium") mat = Graphic3d_NOM_ALUMINIUM;
+        else if (s == "obsidian") mat = Graphic3d_NOM_OBSIDIAN;
+        else if (s == "glass") mat = Graphic3d_NOM_GLASS;
+        else if (s == "jade") mat = Graphic3d_NOM_JADE;
+        else if (s == "matte") mat = Graphic3d_NOM_PLASTIC;
+        else if (s == "shiny") mat = Graphic3d_NOM_SHINY_PLASTIC;
+        else if (s == "default") mat = Graphic3d_NOM_DEFAULT;
+        else { set_error("unknown material name", 2); return 0; }
+        Graphic3d_MaterialAspect aspect(mat);
+        (*ctx)->SetMaterial(*obj, aspect, false);
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int ais_material_preset_count(void) {
+    return 22; // number of named presets we support
+}
+
+const char* ais_material_preset_name(int index) {
+    static const char* names[] = {
+        "brass", "bronze", "copper", "gold", "pewter", "plastic", "silver",
+        "steel", "stone", "shiny-plastic", "satin", "metalized", "neon-phc",
+        "chrome", "aluminium", "obsidian", "glass", "jade", "matte", "shiny",
+        "default", nullptr
+    };
+    if (index < 0 || index >= 22) return nullptr;
+    return names[index];
+}
+
+void ais_set_line_width(void* ctx_ptr, void* obj_ptr, double w) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->SetWidth(*obj, w, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_edges_display(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*obj)->SetDisplayMode(on != 0 ? AIS_Shaded : AIS_WireFrame);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_edge_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB),
+            Aspect_TOL_SOLID, 1.0);
+        drawer->SetFaceBoundaryAspect(aspect);
+        drawer->SetFaceBoundaryDraw(true);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_selection_mode(void* ctx_ptr, void* obj_ptr, int mode) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Activate(*obj, mode);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_deactivate_selection(void* ctx_ptr, void* obj_ptr) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        (*ctx)->Deactivate(*obj);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_set_tessellation(void* obj_ptr, double deflection, double deviation) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetDiscretisation(deflection);
+        drawer->SetDeviationCoefficient(deviation);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Lighting ---
+
+void* make_light_ambient(double r, double g, double b, double intensity) {
+    clear_error();
+    try {
+        Handle(V3d_AmbientLight)* h = new Handle(V3d_AmbientLight)();
+        *h = new V3d_AmbientLight(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_light_directional(double r, double g, double b, double intensity, double dx, double dy, double dz) {
+    clear_error();
+    try {
+        Handle(V3d_DirectionalLight)* h = new Handle(V3d_DirectionalLight)();
+        *h = new V3d_DirectionalLight(gp_Dir(dx, dy, dz), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void light_free(void* light_ptr) {
+    if (light_ptr) {
+        delete static_cast<Handle(V3d_Light)*>(light_ptr);
+    }
+}
+
+void v3d_viewer_add_light(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->AddLight(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_remove_light(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->DelLight(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_light_on(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->SetLightOn(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_light_off(void* viewer_ptr, void* light_ptr) {
+    clear_error();
+    if (!viewer_ptr || !light_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*viewer)->SetLightOff(*light);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int light_is_on(void* light_ptr) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return 0; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        return (*light)->IsEnabled() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void light_set_color(void* light_ptr, double r, double g, double b) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_intensity(void* light_ptr, double v) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetIntensity(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_direction(void* light_ptr, double dx, double dy, double dz) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetDirection(gp_Dir(dx, dy, dz));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_position(void* light_ptr, double x, double y, double z) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetPosition(gp_Pnt(x, y, z));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_headlight(void* light_ptr, int on) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetHeadlight(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_shadows(void* light_ptr, int on) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        (*light)->SetCastShadows(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_default_lights(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultLights();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid Extensions ---
+
+int v3d_viewer_grid_active(void* viewer_ptr) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return 0; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        return (*viewer)->IsGridActive() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+// --- Background ---
+
+void v3d_view_set_bg_gradient(void* view_ptr, double r1, double g1, double b1,
+                                double r2, double g2, double b2, int style) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBgGradientColors(
+            Quantity_Color(r1, g1, b1, Quantity_TOC_RGB),
+            Quantity_Color(r2, g2, b2, Quantity_TOC_RGB),
+            static_cast<Aspect_GradientFillMethod>(style),
+            true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_reset_background(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackgroundColor(Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Rendering ---
+
+void v3d_view_set_computed_mode(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetComputedMode(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+int v3d_view_computed_mode(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return 0; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        return (*view)->ComputedMode() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void v3d_view_set_back_face_model(void* view_ptr, int mode) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackFacingModel(static_cast<Graphic3d_TypeOfBackfacingModel>(mode));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_frustum_culling(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetFrustumCulling(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// SetTransparentShading is not available in OCCT 8.0 V3d_View API.
+
+void v3d_view_redraw(void* view_ptr) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->Redraw();
+        (*view)->RedrawImmediate();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_view_set_immediate_update(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetImmediateUpdate(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Text Label Enhancements ---
+
+void ais_text_label_set_angle(void* label_ptr, double rad) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetAngle(rad);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// HJustify, VJustify, SubtitleColor are not available in OCCT 8.0 AIS_TextLabel API.
+
+// --- Viewer Defaults ---
+
+void v3d_viewer_set_default_bg_color(void* viewer_ptr, double r, double g, double b) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultBackgroundColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_proj(void* viewer_ptr, int orientation) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultViewProj(static_cast<V3d_TypeOfOrientation>(orientation));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_size(void* viewer_ptr, double size) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultViewSize(size);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void v3d_viewer_set_default_view_type(void* viewer_ptr, int is_perspective) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultTypeOfView(is_perspective ? V3d_PERSPECTIVE : V3d_ORTHOGRAPHIC);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Drawer (Prs3d) ---
+
+void ais_object_set_line_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetLineAspect(new Prs3d_LineAspect(
+            Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_line_width(void* obj_ptr, double w) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetLineAspect(new Prs3d_LineAspect(
+            Quantity_Color(1, 1, 1, Quantity_TOC_RGB), Aspect_TOL_SOLID, w));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_line_type(void* obj_ptr, int type) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = drawer->LineAspect();
+        if (aspect.IsNull()) {
+            drawer->SetLineAspect(new Prs3d_LineAspect(
+                Quantity_Color(1, 1, 1, Quantity_TOC_RGB),
+                static_cast<Aspect_TypeOfLine>(type), 1.0));
+        } else {
+            aspect->SetTypeOfLine(static_cast<Aspect_TypeOfLine>(type));
+        }
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_point_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(Aspect_TOM_POINT, Quantity_Color(r, g, b, Quantity_TOC_RGB), 1.0);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_point_type(void* obj_ptr, int type) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(static_cast<Aspect_TypeOfMarker>(type),
+                                            Quantity_Color(1, 1, 1, Quantity_TOC_RGB), 1.0);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetTypeOfMarker(static_cast<Aspect_TypeOfMarker>(type));
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_point_scale(void* obj_ptr, double scale) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_PointAspect) aspect = drawer->PointAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_PointAspect(Aspect_TOM_POINT, Quantity_Color(1,1,1,Quantity_TOC_RGB), scale);
+            drawer->SetPointAspect(aspect);
+        } else {
+            aspect->SetScale(scale);
+        }
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_font(void* obj_ptr, const char* font) {
+    clear_error();
+    if (!obj_ptr || !font) { set_error("null argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetFont(font);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_text_height(void* obj_ptr, double h) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_TextAspect) aspect = drawer->TextAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_TextAspect();
+            drawer->SetTextAspect(aspect);
+        }
+        aspect->SetHeight(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_iso_display(void* obj_ptr, int uOn, int vOn) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetIsoOnPlane(uOn != 0);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_wire_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        Handle(Prs3d_LineAspect) aspect = drawer->WireAspect();
+        if (aspect.IsNull()) {
+            aspect = new Prs3d_LineAspect(Quantity_Color(r, g, b, Quantity_TOC_RGB), Aspect_TOL_SOLID, 1.0);
+            drawer->SetWireAspect(aspect);
+        } else {
+            aspect->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        }
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_shading_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetShadingAspect(new Prs3d_ShadingAspect());
+        drawer->ShadingAspect()->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_face_boundary_draw(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetFaceBoundaryDraw(on != 0);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_object_set_free_boundary_draw(void* obj_ptr, int on) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer) drawer = (*obj)->Attributes();
+        drawer->SetFreeBoundaryDraw(on != 0);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimensions ---
+
+#include <PrsDim_LengthDimension.hxx>
+#include <PrsDim_AngleDimension.hxx>
+#include <PrsDim_DiameterDimension.hxx>
+#include <PrsDim_RadiusDimension.hxx>
+
+void* prsdim_make_length_2p(double x1, double y1, double z1, double x2, double y2, double z2) {
+    clear_error();
+    try {
+        Handle(PrsDim_LengthDimension)* h = new Handle(PrsDim_LengthDimension)();
+        *h = new PrsDim_LengthDimension(gp_Pnt(x1, y1, z1), gp_Pnt(x2, y2, z2), gp_Pln(gp_Pnt(0,0,0), gp_Dir(0,0,1)));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_angle_3p(double vx, double vy, double vz, double p1x, double p1y, double p1z, double p2x, double p2y, double p2z) {
+    clear_error();
+    try {
+        Handle(PrsDim_AngleDimension)* h = new Handle(PrsDim_AngleDimension)();
+        *h = new PrsDim_AngleDimension(gp_Pnt(vx, vy, vz), gp_Pnt(p1x, p1y, p1z), gp_Pnt(p2x, p2y, p2z));
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_diameter(void* shape_ptr) {
+    clear_error();
+    if (!shape_ptr) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Handle(PrsDim_DiameterDimension)* h = new Handle(PrsDim_DiameterDimension)();
+        *h = new PrsDim_DiameterDimension(*shape);
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* prsdim_make_radius(void* shape_ptr) {
+    clear_error();
+    if (!shape_ptr) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        Handle(PrsDim_RadiusDimension)* h = new Handle(PrsDim_RadiusDimension)();
+        *h = new PrsDim_RadiusDimension(*shape);
+        return static_cast<void*>(h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void prsdim_set_text_position(void* dim_ptr, double x, double y, double z) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetTextPosition(gp_Pnt(x, y, z));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void prsdim_set_display_units(void* dim_ptr, const char* units) {
+    clear_error();
+    if (!dim_ptr || !units) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetDisplayUnits(TCollection_AsciiString(units));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Custom Material ---
+
+void* make_material(double ar, double ag, double ab, double dr, double dg, double db,
+                     double sr, double sg, double sb, double shininess, double transparency) {
+    clear_error();
+    try {
+        Graphic3d_MaterialAspect* mat = new Graphic3d_MaterialAspect(Graphic3d_NOM_DEFAULT);
+        mat->SetAmbientColor(Quantity_Color(ar, ag, ab, Quantity_TOC_RGB));
+        mat->SetDiffuseColor(Quantity_Color(dr, dg, db, Quantity_TOC_RGB));
+        mat->SetSpecularColor(Quantity_Color(sr, sg, sb, Quantity_TOC_RGB));
+        mat->SetShininess(shininess);
+        mat->SetTransparency(transparency);
+        return mat;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_set_custom_material(void* ctx_ptr, void* obj_ptr, void* mat_ptr) {
+    clear_error();
+    if (!ctx_ptr || !obj_ptr || !mat_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        auto* mat = static_cast<Graphic3d_MaterialAspect*>(mat_ptr);
+        (*ctx)->SetMaterial(*obj, *mat, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Positional & Spot Lights ---
+
+void* make_light_positional(double r, double g, double b, double intensity, double x, double y, double z) {
+    clear_error();
+    try {
+        Handle(V3d_PositionalLight)* h = new Handle(V3d_PositionalLight)();
+        *h = new V3d_PositionalLight(gp_Pnt(x, y, z), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_light_spot(double r, double g, double b, double intensity, double x, double y, double z, double dx, double dy, double dz, double angle, double concentration) {
+    clear_error();
+    try {
+        Handle(V3d_SpotLight)* h = new Handle(V3d_SpotLight)();
+        *h = new V3d_SpotLight(gp_Pnt(x, y, z), gp_Dir(dx, dy, dz), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        if (intensity != 0.0) (**h).SetIntensity(intensity);
+        if (angle > 0.0) (**h).SetAngle(angle * M_PI / 180.0);
+        (**h).SetConcentration(concentration);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void light_set_angle(void* light_ptr, double angle_deg) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        V3d_SpotLight* spot = dynamic_cast<V3d_SpotLight*>(light->get());
+        if (spot) spot->SetAngle(angle_deg * M_PI / 180.0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void light_set_concentration(void* light_ptr, double v) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        V3d_SpotLight* spot = dynamic_cast<V3d_SpotLight*>(light->get());
+        if (spot) spot->SetConcentration(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid Echo ---
+
+void v3d_view_set_grid_echo(void* view_ptr, int on) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetGridActivity(on != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Background Image ---
+
+void v3d_view_set_bg_image(void* view_ptr, const char* path) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    if (!path) { set_error("null path", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->SetBackgroundImage(path);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Cube-map ---
+
+void* make_cubemap_separate(const char** paths, int count) {
+    clear_error();
+    if (!paths || count != 6) { set_error("need exactly 6 cube face paths", 2); return nullptr; }
+    try {
+        NCollection_Array1<TCollection_AsciiString> arr(1, 6);
+        arr(1) = TCollection_AsciiString(paths[0]);
+        arr(2) = TCollection_AsciiString(paths[1]);
+        arr(3) = TCollection_AsciiString(paths[2]);
+        arr(4) = TCollection_AsciiString(paths[3]);
+        arr(5) = TCollection_AsciiString(paths[4]);
+        arr(6) = TCollection_AsciiString(paths[5]);
+        Handle(Graphic3d_CubeMapSeparate)* h = new Handle(Graphic3d_CubeMapSeparate)(
+            new Graphic3d_CubeMapSeparate(arr));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void free_cubemap(void* cubemap_ptr) {
+    if (cubemap_ptr) {
+        delete static_cast<Handle(Graphic3d_CubeMapSeparate)*>(cubemap_ptr);
+    }
+}
+
+void v3d_view_set_bg_cubemap(void* view_ptr, void* cubemap_ptr) {
+    clear_error();
+    if (!view_ptr || !cubemap_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        if (view->IsNull()) { set_error("view handle is null", 2); return; }
+        auto* cubemap = static_cast<Handle(Graphic3d_CubeMapSeparate)*>(cubemap_ptr);
+        if (cubemap->IsNull()) { set_error("cubemap handle is null", 2); return; }
+        (*view)->SetBackgroundCubeMap(*cubemap, false, false);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Camera handle ---
+
+void v3d_view_get_camera_handle(void* view_ptr, void** out_camera) {
+    clear_error();
+    if (!view_ptr || !out_camera) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        Handle(Graphic3d_Camera)* h = new Handle(Graphic3d_Camera)((*view)->Camera());
+        *out_camera = h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        *out_camera = nullptr;
+    }
+}
+
+// --- Viewer Defaults ---
+
+void v3d_viewer_set_default_lights(void* viewer_ptr, int on) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        if (on) (*viewer)->SetDefaultLights();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+
+
+// --- Drawer (Prs3d) ---
+
+void* ais_object_attributes(void* obj_ptr) {
+    clear_error();
+    if (!obj_ptr) { set_error("null object argument", 2); return nullptr; }
+    try {
+        auto* obj = static_cast<Handle(AIS_InteractiveObject)*>(obj_ptr);
+        Handle(Prs3d_Drawer)* h = new Handle(Prs3d_Drawer)((*obj)->Attributes());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* drawer_shading_aspect(void* drawer_ptr) {
+    clear_error();
+    if (!drawer_ptr) { set_error("null drawer", 2); return nullptr; }
+    try {
+        auto* drawer = static_cast<Handle(Prs3d_Drawer)*>(drawer_ptr);
+        Handle(Prs3d_ShadingAspect)* h = new Handle(Prs3d_ShadingAspect)((*drawer)->ShadingAspect());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* drawer_line_aspect(void* drawer_ptr) {
+    clear_error();
+    if (!drawer_ptr) { set_error("null drawer", 2); return nullptr; }
+    try {
+        auto* drawer = static_cast<Handle(Prs3d_Drawer)*>(drawer_ptr);
+        Handle(Prs3d_LineAspect)* h = new Handle(Prs3d_LineAspect)((*drawer)->LineAspect());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void line_aspect_set_color(void* aspect_ptr, double r, double g, double b) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void line_aspect_set_width(void* aspect_ptr, double w) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetWidth(w);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void line_aspect_set_type(void* aspect_ptr, int type) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_LineAspect)*>(aspect_ptr);
+        (*aspect)->SetTypeOfLine(static_cast<Aspect_TypeOfLine>(type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void shading_aspect_set_color(void* aspect_ptr, double r, double g, double b) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_ShadingAspect)*>(aspect_ptr);
+        (*aspect)->SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void shading_aspect_set_material(void* aspect_ptr, double ar, double ag, double ab,
+                                  double dr, double dg, double db,
+                                  double sr, double sg, double sb,
+                                  double shininess, double transparency) {
+    clear_error();
+    if (!aspect_ptr) { set_error("null aspect", 2); return; }
+    try {
+        auto* aspect = static_cast<Handle(Prs3d_ShadingAspect)*>(aspect_ptr);
+        Graphic3d_MaterialAspect mat(Graphic3d_NOM_DEFAULT);
+        mat.SetAmbientColor(Quantity_Color(ar, ag, ab, Quantity_TOC_RGB));
+        mat.SetDiffuseColor(Quantity_Color(dr, dg, db, Quantity_TOC_RGB));
+        mat.SetSpecularColor(Quantity_Color(sr, sg, sb, Quantity_TOC_RGB));
+        mat.SetShininess(shininess);
+        mat.SetTransparency(transparency);
+        (*aspect)->SetMaterial(mat);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension Styling ---
+
+void prsdim_set_flyout(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetFlyout(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Camera handle set ---
+
+void v3d_view_set_camera(void* view_ptr, void* camera_ptr) {
+    clear_error();
+    if (!view_ptr || !camera_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        auto* camera = static_cast<Handle(Graphic3d_Camera)*>(camera_ptr);
+        (*view)->SetCamera(*camera);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Transparency method ---
+
+void v3d_view_set_transparency_method(void* view_ptr, int method) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        (*view)->ChangeRenderingParams().TransparencyMethod =
+            static_cast<Graphic3d_RenderTransparentMethod>(method);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Default bg gradient ---
+
+void v3d_viewer_set_default_bg_gradient(void* viewer_ptr, double r1, double g1, double b1,
+                                          double r2, double g2, double b2, int style) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetDefaultBgGradientColors(
+            Quantity_Color(r1, g1, b1, Quantity_TOC_RGB),
+            Quantity_Color(r2, g2, b2, Quantity_TOC_RGB),
+            static_cast<Aspect_GradientFillMethod>(style));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Text Label Enhancements ---
+
+void ais_text_label_set_hjustification(void* label_ptr, int align) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetHJustification(static_cast<Graphic3d_HorizontalTextAlignment>(align));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_text_label_set_vjustification(void* label_ptr, int align) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetVJustification(static_cast<Graphic3d_VerticalTextAlignment>(align));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_text_label_set_color_sub_title(void* label_ptr, double r, double g, double b) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetColorSubTitle(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid: rectangular grid values ---
+
+void v3d_viewer_set_rectangular_grid_values(void* viewer_ptr, double xOrigin, double yOrigin,
+                                              double xStep, double yStep, double rotationAngle) {
+    clear_error();
+    if (!viewer_ptr) { set_error("null viewer argument", 2); return; }
+    try {
+        auto* viewer = static_cast<Handle(V3d_Viewer)*>(viewer_ptr);
+        (*viewer)->SetRectangularGridValues(xOrigin, yOrigin, xStep, yStep, rotationAngle);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Grid: GPU shader grid display ---
+
+#include <Aspect_GridParams.hxx>
+
+void v3d_view_grid_display(void* view_ptr, double r, double g, double b, double sizeX, double sizeY) {
+    clear_error();
+    if (!view_ptr) { set_error("null view argument", 2); return; }
+    try {
+        auto* view = static_cast<Handle(V3d_View)*>(view_ptr);
+        Aspect_GridParams params;
+        params.SetColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        params.SetAccentColor(Quantity_Color(1, 1, 1, Quantity_TOC_RGB));
+        if (sizeX > 0) params.SetScale(sizeX);
+        if (sizeY > 0) params.SetScaleY(sizeY);
+        params.SetDrawMode(Aspect_GDM_Lines);
+        (*view)->GridDisplay(params, gp_Ax3(gp_Pnt(0,0,0), gp_Dir(0,0,1)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Default drawer via AIS context ---
+
+void* ais_context_default_drawer(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context argument", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        Handle(Prs3d_Drawer)* h = new Handle(Prs3d_Drawer)((*ctx)->DefaultDrawer());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Dimension styling: edge-based measurement, arrows, extension ---
+
+#include <Prs3d_DimensionAspect.hxx>
+#include <Prs3d_ArrowAspect.hxx>
+
+void prsdim_set_measured_edge(void* dim_ptr, void* shape_ptr, double px, double py, double pz, double nx, double ny, double nz) {
+    clear_error();
+    if (!dim_ptr || !shape_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_LengthDimension)*>(dim_ptr);
+        auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
+        (**dim).SetMeasuredGeometry(TopoDS::Edge(*shape), gp_Pln(gp_Pnt(px, py, pz), gp_Dir(nx, ny, nz)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void prsdim_set_arrow_length(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).DimensionAspect()->ArrowAspect()->SetLength(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Text Label: SetDisplayType ---
+
+void ais_text_label_set_display_type(void* label_ptr, int type) {
+    clear_error();
+    if (!label_ptr) { set_error("null label argument", 2); return; }
+    try {
+        auto* label = static_cast<Handle(AIS_TextLabel)*>(label_ptr);
+        (*label)->SetDisplayType(static_cast<Aspect_TypeOfDisplayText>(type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: SetCustomValue ---
+
+void prsdim_set_custom_value(void* dim_ptr, const char* value) {
+    clear_error();
+    if (!dim_ptr || !value) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).SetCustomValue(TCollection_ExtendedString(value));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: set angle measured edges ---
+
+void prsdim_set_angle_edges(void* dim_ptr, void* edge1_ptr, void* edge2_ptr) {
+    clear_error();
+    if (!dim_ptr || !edge1_ptr || !edge2_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_AngleDimension)*>(dim_ptr);
+        auto* edge1 = static_cast<TopoDS_Shape*>(edge1_ptr);
+        auto* edge2 = static_cast<TopoDS_Shape*>(edge2_ptr);
+        (**dim).SetMeasuredGeometry(TopoDS::Edge(*edge1), TopoDS::Edge(*edge2));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+// --- Dimension: set extension size ---
+
+void prsdim_set_extension_size(void* dim_ptr, double v) {
+    clear_error();
+    if (!dim_ptr) { set_error("null dimension argument", 2); return; }
+    try {
+        auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        (**dim).DimensionAspect()->SetExtensionSize(v);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
     }
 }
 

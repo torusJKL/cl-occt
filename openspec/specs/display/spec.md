@@ -1,3 +1,9 @@
+## EXTENDED BY
+
+The display capabilities are extended by:
+- `viewer-object-props` — per-object transparency, material presets, custom materials, line width, edges, selection mode, tessellation
+- `viewer-drawer` — line / point / text / shading aspect control via ais-set-drawer-* functions
+
 ## ADDED Requirements
 
 ### Requirement: Create AIS context

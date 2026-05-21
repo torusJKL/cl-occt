@@ -30,13 +30,20 @@
         (%free-graphic-driver driver))
       (setf (slot-value v '%driver) (cffi:null-pointer)
             (slot-value v '%viewer) (cffi:null-pointer)
-            (slot-value v '%view) (cffi:null-pointer)))))
+            (slot-value v '%view) (cffi:null-pointer)))
+    ;; Cancel the finalizer so GC won't try to free again
+    (tg:cancel-finalization v)))
 
-(defun fit-all (v)
+(defun fit-all (v &optional shape)
   (when (viewer-p v)
     (let ((view (%view v)))
       (when (and view (not (cffi:null-pointer-p view)))
-        (%v3d-fit-all view)))))
+        (if (shape-p shape)
+            (let ((shape-ptr (%ptr shape)))
+              (when (and shape-ptr (not (cffi:null-pointer-p shape-ptr)))
+                (%v3d-view-fit-all-shape view shape-ptr)))
+            (%v3d-fit-all view))
+        v))))
 
 (defun must-be-resized (v)
   (when (viewer-p v)
@@ -330,6 +337,46 @@
       (when (and corner-int ptr (not (cffi:null-pointer-p ptr)))
         (%ais-trihedron-set-transform-pers ptr corner-int
                                            x-offset y-offset)))))
+
+(defun set-trihedron-axis-colors (tri &key x y z)
+  (when (ais-object-p tri)
+    (let ((ptr (%ptr tri)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (flet ((set-part (part color)
+                 (when color
+                   (destructuring-bind (r g b) (normalize-color color)
+                     (%ais-trihedron-set-datum-part-color ptr part
+                       (coerce r 'double-float)
+                       (coerce g 'double-float)
+                       (coerce b 'double-float))))))
+          (set-part 0 x)
+          (set-part 1 y)
+          (set-part 2 z))
+        tri))))
+
+(defun set-trihedron-text-color (tri color)
+  (when (ais-object-p tri)
+    (let ((rgb (normalize-color color))
+          (ptr (%ptr tri)))
+      (when (and rgb ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (r g b) rgb
+          (%ais-trihedron-set-text-color ptr
+            (coerce r 'double-float)
+            (coerce g 'double-float)
+            (coerce b 'double-float)))
+        tri))))
+
+(defun set-trihedron-wireframe-color (tri color)
+  (when (ais-object-p tri)
+    (let ((rgb (normalize-color color))
+          (ptr (%ptr tri)))
+      (when (and rgb ptr (not (cffi:null-pointer-p ptr)))
+        (destructuring-bind (r g b) rgb
+          (%ais-trihedron-set-wireframe-color ptr
+            (coerce r 'double-float)
+            (coerce g 'double-float)
+            (coerce b 'double-float)))
+        tri))))
 
 (defun show-trihedron (context viewer &key (corner :lower-left) (size 50))
   (let ((tri (make-trihedron)))

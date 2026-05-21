@@ -113,6 +113,28 @@ void ais_context_set_color(void* ctx, void* obj, double r, double g, double b);
 void ais_context_unset_color(void* ctx, void* obj);
 void ais_context_set_display_mode(void* ctx, void* obj, int mode);
 void v3d_view_set_proj(void* view, int orientation);
+void v3d_view_set_eye(void* view, double x, double y, double z);
+double v3d_view_get_eye_x(void* view);
+double v3d_view_get_eye_y(void* view);
+double v3d_view_get_eye_z(void* view);
+void v3d_view_set_target(void* view, double x, double y, double z);
+double v3d_view_get_target_x(void* view);
+double v3d_view_get_target_y(void* view);
+double v3d_view_get_target_z(void* view);
+void v3d_view_set_up(void* view, double x, double y, double z);
+double v3d_view_get_up_x(void* view);
+double v3d_view_get_up_y(void* view);
+double v3d_view_get_up_z(void* view);
+void v3d_view_set_projection_type(void* view, int is_perspective);
+int  v3d_view_get_projection_type(void* view);
+void v3d_view_set_fov(void* view, double fov_rad);
+double v3d_view_get_fov(void* view);
+void v3d_view_set_clip_planes(void* view, double near, double far);
+void v3d_view_fit_all_shape(void* view, void* shape);
+void v3d_view_pan(void* view, double dx, double dy);
+void v3d_view_zoom(void* view, double factor);
+void v3d_view_rotate(void* view, double ax, double ay, double az);
+void v3d_view_reset(void* view);
 void v3d_view_set_msaa(void* view, int samples);
 int  v3d_view_get_msaa(void* view);
 void v3d_view_set_antialiasing(void* view, int on);
@@ -128,6 +150,131 @@ void  ais_trihedron_set_datum_mode(void* obj, int mode);
 void  ais_trihedron_set_draw_arrows(void* obj, int on);
 void  ais_trihedron_set_size(void* obj, double size);
 void  ais_trihedron_set_transform_pers(void* obj, int corner, int xOff, int yOff);
+int   ais_trihedron_set_datum_part_color(void* obj, int part, double r, double g, double b);
+void  ais_trihedron_set_text_color(void* obj, double r, double g, double b);
+void  ais_trihedron_set_wireframe_color(void* obj, double r, double g, double b);
+
+// --- Custom Material ---
+void* make_material(double ar, double ag, double ab, double dr, double dg, double db,
+                     double sr, double sg, double sb, double shininess, double transparency);
+void  ais_set_custom_material(void* ctx, void* obj, void* mat);
+
+// --- Per-Object Properties ---
+void ais_set_transparency(void* ctx, void* obj, double v);
+int  ais_set_material_by_name(void* ctx, void* obj, const char* name);
+int  ais_material_preset_count(void);
+const char* ais_material_preset_name(int index);
+void ais_set_line_width(void* ctx, void* obj, double w);
+void ais_set_edges_display(void* obj, int on);
+void ais_set_edge_color(void* obj, double r, double g, double b);
+void ais_set_selection_mode(void* ctx, void* obj, int mode);
+void ais_deactivate_selection(void* ctx, void* obj);
+void ais_set_tessellation(void* obj, double deflection, double deviation);
+
+// --- Lighting ---
+void* make_light_ambient(double r, double g, double b, double intensity);
+void* make_light_directional(double r, double g, double b, double intensity, double dx, double dy, double dz);
+void* make_light_positional(double r, double g, double b, double intensity, double x, double y, double z);
+void* make_light_spot(double r, double g, double b, double intensity, double x, double y, double z, double dx, double dy, double dz, double angle, double concentration);
+void  light_free(void* light);
+void  v3d_viewer_add_light(void* viewer, void* light);
+void  v3d_viewer_remove_light(void* viewer, void* light);
+void  v3d_viewer_light_on(void* viewer, void* light);
+void  v3d_viewer_light_off(void* viewer, void* light);
+int   light_is_on(void* light);
+void  light_set_color(void* light, double r, double g, double b);
+void  light_set_intensity(void* light, double v);
+void  light_set_direction(void* light, double dx, double dy, double dz);
+void  light_set_position(void* light, double x, double y, double z);
+void  light_set_angle(void* light, double angle_deg);
+void  light_set_concentration(void* light, double v);
+void  light_set_headlight(void* light, int on);
+void  light_set_shadows(void* light, int on);
+void  v3d_viewer_default_lights(void* viewer);
+
+// --- Grid Extensions ---
+int  v3d_viewer_grid_active(void* viewer);
+void v3d_view_set_grid_echo(void* view, int on);
+void v3d_viewer_set_rectangular_grid_values(void* viewer, double xOrigin, double yOrigin, double xStep, double yStep, double rotationAngle);
+void v3d_view_grid_display(void* view, double r, double g, double b, double sizeX, double sizeY);
+
+// --- Background ---
+void v3d_view_set_bg_gradient(void* view, double r1, double g1, double b1, double r2, double g2, double b2, int style);
+void v3d_view_set_bg_image(void* view, const char* path);
+void v3d_view_set_bg_cubemap(void* view, void* cubemap);
+void v3d_view_reset_background(void* view);
+void* make_cubemap_separate(const char** paths, int count);
+void  free_cubemap(void* cubemap);
+
+// --- Rendering ---
+void v3d_view_set_transparent_shading(void* view, int on);
+void v3d_view_get_camera_handle(void* view, void** out_camera);
+void v3d_view_set_camera(void* view, void* camera);
+
+void v3d_view_set_transparency_method(void* view, int method);
+
+void v3d_viewer_set_default_bg_gradient(void* viewer, double r1, double g1, double b1, double r2, double g2, double b2, int style);
+
+void* ais_context_default_drawer(void* ctx);
+void v3d_view_set_computed_mode(void* view, int on);
+int  v3d_view_computed_mode(void* view);
+void v3d_view_set_back_face_model(void* view, int mode);
+void v3d_view_set_frustum_culling(void* view, int on);
+void v3d_view_set_transparent_shading(void* view, int on);
+void v3d_view_redraw(void* view);
+void v3d_view_set_immediate_update(void* view, int on);
+
+// --- Text Label Enhancements ---
+void ais_text_label_set_angle(void* label, double rad);
+void ais_text_label_set_hjustification(void* label, int align);
+void ais_text_label_set_vjustification(void* label, int align);
+void ais_text_label_set_color_sub_title(void* label, double r, double g, double b);
+void ais_text_label_set_display_type(void* label, int type);
+
+// --- Viewer Defaults ---
+void v3d_viewer_set_default_lights(void* viewer, int on);
+void v3d_viewer_set_default_bg_color(void* viewer, double r, double g, double b);
+void v3d_viewer_set_default_view_proj(void* viewer, int orientation);
+void v3d_viewer_set_default_view_size(void* viewer, double size);
+void v3d_viewer_set_default_view_type(void* viewer, int is_perspective);
+
+// --- Drawer (Prs3d) ---
+void* ais_object_attributes(void* obj);
+void ais_object_set_point_color(void* obj, double r, double g, double b);
+void ais_object_set_point_type(void* obj, int type);
+void ais_object_set_point_scale(void* obj, double scale);
+void ais_object_set_text_color(void* obj, double r, double g, double b);
+void ais_object_set_text_font(void* obj, const char* font);
+void ais_object_set_text_height(void* obj, double h);
+void ais_object_set_iso_display(void* obj, int uOn, int vOn);
+void ais_object_set_wire_color(void* obj, double r, double g, double b);
+void* drawer_shading_aspect(void* drawer);
+void* drawer_line_aspect(void* drawer);
+void  line_aspect_set_color(void* aspect, double r, double g, double b);
+void  line_aspect_set_width(void* aspect, double w);
+void  line_aspect_set_type(void* aspect, int type);
+void  shading_aspect_set_color(void* aspect, double r, double g, double b);
+void  shading_aspect_set_material(void* aspect, double ar, double ag, double ab, double dr, double dg, double db, double sr, double sg, double sb, double shininess, double transparency);
+void ais_object_set_line_color(void* obj, double r, double g, double b);
+void ais_object_set_line_width(void* obj, double w);
+void ais_object_set_line_type(void* obj, int type);
+void ais_object_set_shading_color(void* obj, double r, double g, double b);
+void ais_object_set_face_boundary_draw(void* obj, int on);
+void ais_object_set_free_boundary_draw(void* obj, int on);
+
+// --- Dimensions ---
+void* prsdim_make_length_2p(double x1, double y1, double z1, double x2, double y2, double z2);
+void* prsdim_make_angle_3p(double vx, double vy, double vz, double p1x, double p1y, double p1z, double p2x, double p2y, double p2z);
+void* prsdim_make_diameter(void* shape);
+void* prsdim_make_radius(void* shape);
+void  prsdim_set_text_position(void* dim, double x, double y, double z);
+void  prsdim_set_display_units(void* dim, const char* units);
+void  prsdim_set_flyout(void* dim, double v);
+void  prsdim_set_measured_edge(void* dim, void* shape, double px, double py, double pz, double nx, double ny, double nz);
+void  prsdim_set_arrow_length(void* dim, double v);
+void  prsdim_set_extension_size(void* dim, double v);
+void  prsdim_set_custom_value(void* dim, const char* value);
+void  prsdim_set_angle_edges(void* dim, void* edge1, void* edge2);
 
 // --- Font & Text ---
 occt_brep_font make_brep_font_from_file(const char* font_path, double size, int face_id);

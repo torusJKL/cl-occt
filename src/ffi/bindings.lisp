@@ -311,6 +311,72 @@
 (defcfun (%v3d-view-set-proj "v3d_view_set_proj") :void
   (view :pointer) (orientation :int))
 
+(defcfun (%v3d-view-set-eye "v3d_view_set_eye") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-get-eye-x "v3d_view_get_eye_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-eye-y "v3d_view_get_eye_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-eye-z "v3d_view_get_eye_z") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-set-target "v3d_view_set_target") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-get-target-x "v3d_view_get_target_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-target-y "v3d_view_get_target_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-target-z "v3d_view_get_target_z") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-set-up "v3d_view_set_up") :void
+  (view :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%v3d-view-get-up-x "v3d_view_get_up_x") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-up-y "v3d_view_get_up_y") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-get-up-z "v3d_view_get_up_z") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-set-projection-type "v3d_view_set_projection_type") :void
+  (view :pointer) (is-perspective :int))
+
+(defcfun (%v3d-view-get-projection-type "v3d_view_get_projection_type") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-fov "v3d_view_set_fov") :void
+  (view :pointer) (fov-rad :double))
+
+(defcfun (%v3d-view-get-fov "v3d_view_get_fov") :double
+  (view :pointer))
+
+(defcfun (%v3d-view-set-clip-planes "v3d_view_set_clip_planes") :void
+  (view :pointer) (near :double) (far :double))
+
+(defcfun (%v3d-view-fit-all-shape "v3d_view_fit_all_shape") :void
+  (view :pointer) (shape :pointer))
+
+(defcfun (%v3d-view-pan "v3d_view_pan") :void
+  (view :pointer) (dx :double) (dy :double))
+
+(defcfun (%v3d-view-zoom "v3d_view_zoom") :void
+  (view :pointer) (factor :double))
+
+(defcfun (%v3d-view-rotate "v3d_view_rotate") :void
+  (view :pointer) (ax :double) (ay :double) (az :double))
+
+(defcfun (%v3d-view-reset "v3d_view_reset") :void
+  (view :pointer))
+
 (defcfun (%v3d-view-set-msaa "v3d_view_set_msaa") :void
   (view :pointer) (samples :int))
 
@@ -350,6 +416,346 @@
 
 (defcfun (%ais-trihedron-set-transform-pers "ais_trihedron_set_transform_pers") :void
   (obj :pointer) (corner :int) (x-off :int) (y-off :int))
+
+(defcfun (%ais-trihedron-set-datum-part-color "ais_trihedron_set_datum_part_color") :int
+  (obj :pointer) (part :int)
+  (r :double) (g :double) (b :double))
+
+(defcfun (%ais-trihedron-set-text-color "ais_trihedron_set_text_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-trihedron-set-wireframe-color "ais_trihedron_set_wireframe_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+;; --- Per-Object Properties ---
+
+(defcfun (%make-material "make_material") :pointer
+  (ar :double) (ag :double) (ab :double)
+  (dr :double) (dg :double) (db :double)
+  (sr :double) (sg :double) (sb :double)
+  (shininess :double) (transparency :double))
+
+(defcfun (%ais-set-custom-material "ais_set_custom_material") :void
+  (ctx :pointer) (obj :pointer) (mat :pointer))
+
+(defcfun (%ais-set-transparency "ais_set_transparency") :void
+  (ctx :pointer) (obj :pointer) (v :double))
+
+(defcfun (%ais-set-material-by-name "ais_set_material_by_name") :int
+  (ctx :pointer) (obj :pointer) (name :string))
+
+(defcfun (%ais-material-preset-count "ais_material_preset_count") :int)
+
+(defcfun (%ais-material-preset-name "ais_material_preset_name") :string
+  (index :int))
+
+(defcfun (%ais-set-line-width "ais_set_line_width") :void
+  (ctx :pointer) (obj :pointer) (w :double))
+
+(defcfun (%ais-set-edges-display "ais_set_edges_display") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-set-edge-color "ais_set_edge_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-set-selection-mode "ais_set_selection_mode") :void
+  (ctx :pointer) (obj :pointer) (mode :int))
+
+(defcfun (%ais-deactivate-selection "ais_deactivate_selection") :void
+  (ctx :pointer) (obj :pointer))
+
+(defcfun (%ais-set-tessellation "ais_set_tessellation") :void
+  (obj :pointer) (deflection :double) (deviation :double))
+
+;; --- Lighting ---
+
+(defcfun (%make-light-ambient "make_light_ambient") :pointer
+  (r :double) (g :double) (b :double) (intensity :double))
+
+(defcfun (%make-light-directional "make_light_directional") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (dx :double) (dy :double) (dz :double))
+
+(defcfun (%make-light-positional "make_light_positional") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (x :double) (y :double) (z :double))
+
+(defcfun (%make-light-spot "make_light_spot") :pointer
+  (r :double) (g :double) (b :double) (intensity :double)
+  (x :double) (y :double) (z :double)
+  (dx :double) (dy :double) (dz :double)
+  (angle :double) (concentration :double))
+
+(defcfun (%light-free "light_free") :void
+  (light :pointer))
+
+(defcfun (%v3d-viewer-add-light "v3d_viewer_add_light") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-remove-light "v3d_viewer_remove_light") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-light-on "v3d_viewer_light_on") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%v3d-viewer-light-off "v3d_viewer_light_off") :void
+  (viewer :pointer) (light :pointer))
+
+(defcfun (%light-is-on "light_is_on") :int
+  (light :pointer))
+
+(defcfun (%light-set-color "light_set_color") :void
+  (light :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%light-set-intensity "light_set_intensity") :void
+  (light :pointer) (v :double))
+
+(defcfun (%light-set-direction "light_set_direction") :void
+  (light :pointer) (dx :double) (dy :double) (dz :double))
+
+(defcfun (%light-set-position "light_set_position") :void
+  (light :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%light-set-angle "light_set_angle") :void
+  (light :pointer) (angle :double))
+
+(defcfun (%light-set-concentration "light_set_concentration") :void
+  (light :pointer) (v :double))
+
+(defcfun (%light-set-headlight "light_set_headlight") :void
+  (light :pointer) (on :int))
+
+(defcfun (%light-set-shadows "light_set_shadows") :void
+  (light :pointer) (on :int))
+
+(defcfun (%v3d-viewer-default-lights "v3d_viewer_default_lights") :void
+  (viewer :pointer))
+
+;; --- Grid Extensions ---
+
+(defcfun (%v3d-viewer-grid-active "v3d_viewer_grid_active") :int
+  (viewer :pointer))
+
+(defcfun (%v3d-view-set-grid-echo "v3d_view_set_grid_echo") :void
+  (view :pointer) (on :int))
+
+;; --- Background ---
+
+(defcfun (%v3d-view-set-bg-image "v3d_view_set_bg_image") :void
+  (view :pointer) (path :string))
+
+(defcfun (%make-cubemap-separate "make_cubemap_separate") :pointer
+  (paths :pointer) (count :int))
+
+(defcfun (%free-cubemap "free_cubemap") :void
+  (cubemap :pointer))
+
+(defcfun (%v3d-view-set-bg-cubemap "v3d_view_set_bg_cubemap") :void
+  (view :pointer) (cubemap :pointer))
+
+(defcfun (%v3d-view-set-bg-gradient "v3d_view_set_bg_gradient") :void
+  (view :pointer)
+  (r1 :double) (g1 :double) (b1 :double)
+  (r2 :double) (g2 :double) (b2 :double)
+  (style :int))
+
+(defcfun (%v3d-view-reset-background "v3d_view_reset_background") :void
+  (view :pointer))
+
+;; --- Rendering ---
+
+(defcfun (%v3d-view-set-computed-mode "v3d_view_set_computed_mode") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-computed-mode "v3d_view_computed_mode") :int
+  (view :pointer))
+
+(defcfun (%v3d-view-set-back-face-model "v3d_view_set_back_face_model") :void
+  (view :pointer) (mode :int))
+
+(defcfun (%v3d-view-get-camera-handle "v3d_view_get_camera_handle") :void
+  (view :pointer) (out-camera :pointer))
+
+(defcfun (%v3d-view-set-camera "v3d_view_set_camera") :void
+  (view :pointer) (camera :pointer))
+
+(defcfun (%v3d-view-set-transparency-method "v3d_view_set_transparency_method") :void
+  (view :pointer) (method :int))
+
+(defcfun (%v3d-viewer-set-default-bg-gradient "v3d_viewer_set_default_bg_gradient") :void
+  (viewer :pointer)
+  (r1 :double) (g1 :double) (b1 :double)
+  (r2 :double) (g2 :double) (b2 :double)
+  (style :int))
+
+(defcfun (%ais-text-label-set-hjustification "ais_text_label_set_hjustification") :void
+  (label :pointer) (align :int))
+
+(defcfun (%ais-text-label-set-vjustification "ais_text_label_set_vjustification") :void
+  (label :pointer) (align :int))
+
+(defcfun (%ais-text-label-set-color-sub-title "ais_text_label_set_color_sub_title") :void
+  (label :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-text-label-set-display-type "ais_text_label_set_display_type") :void
+  (label :pointer) (type :int))
+
+(defcfun (%v3d-viewer-set-rectangular-grid-values "v3d_viewer_set_rectangular_grid_values") :void
+  (viewer :pointer) (x-origin :double) (y-origin :double)
+  (x-step :double) (y-step :double) (rotation-angle :double))
+
+(defcfun (%v3d-view-grid-display "v3d_view_grid_display") :void
+  (view :pointer) (r :double) (g :double) (b :double)
+  (size-x :double) (size-y :double))
+
+(defcfun (%ais-context-default-drawer "ais_context_default_drawer") :pointer
+  (ctx :pointer))
+
+(defcfun (%prsdim-set-measured-edge "prsdim_set_measured_edge") :void
+  (dim :pointer) (shape :pointer)
+  (px :double) (py :double) (pz :double)
+  (nx :double) (ny :double) (nz :double))
+
+(defcfun (%prsdim-set-custom-value "prsdim_set_custom_value") :void
+  (dim :pointer) (value :string))
+
+(defcfun (%prsdim-set-angle-edges "prsdim_set_angle_edges") :void
+  (dim :pointer) (edge1 :pointer) (edge2 :pointer))
+
+(defcfun (%prsdim-set-arrow-length "prsdim_set_arrow_length") :void
+  (dim :pointer) (v :double))
+
+(defcfun (%prsdim-set-extension-size "prsdim_set_extension_size") :void
+  (dim :pointer) (v :double))
+
+(defcfun (%v3d-view-set-frustum-culling "v3d_view_set_frustum_culling") :void
+  (view :pointer) (on :int))
+
+(defcfun (%v3d-view-redraw "v3d_view_redraw") :void
+  (view :pointer))
+
+(defcfun (%v3d-view-set-immediate-update "v3d_view_set_immediate_update") :void
+  (view :pointer) (on :int))
+
+;; --- Text Label Enhancements ---
+
+(defcfun (%ais-text-label-set-angle "ais_text_label_set_angle") :void
+  (label :pointer) (rad :double))
+
+;; --- Viewer Defaults ---
+
+(defcfun (%v3d-viewer-set-default-lights "v3d_viewer_set_default_lights") :void
+  (viewer :pointer) (on :int))
+
+(defcfun (%v3d-viewer-set-default-bg-color "v3d_viewer_set_default_bg_color") :void
+  (viewer :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%v3d-viewer-set-default-view-proj "v3d_viewer_set_default_view_proj") :void
+  (viewer :pointer) (orientation :int))
+
+(defcfun (%v3d-viewer-set-default-view-size "v3d_viewer_set_default_view_size") :void
+  (viewer :pointer) (size :double))
+
+(defcfun (%v3d-viewer-set-default-view-type "v3d_viewer_set_default_view_type") :void
+  (viewer :pointer) (is-perspective :int))
+
+;; --- Drawer ---
+
+(defcfun (%ais-object-attributes "ais_object_attributes") :pointer
+  (obj :pointer))
+
+(defcfun (%drawer-shading-aspect "drawer_shading_aspect") :pointer
+  (drawer :pointer))
+
+(defcfun (%drawer-line-aspect "drawer_line_aspect") :pointer
+  (drawer :pointer))
+
+(defcfun (%line-aspect-set-color "line_aspect_set_color") :void
+  (aspect :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%line-aspect-set-width "line_aspect_set_width") :void
+  (aspect :pointer) (w :double))
+
+(defcfun (%line-aspect-set-type "line_aspect_set_type") :void
+  (aspect :pointer) (type :int))
+
+(defcfun (%shading-aspect-set-color "shading_aspect_set_color") :void
+  (aspect :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%shading-aspect-set-material "shading_aspect_set_material") :void
+  (aspect :pointer)
+  (ar :double) (ag :double) (ab :double)
+  (dr :double) (dg :double) (db :double)
+  (sr :double) (sg :double) (sb :double)
+  (shininess :double) (transparency :double))
+
+(defcfun (%ais-object-set-line-color "ais_object_set_line_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-line-width "ais_object_set_line_width") :void
+  (obj :pointer) (w :double))
+
+(defcfun (%ais-object-set-line-type "ais_object_set_line_type") :void
+  (obj :pointer) (type :int))
+
+(defcfun (%ais-object-set-point-color "ais_object_set_point_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-point-type "ais_object_set_point_type") :void
+  (obj :pointer) (type :int))
+
+(defcfun (%ais-object-set-point-scale "ais_object_set_point_scale") :void
+  (obj :pointer) (scale :double))
+
+(defcfun (%ais-object-set-text-color "ais_object_set_text_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-text-font "ais_object_set_text_font") :void
+  (obj :pointer) (font :string))
+
+(defcfun (%ais-object-set-text-height "ais_object_set_text_height") :void
+  (obj :pointer) (h :double))
+
+(defcfun (%ais-object-set-iso-display "ais_object_set_iso_display") :void
+  (obj :pointer) (u-on :int) (v-on :int))
+
+(defcfun (%ais-object-set-wire-color "ais_object_set_wire_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-shading-color "ais_object_set_shading_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-object-set-face-boundary-draw "ais_object_set_face_boundary_draw") :void
+  (obj :pointer) (on :int))
+
+(defcfun (%ais-object-set-free-boundary-draw "ais_object_set_free_boundary_draw") :void
+  (obj :pointer) (on :int))
+
+;; --- Dimensions ---
+
+(defcfun (%prsdim-make-length-2p "prsdim_make_length_2p") :pointer
+  (x1 :double) (y1 :double) (z1 :double)
+  (x2 :double) (y2 :double) (z2 :double))
+
+(defcfun (%prsdim-make-angle-3p "prsdim_make_angle_3p") :pointer
+  (vx :double) (vy :double) (vz :double)
+  (p1x :double) (p1y :double) (p1z :double)
+  (p2x :double) (p2y :double) (p2z :double))
+
+(defcfun (%prsdim-make-diameter "prsdim_make_diameter") :pointer
+  (shape :pointer))
+
+(defcfun (%prsdim-make-radius "prsdim_make_radius") :pointer
+  (shape :pointer))
+
+(defcfun (%prsdim-set-text-position "prsdim_set_text_position") :void
+  (dim :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%prsdim-set-display-units "prsdim_set_display_units") :void
+  (dim :pointer) (units :string))
+
+(defcfun (%prsdim-set-flyout "prsdim_set_flyout") :void
+  (dim :pointer) (v :double))
 
 ;; --- Font & Text ---
 

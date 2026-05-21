@@ -1,0 +1,60 @@
+(in-package :cl-occt)
+
+(defparameter *transparency-method-map*
+  '((:blend-unordered . 0) (:blend-oit . 1) (:depth-peeling-oit . 2)))
+
+(defparameter *back-face-model-map*
+  '((:auto . 0) (:force . 1) (:disable . 2)))
+
+(defun set-computed-mode (view on)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-computed-mode view-ptr (if on 1 0))
+        view))))
+
+(defun computed-mode-p (view)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (not (zerop (%v3d-view-computed-mode view-ptr)))))))
+
+(defun set-back-face-model (view model)
+  (when (viewer-p view)
+    (let ((mode-int (cdr (assoc model *back-face-model-map*)))
+          (view-ptr (%view view)))
+      (when (and mode-int view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-back-face-model view-ptr mode-int)
+        view))))
+
+(defun set-transparency-method (view method)
+  (when (viewer-p view)
+    (let ((method-int (cdr (assoc method *transparency-method-map*)))
+          (view-ptr (%view view)))
+      (when (and method-int view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-transparency-method view-ptr method-int)
+        view))))
+
+(defun set-frustum-culling (view on)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-frustum-culling view-ptr (if on 1 0))
+        view))))
+
+(defun redraw-view (view)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-redraw view-ptr)
+        view))))
+
+(defun set-immediate-update (view on)
+  (when (viewer-p view)
+    (let ((view-ptr (%view view)))
+      (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
+        (%v3d-view-set-immediate-update view-ptr (if on 1 0))
+        view))))
+
+(defun set-transparent-shading (view method)
+  (set-transparency-method view method))
