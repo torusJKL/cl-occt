@@ -13,11 +13,14 @@ default:
     @echo "Usage: just <recipe>"
     @echo ""
     @echo "Recipes:"
-    @echo "  setup   Download & build OCCT {{occt-version}} (one-time ~15 min)"
-    @echo "  wrap    Compile C wrapper → lib/libocctwrap.so"
-    @echo "  start   Launch SBCL REPL with cl-occt loaded (via Quicklisp)"
-    @echo "  repl    Launch SBCL REPL with cl-occt loaded (standalone)"
-    @echo "  clean   Remove build artifacts"
+    @echo "  setup       Download & build OCCT {{occt-version}} (one-time ~15 min)"
+    @echo "  wrap        Compile C wrapper → lib/libocctwrap.so"
+    @echo "  start       Launch SBCL REPL with cl-occt loaded (via Quicklisp)"
+    @echo "  repl        Launch SBCL REPL with cl-occt loaded (standalone)"
+    @echo "  test-core   Run ~200 core tests (geometry, I/O, DAG) — no X display needed"
+    @echo "  test-viewer Run ~80 viewer tests (rendering, AIS, camera) — needs xvfb-run"
+    @echo "  test-all    Run all 288 tests under xvfb-run"
+    @echo "  clean       Remove build artifacts"
 
 setup:
     # Download and build OCCT 8.0.0
@@ -68,3 +71,21 @@ repl:
 
 clean:
     rm -rf {{occt-build}} {{occt-src}} {{occt-tarball}}
+
+test-core:
+    # Run core tests (geometry, I/O, DAG, colors, text shapes) — no X display needed
+    LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib \
+    {{sbcl}} --noinform \
+        --eval "(require :asdf)" \
+        --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" \
+        --eval "(asdf:load-system :cl-occt/tests)" \
+        --eval "(cl-occt::run-core-tests)" \
+        --eval "(sb-ext:quit)"
+
+test-viewer:
+    # Run viewer tests (rendering, AIS, camera, grid, lighting) — needs X display
+    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(cl-occt::run-viewer-tests)" --eval "(sb-ext:quit)"'
+
+test-all:
+    # Run all tests under xvfb-run
+    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(cl-occt::run-tests)" --eval "(sb-ext:quit)"'

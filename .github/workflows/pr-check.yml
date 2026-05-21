@@ -15,7 +15,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++ sbcl curl just libfreetype-dev libx11-dev libfontconfig-dev libgl1-mesa-dev
+          sudo apt-get install -y cmake g++ sbcl curl just libfreetype-dev libx11-dev libfontconfig-dev libgl1-mesa-dev xvfb
 
       - name: Install Quicklisp
         run: |
@@ -44,7 +44,7 @@ jobs:
       - name: Build C wrapper
         run: just wrap
 
-      - name: Run tests
+      - name: Run core tests
         run: |
           LD_LIBRARY_PATH=$PWD/lib:$PWD/.local/lib \
            sbcl --load $HOME/quicklisp/setup.lisp \
@@ -52,3 +52,13 @@ jobs:
                --eval "(ql:quickload :cl-occt)" \
                --eval "(asdf:test-system :cl-occt/tests)" \
                --quit
+
+      - name: Run viewer tests
+        run: |
+          xvfb-run -a sh -c '
+            LD_LIBRARY_PATH=$PWD/lib:$PWD/.local/lib \
+             sbcl --load $HOME/quicklisp/setup.lisp \
+                 --eval "(push \"$PWD/\" asdf:*central-registry*)" \
+                 --eval "(ql:quickload :cl-occt)" \
+                 --eval "(cl-occt::run-viewer-tests)" \
+                 --quit'

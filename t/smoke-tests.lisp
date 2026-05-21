@@ -575,13 +575,6 @@
 (deftest read-step-into-dag-valid
   (assert-true (read-step-into-dag "/tmp/clocct-test-dag-export.step")))
 
-(defun display-available-p ()
-  (handler-case
-      (let ((v (make-viewer)))
-        (free-viewer v)
-        t)
-    (error () nil)))
-
 ;; --- Viewer ---
 
 (deftest make-viewer-returns-viewer
@@ -1662,10 +1655,11 @@
     (assert-true (set-transparent-shading v :blend-oit)
                  "set-transparent-shading alias should work")))
 
-(defun run-tests ()
+(defun run-core-tests ()
+  "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
   (let ((*params* nil))
-    (format t "~&=== cl-occt smoke tests ===~2%")
+    (format t "~&=== cl-occt core tests (no display needed) ===~2%")
     (dolist (test-sym
              '(set-background-cubemap-creation set-cube-map-alias
                make-box-valid make-box-zero-dim make-box-negative
@@ -1712,15 +1706,87 @@
                defmodel-static-metadata defmodel-metadata-from-params
                defmodel-no-metadata defmodel-metadata-re-evaluation
                write-dag-models-to-step-valid read-step-into-dag-valid
-               make-viewer-returns-viewer with-viewer-creates-and-cleans-up
+               ais-create-shape-from-box ais-create-shape-nil-shape
+               ais-free-on-nil-safe ais-create-shape-nil-input
+               make-trihedron-defaults make-trihedron-zero-normal
+               make-light-ambient-valid make-light-directional-valid
+               make-light-positional-valid make-light-spot-valid
+               set-light-position-angle-concentration
+               set-light-color-intensity set-light-direction-valid
+               set-headlight-valid
+               make-length-dimension-2p make-angle-dimension-3p
+               set-dimension-text-position-valid set-dimension-units-valid
+               set-dimension-arrow-length-valid set-dimension-extension-size-valid
+               set-dimension-custom-value-valid
+               named-color-red named-color-blue named-color-white
+               named-color-unknown named-color-exists-p-true named-color-exists-p-false
+               hex-to-rgb-6-digit hex-to-rgb-3-digit hex-to-rgb-invalid
+               normalize-color-keyword normalize-color-rgb-list normalize-color-hex
+               make-color-from-keyword make-color-from-rgb make-color-from-hls
+               color-delta-same color-delta-different color-delta-nil-input
+               viewer-color-p-predicate list-named-colors-includes-red
+               make-brep-font-from-file-valid
+               make-brep-font-from-file-nonexistent
+               make-brep-font-from-file-zero-size
+               make-text-shape-valid
+               make-text-shape-nil-font
+               make-text-shape-empty-string
+               make-text-shape-3d-valid
+               make-text-shape-3d-nil-font
+               make-text-shape-3d-zero-depth
+               brep-font-p-valid
+               brep-font-p-nil
+               text-step-roundtrip
+               text-stl-export
+               text-shape-on-yz-plane
+               text-shape-with-position-only
+               text-shape-on-plane-convenience
+               text-shape-3d-on-rotated-plane
+               text-bounding-box-valid
+               text-bounding-box-empty-string
+               list-available-fonts-valid
+               font-info-valid
+               make-multi-line-text-valid
+               make-multi-line-text-single-line
+               make-formatted-text-valid
+               make-ais-text-label-valid
+               ais-text-label-predicate
+               text-glyph-as-shape-valid
+               text-glyph-as-shape-3d-valid
+               text-font-ascender-valid
+               text-font-descender-valid
+               text-font-line-spacing-valid
+               text-font-advance-x-valid
+               text-font-advance-y-valid
+               text-font-set-width-scaling-valid
+               text-font-set-composite-curve-mode-valid
+               write-step-skips-ais-label
+               write-stl-skips-ais-label
+               make-dimension-edge-keyword
+               set-dimension-text-alias
+               set-dimension-arrows-convenience
+               set-dimension-extension-convenience))
+      (funcall test-sym))
+    (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
+            (test-result-pass *test-result*)
+            (test-result-fail *test-result*)
+            (test-result-errors *test-result*))
+    (values (test-result-pass *test-result*)
+            (test-result-fail *test-result*))))
+
+(defun run-viewer-tests ()
+  "Run tests that require an X display (viewer, AIS, rendering, camera, grid, lighting)."
+  (setq *test-result* (make-test-result))
+  (let ((*params* nil))
+    (format t "~&=== cl-occt viewer tests (display required) ===~2%")
+    (dolist (test-sym
+             '(make-viewer-returns-viewer with-viewer-creates-and-cleans-up
                free-viewer-nil-safe
                ais-create-context-returns-ais-context
-               ais-create-shape-from-box ais-create-shape-nil-shape
                ais-display-shape-in-context
                ais-displayed-p-returns-t-after-display
                ais-erase-hides-without-removing
                ais-remove-removes-from-context
-               ais-free-on-nil-safe ais-create-shape-nil-input
                set-background-valid
                ais-set-color-on-displayed-shape
                ais-set-display-mode-wireframe
@@ -1729,124 +1795,79 @@
                set-antialiasing-roundtrip
                activate-grid-rectangular-lines
                activate-grid-circular-points
-                make-trihedron-defaults
-                make-trihedron-zero-normal
-                set-trihedron-mode-shaded
-                set-trihedron-arrows-nil
-                set-trihedron-size-100
-                set-trihedron-corner-lower-right
-                 show-trihedron-in-context
-                 set-trihedron-axis-colors-red-blue-green
-                 set-trihedron-axis-colors-partial
-                 set-trihedron-text-color-white
-                 set-trihedron-text-color-nil-tri
-                 ais-set-transparency-valid ais-set-transparency-zero
-                 ais-set-material-gold ais-set-material-plastic ais-set-material-unknown
-                 ais-set-line-width-valid
-                 ais-show-edges-valid ais-set-edge-styling-color
-                 ais-set-selection-mode-face ais-set-selection-mode-nil
-                 ais-set-tessellation-valid
-                 make-material-valid ais-set-custom-material-valid
-                 make-light-ambient-valid make-light-directional-valid
-                 make-light-positional-valid make-light-spot-valid
-                 set-light-position-angle-concentration
-                 viewer-add-and-toggle-light
-                 set-light-color-intensity set-light-direction-valid
-                 set-headlight-valid viewer-default-lights-valid
-                  grid-active-p-after-activate grid-active-p-after-deactivate
-                  set-gradient-background-valid set-gradient-background-style
-                 reset-background-valid
-                 set-computed-mode-toggle set-back-face-model-valid
-                 set-frustum-culling-valid set-transparency-method-valid redraw-view-valid
-                 set-immediate-update-valid
-                 set-text-label-angle-valid set-text-label-hjustification-valid
-                 set-text-label-vjustification-valid set-text-label-subtitle-color-valid
-                 set-text-label-display-type-valid
-                 make-text-label-convenience
-                 set-default-background-valid set-default-projection-valid
-                 set-default-view-size-valid set-default-view-type-valid
-                 set-default-bg-gradient-valid
-                 set-rectangular-grid-values-valid set-grid-xy-size-valid
-                 set-grid-offset-valid grid-display-valid
-                 ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid ais-set-drawer-line-type-valid
-                 ais-set-drawer-point-color-valid ais-set-drawer-point-type-valid ais-set-drawer-point-scale-valid
-                 ais-set-drawer-text-color-valid ais-set-drawer-text-font-valid ais-set-drawer-text-height-valid
-                 ais-set-drawer-iso-display-valid ais-set-drawer-wire-color-valid
-                 ais-set-drawer-shading-color-valid
-                 ais-set-drawer-face-boundaries-valid                  ais-set-drawer-free-boundaries-valid
-                 make-length-dimension-2p make-angle-dimension-3p
-                 set-dimension-text-position-valid set-dimension-units-valid
-                 set-dimension-arrow-length-valid set-dimension-extension-size-valid
-                 set-dimension-custom-value-valid
-                 set-camera-eye-target-up set-camera-partial-eye-only
-                 set-perspective-toggles
-                 set-fov-valid set-fov-zero
-                 set-clip-planes-valid
-                 reset-view-valid fit-all-shape-valid
-                 named-color-red named-color-blue named-color-white
-                 named-color-unknown named-color-exists-p-true named-color-exists-p-false
-                 hex-to-rgb-6-digit hex-to-rgb-3-digit hex-to-rgb-invalid
-                 normalize-color-keyword normalize-color-rgb-list normalize-color-hex
-                 make-color-from-keyword make-color-from-rgb make-color-from-hls
-                 color-delta-same color-delta-different color-delta-nil-input
-                 viewer-color-p-predicate list-named-colors-includes-red
-                 make-brep-font-from-file-valid
-                make-brep-font-from-file-nonexistent
-                make-brep-font-from-file-zero-size
-                make-text-shape-valid
-                make-text-shape-nil-font
-                make-text-shape-empty-string
-                make-text-shape-3d-valid
-                make-text-shape-3d-nil-font
-                make-text-shape-3d-zero-depth
-                brep-font-p-valid
-                brep-font-p-nil
-                text-step-roundtrip
-                text-stl-export
-                text-shape-on-yz-plane
-                text-shape-with-position-only
-                text-shape-on-plane-convenience
-                text-shape-3d-on-rotated-plane
-                text-bounding-box-valid
-                text-bounding-box-empty-string
-                list-available-fonts-valid
-                font-info-valid
-                make-multi-line-text-valid
-                make-multi-line-text-single-line
-                make-formatted-text-valid
-                make-ais-text-label-valid
-                ais-text-label-predicate
-                text-glyph-as-shape-valid
-                text-glyph-as-shape-3d-valid
-                text-font-ascender-valid
-                text-font-descender-valid
-                text-font-line-spacing-valid
-                text-font-advance-x-valid
-                text-font-advance-y-valid
-                text-font-set-width-scaling-valid
-                text-font-set-composite-curve-mode-valid
-                 write-step-skips-ais-label
-                 write-stl-skips-ais-label
-                 viewer-camera-predicate
-                 viewer-camera-roundtrip
-                 viewer-lights-and-active
-                 set-trihedron-wireframe-color-valid
-                 set-default-gradient-alias
-                 set-default-lights-modes
-                 set-grid-color-convenience
-                 set-grid-size-convenience
-                 grid-getter-stubs
-                 make-dimension-edge-keyword
-                 set-dimension-text-alias
-                 set-dimension-arrows-convenience
-                 set-dimension-extension-convenience
-                 ais-set-selection-mode-keywords
-                 set-text-label-align-convenience
-                  set-transparent-shading-alias))
+               set-trihedron-mode-shaded
+               set-trihedron-arrows-nil
+               set-trihedron-size-100
+               set-trihedron-corner-lower-right
+               show-trihedron-in-context
+               set-trihedron-axis-colors-red-blue-green
+               set-trihedron-axis-colors-partial
+               set-trihedron-text-color-white
+               set-trihedron-text-color-nil-tri
+               ais-set-transparency-valid ais-set-transparency-zero
+               ais-set-material-gold ais-set-material-plastic ais-set-material-unknown
+               ais-set-line-width-valid
+               ais-show-edges-valid ais-set-edge-styling-color
+               ais-set-selection-mode-face ais-set-selection-mode-nil
+               ais-set-tessellation-valid
+               make-material-valid ais-set-custom-material-valid
+               viewer-add-and-toggle-light
+               viewer-default-lights-valid
+               grid-active-p-after-activate grid-active-p-after-deactivate
+               set-gradient-background-valid set-gradient-background-style
+               reset-background-valid
+               set-computed-mode-toggle set-back-face-model-valid
+               set-frustum-culling-valid set-transparency-method-valid redraw-view-valid
+               set-immediate-update-valid
+               set-text-label-angle-valid set-text-label-hjustification-valid
+               set-text-label-vjustification-valid set-text-label-subtitle-color-valid
+               set-text-label-display-type-valid
+               make-text-label-convenience
+               set-default-background-valid set-default-projection-valid
+               set-default-view-size-valid set-default-view-type-valid
+               set-default-bg-gradient-valid
+               set-rectangular-grid-values-valid set-grid-xy-size-valid
+               set-grid-offset-valid grid-display-valid
+               ais-set-drawer-line-color-valid ais-set-drawer-line-width-valid ais-set-drawer-line-type-valid
+               ais-set-drawer-point-color-valid ais-set-drawer-point-type-valid ais-set-drawer-point-scale-valid
+               ais-set-drawer-text-color-valid ais-set-drawer-text-font-valid ais-set-drawer-text-height-valid
+               ais-set-drawer-iso-display-valid ais-set-drawer-wire-color-valid
+               ais-set-drawer-shading-color-valid
+               ais-set-drawer-face-boundaries-valid ais-set-drawer-free-boundaries-valid
+               set-camera-eye-target-up set-camera-partial-eye-only
+               set-perspective-toggles
+               set-fov-valid set-fov-zero
+               set-clip-planes-valid
+               reset-view-valid fit-all-shape-valid
+               viewer-camera-predicate
+               viewer-camera-roundtrip
+               viewer-lights-and-active
+               set-trihedron-wireframe-color-valid
+               set-default-gradient-alias
+               set-default-lights-modes
+               set-grid-color-convenience
+               set-grid-size-convenience
+               grid-getter-stubs
+               ais-set-selection-mode-keywords
+               set-text-label-align-convenience
+               set-transparent-shading-alias))
       (funcall test-sym))
-    (format t "~2&=== Results: ~D pass, ~D fail, ~D errors ===~%"
+    (format t "~2&=== Viewer results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
             (test-result-fail *test-result*)
             (test-result-errors *test-result*))
     (values (test-result-pass *test-result*)
             (test-result-fail *test-result*))))
+
+(defun run-tests ()
+  "Run all tests (core + viewer). For viewer tests an X display is required."
+  (let ((core-pass 0) (core-fail 0)
+        (viewer-pass 0) (viewer-fail 0))
+    (multiple-value-setq (core-pass core-fail) (run-core-tests))
+    (multiple-value-setq (viewer-pass viewer-fail) (run-viewer-tests))
+    (format t "~2&=== All results: ~D pass, ~D fail, ~D errors ===~%"
+            (+ core-pass viewer-pass)
+            (+ core-fail viewer-fail)
+            (test-result-errors *test-result*))
+    (values (+ core-pass viewer-pass)
+            (+ core-fail viewer-fail))))

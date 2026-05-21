@@ -61,6 +61,6 @@
              (let ((*package* (find-package :cl-occt)))
                (asdf:load-system :cl-occt/tests)
                (multiple-value-bind (pass fail)
-                   (funcall (find-symbol "RUN-TESTS" :cl-occt))
+                   (funcall (find-symbol "RUN-CORE-TESTS" :cl-occt))
                   (unless (zerop fail)
                     (uiop:quit 1))))))
