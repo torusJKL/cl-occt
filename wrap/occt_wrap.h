@@ -309,6 +309,37 @@ double font_advance_y(occt_brep_font font, unsigned int c1, unsigned int c2);
 void font_set_width_scaling(occt_brep_font font, double scale);
 void font_set_composite_curve_mode(occt_brep_font font, int on);
 
+// --- Selection (AIS_InteractiveContext) ---
+
+int    ais_context_nb_selected(void* ctx);
+void   ais_context_init_selected(void* ctx);
+int    ais_context_more_selected(void* ctx);
+void   ais_context_next_selected(void* ctx);
+void*  ais_context_selected_interactive(void* ctx);
+void*  ais_context_selected_shape(void* ctx);
+int    ais_context_has_selected_shape(void* ctx);
+
+void   ais_context_set_selected(void* ctx, void* obj, int update);
+void   ais_context_add_or_remove_selected(void* ctx, void* obj, int update);
+void   ais_context_clear_selected(void* ctx, int update);
+int    ais_context_is_selected(void* ctx, void* obj);
+
+int    ais_context_move_to(void* ctx, void* view, int x, int y);
+int    ais_context_select_detected(void* ctx, int scheme);
+int    ais_context_select_point(void* ctx, void* view, int x, int y, int scheme);
+
+void   ais_context_hilight_selected(void* ctx, int update);
+void   ais_context_unhilight_selected(void* ctx, int update);
+
+void   ais_context_fit_selected(void* ctx, void* view, double margin);
+void*  ais_context_detected_interactive(void* ctx);
+int    ais_context_has_detected(void* ctx);
+void   ais_context_clear_detected(void* ctx);
+void   ais_context_set_selection_sensitivity(void* ctx, void* obj, int mode, int sensitivity);
+void   ais_context_set_pixel_tolerance(void* ctx, int pixels);
+void   ais_context_set_automatic_hilight(void* ctx, int on);
+void   ais_context_set_to_hilight_selected(void* ctx, int on);
+
 #ifdef __cplusplus
 }
 #endif
