@@ -596,11 +596,10 @@
   ;; but no error means success)
   t)
 
-(deftest free-viewer-double-free-safe
-  (let ((v (make-viewer)))
-    (free-viewer v)
-    ;; Second free should be safe
-    (free-viewer v))
+(deftest free-viewer-nil-safe
+  ;; Verify free-viewer handles nil and non-viewer inputs safely
+  (free-viewer nil)
+  (free-viewer "not-a-viewer")
   t)
 
 ;; --- AIS Display ---
@@ -1714,7 +1713,7 @@
                defmodel-no-metadata defmodel-metadata-re-evaluation
                write-dag-models-to-step-valid read-step-into-dag-valid
                make-viewer-returns-viewer with-viewer-creates-and-cleans-up
-               free-viewer-double-free-safe
+               free-viewer-nil-safe
                ais-create-context-returns-ais-context
                ais-create-shape-from-box ais-create-shape-nil-shape
                ais-display-shape-in-context

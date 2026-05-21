@@ -30,7 +30,9 @@
         (%free-graphic-driver driver))
       (setf (slot-value v '%driver) (cffi:null-pointer)
             (slot-value v '%viewer) (cffi:null-pointer)
-            (slot-value v '%view) (cffi:null-pointer)))))
+            (slot-value v '%view) (cffi:null-pointer)))
+    ;; Cancel the finalizer so GC won't try to free again
+    (tg:cancel-finalization v)))
 
 (defun fit-all (v &optional shape)
   (when (viewer-p v)
