@@ -140,6 +140,10 @@
 #include <BRepFilletAPI_MakeFillet.hxx>
 #include <BRepFilletAPI_MakeFillet2d.hxx>
 #include <BRepFilletAPI_MakeChamfer.hxx>
+#include <BRepOffsetAPI_MakePipe.hxx>
+#include <BRepOffsetAPI_MakePipeShell.hxx>
+#include <BRepOffsetAPI_ThruSections.hxx>
+#include <BRepFill_Filling.hxx>
 
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <Poly_Triangulation.hxx>
@@ -4123,6 +4127,249 @@ void prsdim_set_angle_edges(void* dim_ptr, void* edge1_ptr, void* edge2_ptr) {
         (**dim).SetMeasuredGeometry(TopoDS::Edge(*edge1), TopoDS::Edge(*edge2));
     } catch (Standard_Failure& e) {
         set_error(e.what());
+    }
+}
+
+// --- Sweep / Pipe ---
+
+occt_shape sweep_pipe(occt_shape profile, occt_shape spine) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipe maker(TopoDS::Wire(*to_shape(spine)), *to_shape(profile));
+        if (!maker.IsDone()) { set_error("MakePipe failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_fixed(occt_shape profile, occt_shape spine) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipe maker(TopoDS::Wire(*to_shape(spine)), *to_shape(profile));
+        if (!maker.IsDone()) { set_error("MakePipe failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_sliding(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        maker.SetMode(true);
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell sliding failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_fixed(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        maker.SetMode(false);
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell fixed failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_aux(occt_shape profile, occt_shape main_spine, occt_shape aux_spine) {
+    clear_error();
+    if (!profile || !main_spine || !aux_spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(main_spine)));
+        maker.SetMode(TopoDS::Wire(*to_shape(aux_spine)));
+        maker.Add(*to_shape(profile), 0.0, true);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell aux spine failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Loft ---
+
+occt_shape loft_sections(occt_shape* wires, int count, int solid) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, false);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_ruled(occt_shape* wires, int count, int solid, int ruled) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, ruled == 0);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections ruled failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_smooth(occt_shape* wires, int count, int solid, int smooth) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, smooth != 0);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections smooth failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_tangency(occt_shape* wires, int count, int solid,
+                                   occt_shape init_face, occt_shape final_face) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    (void)init_face;
+    (void)final_face;
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, false);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections tangency failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Face Filling ---
+
+occt_shape fill_face(occt_shape wire) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        TopExp_Explorer exp(*to_shape(wire), TopAbs_EDGE);
+        for (; exp.More(); exp.Next()) {
+            filler.Add(TopoDS::Edge(exp.Current()), GeomAbs_C0, false);
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fill_face_constrained(occt_shape wire, occt_shape* support_faces, int* continuities, int count) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        TopExp_Explorer exp(*to_shape(wire), TopAbs_EDGE);
+        for (; exp.More(); exp.Next()) {
+            filler.Add(TopoDS::Edge(exp.Current()), GeomAbs_C0, false);
+        }
+        for (int i = 0; i < count; i++) {
+            if (support_faces[i]) {
+                GeomAbs_Shape cont = GeomAbs_C0;
+                if (continuities[i] == 1) cont = GeomAbs_C1;
+                else if (continuities[i] == 2) cont = GeomAbs_C2;
+                else if (continuities[i] == 3) cont = GeomAbs_C3;
+                filler.Add(TopoDS::Face(*to_shape(support_faces[i])), cont);
+            }
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling constrained failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity) {
+    clear_error();
+    if (!edges || count < 3) { set_error("need at least 3 edges", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        GeomAbs_Shape cont = GeomAbs_C0;
+        if (continuity == 1) cont = GeomAbs_C1;
+        else if (continuity == 2) cont = GeomAbs_C2;
+        else if (continuity == 3) cont = GeomAbs_C3;
+        for (int i = 0; i < count; i++) {
+            if (!edges[i]) { set_error("null edge in fill", 2); return nullptr; }
+            filler.Add(TopoDS::Edge(*to_shape(edges[i])), cont);
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling N-sided failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
     }
 }
 

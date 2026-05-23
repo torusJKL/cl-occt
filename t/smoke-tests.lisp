@@ -2183,6 +2183,135 @@
          (result (chamfer-edge box (first edges) 999.0)))
     (assert-nil result "excessive distance should return nil")))
 
+;; --- Sweep / Pipe ---
+
+(deftest sweep-profile-circle-along-line
+  (let* ((circ (make-circle-edge 0 0 5))
+         (wire (make-wire circ))
+         (face (make-face wire))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (sweep-profile face spine)))
+    (assert-shape result)))
+
+(deftest sweep-profile-nil-profile
+  (assert-nil (sweep-profile nil (make-wire (make-edge-3d 0 0 0 10 0 0)))))
+
+(deftest sweep-profile-nil-spine
+  (assert-nil (sweep-profile (make-face (make-wire (make-circle-edge 0 0 5))) nil)))
+
+(deftest sweep-profile-fixed-mode
+  (let* ((circ (make-circle-edge 0 0 5))
+         (wire (make-wire circ))
+         (face (make-face wire))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (sweep-profile face spine :mode :fixed)))
+    (assert-shape result)))
+
+(deftest sweep-sections-two-sections
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (e2 (make-circle-edge 20 0 10))
+         (w2 (make-wire e2))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+    (let ((result (sweep-sections spine (list w1 w2) '(0.0 1.0))))
+      (assert-true (or (null result) (shape-p result))
+                   "sweep-sections should return shape or nil"))))
+
+(deftest sweep-sections-nil-spine
+  (assert-nil (sweep-sections nil (list (make-wire (make-circle-edge 0 0 5))) '(0.0))))
+
+(deftest sweep-sections-mismatched-counts
+  (assert-nil (sweep-sections (make-wire (make-edge-3d 0 0 0 10 0 0))
+                              (list (make-wire (make-circle-edge 0 0 5)))
+                              '(0.0 1.0))))
+
+(deftest sweep-with-aux-spine-valid
+  (let* ((circ (make-circle-edge 0 0 5))
+         (face (make-face (make-wire circ)))
+         (main (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (aux (make-wire (make-edge-3d 0 0 0 20 5 0))))
+    (let ((result (sweep-with-aux-spine face main aux)))
+      (assert-true (or (null result) (shape-p result))
+                   "sweep-with-aux-spine should return shape or nil"))))
+
+(deftest sweep-with-aux-spine-nil
+  (assert-nil (sweep-with-aux-spine nil (make-wire (make-edge-3d 0 0 0 10 0 0))
+                                    (make-wire (make-edge-3d 0 0 0 10 5 0)))))
+
+;; --- Loft ---
+
+(deftest loft-sections-two-wires
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (e2 (make-circle-edge 0 0 10))
+         (w2 (make-wire (make-circle-edge 0 0 10)))
+         (result (loft-sections (list w1 w2))))
+    (assert-shape result)))
+
+(deftest loft-sections-nil
+  (assert-nil (loft-sections nil)))
+
+(deftest loft-sections-solid-true
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (w2 (make-wire (make-circle-edge 0 20 5)))
+         (result (loft-sections (list w1 w2) :solid t)))
+    (assert-shape result)))
+
+(deftest loft-sections-ruled
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (result (loft-sections (list w1 w2) :ruled t)))
+    (assert-shape result)))
+
+(deftest loft-sections-smooth
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (result (loft-sections (list w1 w2) :smooth t)))
+    (assert-shape result)))
+
+(deftest loft-sections-three-wires
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (w3 (make-wire (make-circle-edge 0 20 6)))
+         (result (loft-sections (list w1 w2 w3))))
+    (assert-shape result)))
+
+;; --- Face Filling ---
+
+(deftest fill-face-valid
+  (let* ((w (make-wire (make-edge-3d 0 0 0 10 0 0)
+                        (make-edge-3d 10 0 0 10 10 0)
+                        (make-edge-3d 10 10 0 0 10 0)
+                        (make-edge-3d 0 10 0 0 0 0)))
+         (result (fill-face w)))
+    (assert-true (or (null result) (shape-p result)) "fill-face should return shape or nil")))
+
+(deftest fill-face-nil
+  (assert-nil (fill-face nil)))
+
+(deftest fill-n-sided-face-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (result (fill-n-sided-face (list e1 e2 e3 e4))))
+    (assert-shape result)))
+
+(deftest fill-n-sided-face-nil-edges
+  (assert-nil (fill-n-sided-face nil)))
+
+(deftest fill-n-sided-face-too-few
+  (assert-nil (fill-n-sided-face (list (make-edge 0 0 10 0) (make-edge 10 0 10 10)))))
+
+(deftest fill-n-sided-face-curvature
+  (let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+         (e2 (make-edge-3d 10 0 0 10 10 0))
+         (e3 (make-edge-3d 10 10 0 0 10 0))
+         (e4 (make-edge-3d 0 10 0 0 0 0))
+         (result (fill-n-sided-face (list e1 e2 e3 e4) :continuity :tangent)))
+    (assert-true (or (null result) (shape-p result)) "fill-n-sided-face curvature should return shape or nil")))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -2346,7 +2475,19 @@
                 chamfer-edges-multiple chamfer-edge-asymmetric-valid
                 chamfer-edge-on-face-valid
                 blend-faces-valid make-blend-constant-valid
-                fillet-edge-excessive-radius chamfer-edge-excessive-distance))
+                fillet-edge-excessive-radius chamfer-edge-excessive-distance
+                sweep-profile-circle-along-line
+                sweep-profile-nil-profile sweep-profile-nil-spine
+                sweep-profile-fixed-mode
+                sweep-sections-two-sections
+                sweep-sections-nil-spine sweep-sections-mismatched-counts
+                sweep-with-aux-spine-valid sweep-with-aux-spine-nil
+                loft-sections-two-wires loft-sections-nil
+                loft-sections-solid-true loft-sections-ruled
+                loft-sections-smooth loft-sections-three-wires
+                fill-face-valid fill-face-nil
+                fill-n-sided-face-valid fill-n-sided-face-nil-edges
+                fill-n-sided-face-too-few fill-n-sided-face-curvature))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

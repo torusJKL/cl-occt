@@ -1255,3 +1255,78 @@
   (face1 :pointer)
   (face2 :pointer)
   (radius :double))
+
+;; --- Sweep / Pipe ---
+
+(defcfun (%sweep-pipe "sweep_pipe") :pointer
+  (profile :pointer)
+  (spine :pointer))
+
+(defcfun (%sweep-pipe-fixed "sweep_pipe_fixed") :pointer
+  (profile :pointer)
+  (spine :pointer))
+
+(defcfun (%sweep-pipe-shell "sweep_pipe_shell") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-sliding "sweep_pipe_shell_sliding") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-fixed "sweep_pipe_shell_fixed") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-aux "sweep_pipe_shell_aux") :pointer
+  (profile :pointer)
+  (main-spine :pointer)
+  (aux-spine :pointer))
+
+;; --- Loft ---
+
+(defcfun (%loft-sections "loft_sections") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int))
+
+(defcfun (%loft-sections-ruled "loft_sections_ruled") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (ruled :int))
+
+(defcfun (%loft-sections-smooth "loft_sections_smooth") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (smooth :int))
+
+(defcfun (%loft-sections-tangency "loft_sections_tangency") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (init-face :pointer)
+  (final-face :pointer))
+
+;; --- Face Filling ---
+
+(defcfun (%fill-face "fill_face") :pointer
+  (wire :pointer))
+
+(defcfun (%fill-face-constrained "fill_face_constrained") :pointer
+  (wire :pointer)
+  (support-faces :pointer)
+  (continuities :pointer)
+  (count :int))
+
+(defcfun (%fill-n-sided-face "fill_n_sided_face") :pointer
+  (edges :pointer)
+  (count :int)
+  (continuity :int))

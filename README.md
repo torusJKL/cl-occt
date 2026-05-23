@@ -292,18 +292,88 @@ Edges are obtained via `(map-shape-subshapes shape :edge)`. All functions return
   (chamfer-edge-on-face box (first edges) 3.0 (first faces)))
 ```
 
-### Surface Blend
+### Sweep / Pipe
+
+Sweep a profile (face or wire) along a spine, or sweep with multiple evolving sections.
 
 | Function | Description |
 |----------|-------------|
-| `(blend-faces face1 face2 radius)` | Create a smooth blending surface between two faces (constant radius) |
-| `(make-blend face1 face2 type radius-or-law)` | General blend construction. `:constant` type with radius value. `:evolving` type not yet supported (returns nil) |
+| `(sweep-profile profile spine &key mode)` | Sweep a single profile (face or wire) along a spine (wire). `:mode` is `:sliding` (Frenet, default) or `:fixed` (section orientation constant). |
+| `(sweep-sections spine sections params &key mode)` | Sweep with multiple section wires at specified parameters along the spine. `:mode` is `:sliding` or `:fixed`. |
+| `(sweep-with-aux-spine profile main-spine aux-spine)` | Sweep a profile along a main spine guided by an auxiliary spine. |
+
+All return `nil` on invalid inputs (nil args, mismatched section/param counts).
 
 ```lisp
-(let* ((box (make-box 30 20 10))
-       (faces (map-shape-subshapes box :face)))
-  (blend-faces (first faces) (second faces) 2.0)
-  (make-blend (first faces) (second faces) :constant 2.0))
+;; Simple pipe sweep: circle face along a line
+(let* ((face (make-face (make-wire (make-circle-edge 0 0 5))))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (sweep-profile face spine))
+
+;; Fixed mode (section doesn't rotate with spine)
+(sweep-profile face spine :mode :fixed)
+
+;; Multi-section sweep: circle morphs from r=5 to r=10
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 20 0 10)))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (sweep-sections spine (list w1 w2) '(0.0 1.0)))
+```
+
+### Loft
+
+Create a solid or shell through multiple section wires.
+
+| Function | Description |
+|----------|-------------|
+| `(loft-sections wires &key solid ruled smooth initial-tangent final-tangent)` | Loft through a list of wire sections. `:solid t` (default) creates a closed solid, `:solid nil` creates a shell. `:ruled t` uses linear interpolation (no smoothing). `:smooth t` enables vertex smoothing. `:initial-tangent` and `:final-tangent` accept face references for tangency constraints. |
+
+Returns `nil` on invalid inputs (nil wires, fewer than 2 wires).
+
+```lisp
+;; Loft two circular wires
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 0 10 8))))
+  (loft-sections (list w1 w2)))
+
+;; Loft three wires with smooth interpolation
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 0 10 8)))
+       (w3 (make-wire (make-circle-edge 0 20 6))))
+  (loft-sections (list w1 w2 w3) :smooth t))
+
+;; Ruled loft (linear interpolation between sections)
+(loft-sections (list w1 w2) :ruled t)
+
+;; Open shell loft (not closed)
+(loft-sections (list w1 w2) :solid nil)
+```
+
+### Face Filling
+
+Fill an N-sided face from boundary edges or a boundary wire, with optional continuity constraints.
+
+| Function | Description |
+|----------|-------------|
+| `(fill-face boundary-wire &key support-faces continuity)` | Fill a surface from a closed boundary wire. `:support-faces` is a list of reference faces. `:continuity` is a list of continuity keywords (`:c0`, `:tangent`, `:curvature`, `:g3`), one per support face. |
+| `(fill-n-sided-face edges &key continuity)` | Fill an N-sided face from a list of boundary edges. `:continuity` is a keyword (`:c0`, `:tangent`, `:curvature`, `:g3`). |
+
+Returns `nil` on invalid inputs (nil wire, fewer than 3 edges).
+
+```lisp
+;; Fill a square boundary wire
+(let* ((w (make-wire (make-edge-3d 0 0 0 10 0 0)
+                      (make-edge-3d 10 0 0 10 10 0)
+                      (make-edge-3d 10 10 0 0 10 0)
+                      (make-edge-3d 0 10 0 0 0 0))))
+  (fill-face w))
+
+;; Fill an N-sided face from four edges
+(let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+       (e2 (make-edge-3d 10 0 0 10 10 0))
+       (e3 (make-edge-3d 10 10 0 0 10 0))
+       (e4 (make-edge-3d 0 10 0 0 0 0)))
+  (fill-n-sided-face (list e1 e2 e3 e4)))
 ```
 
 ### Transforms
@@ -962,6 +1032,9 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── fillet.lisp           fillet-edge, fillet-edges, fillet-edge-variable, fillet-wire-corner, fillet-wire-all-corners
 │   │   ├── chamfer.lisp          chamfer-edge, chamfer-edges, chamfer-edge-asymmetric, chamfer-edge-on-face
 │   │   ├── blend.lisp            blend-faces, make-blend
+│   │   ├── sweep.lisp            sweep-profile, sweep-sections, sweep-with-aux-spine
+│   │   ├── loft.lisp             loft-sections
+│   │   └── face-filling.lisp     fill-face, fill-n-sided-face
 │   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
 │   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
 │   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)
@@ -985,7 +1058,7 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~267 smoke tests
+│   └── smoke-tests.lisp  ~305 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

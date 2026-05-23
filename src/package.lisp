@@ -329,8 +329,21 @@
         :%chamfer-edges-equal
         :%chamfer-edge-asym
         :%chamfer-edge-on-face
-        :%blend-faces-constant
-        :%blend-make-constant
+         :%blend-faces-constant
+         :%blend-make-constant
+         :%sweep-pipe
+         :%sweep-pipe-fixed
+         :%sweep-pipe-shell
+         :%sweep-pipe-shell-sliding
+         :%sweep-pipe-shell-fixed
+         :%sweep-pipe-shell-aux
+         :%loft-sections
+         :%loft-sections-ruled
+         :%loft-sections-smooth
+         :%loft-sections-tangency
+         :%fill-face
+         :%fill-face-constrained
+         :%fill-n-sided-face
         :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
@@ -728,10 +741,16 @@
            :fillet-edges
            :fillet-edge-variable
            :fillet-wire-corner
-           :fillet-wire-all-corners
-           :chamfer-edge
-           :chamfer-edges
-           :chamfer-edge-asymmetric
-           :chamfer-edge-on-face
-           :blend-faces
-           :make-blend))
+            :fillet-wire-all-corners
+            :chamfer-edge
+            :chamfer-edges
+            :chamfer-edge-asymmetric
+            :chamfer-edge-on-face
+            :blend-faces
+            :make-blend
+            :sweep-profile
+            :sweep-sections
+            :sweep-with-aux-spine
+            :loft-sections
+            :fill-face
+            :fill-n-sided-face))

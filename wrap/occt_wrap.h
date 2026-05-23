@@ -478,6 +478,28 @@ occt_shape chamfer_edge_on_face(occt_shape shape, occt_shape edge, double distan
 occt_shape blend_faces_constant(occt_shape face1, occt_shape face2, double radius);
 occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius);
 
+// --- Sweep / Pipe ---
+
+occt_shape sweep_pipe(occt_shape profile, occt_shape spine);
+occt_shape sweep_pipe_fixed(occt_shape profile, occt_shape spine);
+occt_shape sweep_pipe_shell(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_sliding(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_fixed(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_aux(occt_shape profile, occt_shape main_spine, occt_shape aux_spine);
+
+// --- Loft ---
+
+occt_shape loft_sections(occt_shape* wires, int count, int solid);
+occt_shape loft_sections_ruled(occt_shape* wires, int count, int solid, int ruled);
+occt_shape loft_sections_smooth(occt_shape* wires, int count, int solid, int smooth);
+occt_shape loft_sections_tangency(occt_shape* wires, int count, int solid, occt_shape init_face, occt_shape final_face);
+
+// --- Face Filling ---
+
+occt_shape fill_face(occt_shape wire);
+occt_shape fill_face_constrained(occt_shape wire, occt_shape* support_faces, int* continuities, int count);
+occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity);
+
 #ifdef __cplusplus
 }
 #endif

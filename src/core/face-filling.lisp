@@ -1,0 +1,33 @@
+(in-package :cl-occt)
+
+(defun fill-face (boundary-wire &key support-faces continuity)
+  (when (null boundary-wire)
+    (return-from fill-face nil))
+  (if (and support-faces continuity)
+      (let* ((count (length support-faces))
+             (faces-ff (cffi:foreign-alloc :pointer :initial-contents
+                                           (map 'vector (lambda (f) (if f (%ptr f) (cffi:null-pointer)))
+                                                support-faces)))
+             (cont-vec (map 'vector (lambda (c) (ecase c (:c0 0) (:tangent 1) (:curvature 2) (:g3 3)))
+                            continuity))
+             (cont-ff (cffi:foreign-alloc :int :initial-contents cont-vec))
+             result)
+        (unwind-protect
+             (setf result (make-shape (%fill-face-constrained (%ptr boundary-wire) faces-ff cont-ff count)))
+          (cffi:foreign-free faces-ff)
+          (cffi:foreign-free cont-ff))
+        result)
+      (make-shape (%fill-face (%ptr boundary-wire)))))
+
+(defun fill-n-sided-face (edges &key (continuity :c0))
+  (when (or (null edges) (< (length edges) 3))
+    (return-from fill-n-sided-face nil))
+  (let* ((count (length edges))
+         (cont-int (ecase continuity (:c0 0) (:tangent 1) (:curvature 2) (:g3 3)))
+         (ptr-vec (map 'vector (lambda (e) (%ptr e)) edges))
+         (edges-ff (cffi:foreign-alloc :pointer :initial-contents ptr-vec))
+         result)
+    (unwind-protect
+         (setf result (make-shape (%fill-n-sided-face edges-ff count cont-int)))
+      (cffi:foreign-free edges-ff))
+    result))
