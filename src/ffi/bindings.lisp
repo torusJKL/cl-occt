@@ -934,3 +934,568 @@
 
 (defcfun (%font-set-composite-curve-mode "font_set_composite_curve_mode") :void
   (font :pointer) (on :int))
+
+;; --- 3D Curves ---
+
+(defcfun (%make-line-3d "make_line_3d") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double))
+
+(defcfun (%make-circle-3d "make_circle_3d") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (radius :double))
+
+(defcfun (%make-ellipse-3d "make_ellipse_3d") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (major-r :double) (minor-r :double))
+
+(defcfun (%make-hyperbola "make_hyperbola") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (major-r :double) (minor-r :double))
+
+(defcfun (%make-parabola "make_parabola") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (focal :double))
+
+(defcfun (%make-bezier-curve "make_bezier_curve") :pointer
+  (points :pointer) (num-points :int))
+
+(defcfun (%make-bspline-curve "make_bspline_curve") :pointer
+  (poles :pointer) (num-poles :int)
+  (knots :pointer) (mults :pointer) (num-knots :int)
+  (degree :int))
+
+(defcfun (%free-curve "free_curve") :void
+  (curve :pointer))
+
+(defcfun (%curve-type "curve_type") :int
+  (curve :pointer))
+
+(defcfun (%make-gc-line "make_gc_line") :pointer
+  (x1 :double) (y1 :double) (z1 :double)
+  (x2 :double) (y2 :double) (z2 :double))
+
+(defcfun (%make-gc-arc-of-circle "make_gc_arc_of_circle") :pointer
+  (x1 :double) (y1 :double) (z1 :double)
+  (x2 :double) (y2 :double) (z2 :double)
+  (x3 :double) (y3 :double) (z3 :double))
+
+(defcfun (%convert-curve-to-bspline "convert_curve_to_bspline") :pointer
+  (curve :pointer))
+
+(defcfun (%curve-bounding-box "curve_bounding_box") :int
+  (curve :pointer)
+  (xmin :pointer) (ymin :pointer) (zmin :pointer)
+  (xmax :pointer) (ymax :pointer) (zmax :pointer))
+
+;; --- 3D Surfaces ---
+
+(defcfun (%make-plane "make_plane") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (nx :double) (ny :double) (nz :double))
+
+(defcfun (%make-cylindrical-surface "make_cylindrical_surface") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double)
+  (radius :double))
+
+(defcfun (%make-conical-surface "make_conical_surface") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double)
+  (radius :double) (semi-angle :double))
+
+(defcfun (%make-spherical-surface "make_spherical_surface") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (radius :double))
+
+(defcfun (%make-toroidal-surface "make_toroidal_surface") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (major-r :double) (minor-r :double))
+
+(defcfun (%make-bezier-surface "make_bezier_surface") :pointer
+  (poles :pointer) (num-u :int) (num-v :int))
+
+(defcfun (%make-bspline-surface "make_bspline_surface") :pointer
+  (poles :pointer)
+  (num-u-poles :int) (num-v-poles :int)
+  (uknots :pointer) (umults :pointer) (num-uknots :int)
+  (vknots :pointer) (vmults :pointer) (num-vknots :int)
+  (udeg :int) (vdeg :int))
+
+(defcfun (%free-surface "free_surface") :void
+  (surface :pointer))
+
+(defcfun (%surface-type "surface_type") :int
+  (surface :pointer))
+
+(defcfun (%convert-surface-to-bspline "convert_surface_to_bspline") :pointer
+  (surface :pointer))
+
+(defcfun (%surface-bounding-box "surface_bounding_box") :int
+  (surface :pointer)
+  (xmin :pointer) (ymin :pointer) (zmin :pointer)
+  (xmax :pointer) (ymax :pointer) (zmax :pointer))
+
+;; --- Geometric Algorithms ---
+
+(defcfun (%project-point-on-curve "project_point_on_curve") :int
+  (curve :pointer)
+  (px :double) (py :double) (pz :double)
+  (out-x :pointer) (out-y :pointer) (out-z :pointer)
+  (out-dist :pointer) (out-param :pointer))
+
+(defcfun (%project-point-on-surface "project_point_on_surface") :int
+  (surface :pointer)
+  (px :double) (py :double) (pz :double)
+  (out-x :pointer) (out-y :pointer) (out-z :pointer)
+  (out-u :pointer) (out-v :pointer) (out-dist :pointer))
+
+(defcfun (%intersect-curves "intersect_curves") :int
+  (c1 :pointer) (c2 :pointer)
+  (out-points :pointer) (max-points :int))
+
+(defcfun (%intersect-curve-surface "intersect_curve_surface") :int
+  (curve :pointer) (surface :pointer)
+  (out-points :pointer) (max-points :int))
+
+(defcfun (%intersect-surfaces "intersect_surfaces") :int
+  (s1 :pointer) (s2 :pointer)
+  (out-curves :pointer) (max-curves :int))
+
+(defcfun (%extrema-curve-curve "extrema_curve_curve") :int
+  (c1 :pointer) (c2 :pointer)
+  (out-dist :pointer)
+  (out-p1x :pointer) (out-p1y :pointer) (out-p1z :pointer)
+  (out-p2x :pointer) (out-p2y :pointer) (out-p2z :pointer))
+
+(defcfun (%extrema-curve-surface "extrema_curve_surface") :int
+  (curve :pointer) (surface :pointer)
+  (out-dist :pointer)
+  (out-px :pointer) (out-py :pointer) (out-pz :pointer)
+  (out-u :pointer) (out-v :pointer))
+
+(defcfun (%intersect-curves-2d "intersect_curves_2d") :int
+  (c1 :pointer) (c2 :pointer)
+  (out-points :pointer) (max-points :int))
+
+(defcfun (%project-point-on-curve-2d "project_point_on_curve_2d") :int
+  (curve :pointer)
+  (px :double) (py :double)
+  (out-x :pointer) (out-y :pointer)
+  (out-dist :pointer) (out-param :pointer))
+
+(defcfun (%points-to-bspline "points_to_bspline") :pointer
+  (points :pointer) (num-points :int) (degree :int))
+
+(defcfun (%interpolate-points "interpolate_points") :pointer
+  (points :pointer) (num-points :int)
+  (init-tangent :pointer) (final-tangent :pointer))
+
+;; --- Helix ---
+
+(defcfun (%make-helix-curve "make_helix_curve") :pointer
+  (radius :double) (pitch :double) (height :double)
+  (left-handed :int) (angle :double))
+
+(defcfun (%make-helix-edge "make_helix_edge") :pointer
+  (radius :double) (pitch :double) (height :double)
+  (left-handed :int) (angle :double)
+  (on-surface :pointer))
+
+;; --- Mass Properties (BRepGProp) ---
+
+(defcfun (%shape-volume "shape_volume") :double
+  (shape :pointer))
+
+(defcfun (%shape-area "shape_area") :double
+  (shape :pointer))
+
+(defcfun (%shape-center-of-mass "shape_center_of_mass") :int
+  (shape :pointer)
+  (out-x :pointer)
+  (out-y :pointer)
+  (out-z :pointer))
+
+(defcfun (%shape-inertia "shape_inertia") :int
+  (shape :pointer)
+  (out-inertia :pointer)
+  (inertia-size :int)
+  (out-principal-moments :pointer)
+  (pm-size :int)
+  (out-principal-axes :pointer)
+  (pa-size :int))
+
+;; --- Shape Analysis Queries ---
+
+(defcfun (%shape-distance "shape_distance") :double
+  (shape1 :pointer)
+  (shape2 :pointer))
+
+(defcfun (%shape-distance-extrema "shape_distance_extrema") :int
+  (shape1 :pointer)
+  (shape2 :pointer)
+  (out-dist :pointer)
+  (out-p1x :pointer) (out-p1y :pointer) (out-p1z :pointer)
+  (out-p2x :pointer) (out-p2y :pointer) (out-p2z :pointer))
+
+(defcfun (%classify-point-in-solid "classify_point_in_solid") :int
+  (shape :pointer)
+  (px :double) (py :double) (pz :double)
+  (out-state :pointer)
+  (out-face :pointer))
+
+(defcfun (%shape-is-valid "shape_is_valid") :int
+  (shape :pointer))
+
+(defcfun (%shape-analysis-report "shape_analysis_report") :string
+  (shape :pointer))
+
+(defcfun (%intersect-curve-shape "intersect_curve_shape") :int
+  (curve :pointer)
+  (shape :pointer)
+  (out-points :pointer)
+  (out-params :pointer)
+  (out-faces :pointer)
+  (max-results :int))
+
+;; --- Topology Navigation ---
+
+(defcfun (%map-subshapes "map_subshapes") :int
+  (shape :pointer)
+  (shape-type :int)
+  (stop-at-type :int)
+  (out-shapes :pointer)
+  (max-shapes :int))
+
+(defcfun (%count-subshapes "count_subshapes") :int
+  (shape :pointer)
+  (shape-type :int)
+  (stop-at-type :int))
+
+(defcfun (%dump-shape "dump_shape") :string
+  (shape :pointer))
+
+(defcfun (%shape-triangle-count "shape_triangle_count") :int
+  (shape :pointer))
+
+(defcfun (%wire-order-check "wire_order_check") :int
+  (wire :pointer)
+  (face :pointer))
+
+(defcfun (%edge-to-curve "edge_to_curve") :pointer
+  (edge :pointer))
+
+(defcfun (%face-to-surface "face_to_surface") :pointer
+  (face :pointer))
+
+(defcfun (%make-vertex "make_vertex") :pointer
+  (x :double) (y :double) (z :double))
+
+(defcfun (%make-polygon "make_polygon") :pointer
+  (points :pointer)
+  (num-points :int)
+  (closed :int))
+
+;; --- Fillet / Chamfer / Blend ---
+
+(defcfun (%fillet-edge-constant "fillet_edge_constant") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (radius :double))
+
+(defcfun (%fillet-edges-constant "fillet_edges_constant") :pointer
+  (shape :pointer)
+  (edges :pointer)
+  (num-edges :int)
+  (radius :double))
+
+(defcfun (%fillet-edge-variable "fillet_edge_variable") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (params-and-radii :pointer)
+  (num-pairs :int))
+
+(defcfun (%fillet-wire-corner "fillet_wire_corner") :pointer
+  (wire :pointer)
+  (radius :double))
+
+(defcfun (%fillet-wire-all-corners "fillet_wire_all_corners") :pointer
+  (wire :pointer)
+  (radius :double))
+
+(defcfun (%chamfer-edge-equal "chamfer_edge_equal") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance :double))
+
+(defcfun (%chamfer-edges-equal "chamfer_edges_equal") :pointer
+  (shape :pointer)
+  (edges :pointer)
+  (num-edges :int)
+  (distance :double))
+
+(defcfun (%chamfer-edge-asym "chamfer_edge_asym") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance1 :double)
+  (distance2 :double))
+
+(defcfun (%chamfer-edge-on-face "chamfer_edge_on_face") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance :double)
+  (face :pointer))
+
+(defcfun (%blend-faces-constant "blend_faces_constant") :pointer
+  (face1 :pointer)
+  (face2 :pointer)
+  (radius :double))
+
+(defcfun (%blend-make-constant "blend_make_constant") :pointer
+  (face1 :pointer)
+  (face2 :pointer)
+  (radius :double))
+
+;; --- Sweep / Pipe ---
+
+(defcfun (%sweep-pipe "sweep_pipe") :pointer
+  (profile :pointer)
+  (spine :pointer))
+
+(defcfun (%sweep-pipe-fixed "sweep_pipe_fixed") :pointer
+  (profile :pointer)
+  (spine :pointer))
+
+(defcfun (%sweep-pipe-shell "sweep_pipe_shell") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-sliding "sweep_pipe_shell_sliding") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-fixed "sweep_pipe_shell_fixed") :pointer
+  (spine :pointer)
+  (sections :pointer)
+  (params :pointer)
+  (count :int))
+
+(defcfun (%sweep-pipe-shell-aux "sweep_pipe_shell_aux") :pointer
+  (profile :pointer)
+  (main-spine :pointer)
+  (aux-spine :pointer))
+
+;; --- Loft ---
+
+(defcfun (%loft-sections "loft_sections") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int))
+
+(defcfun (%loft-sections-ruled "loft_sections_ruled") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (ruled :int))
+
+(defcfun (%loft-sections-smooth "loft_sections_smooth") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (smooth :int))
+
+(defcfun (%loft-sections-tangency "loft_sections_tangency") :pointer
+  (wires :pointer)
+  (count :int)
+  (solid :int)
+  (init-face :pointer)
+  (final-face :pointer))
+
+;; --- Face Filling ---
+
+(defcfun (%fill-face "fill_face") :pointer
+  (wire :pointer))
+
+(defcfun (%fill-face-constrained "fill_face_constrained") :pointer
+  (wire :pointer)
+  (support-faces :pointer)
+  (continuities :pointer)
+  (count :int))
+
+(defcfun (%fill-n-sided-face "fill_n_sided_face") :pointer
+  (edges :pointer)
+  (count :int)
+  (continuity :int))
+
+;; --- Shell / Thicken ---
+
+(defcfun (%shell-shape "shell_shape") :pointer
+  (shape :pointer)
+  (faces :pointer)
+  (num-faces :int)
+  (thickness :double))
+
+;; --- Offset ---
+
+(defcfun (%offset-shape-3d "offset_shape_3d") :pointer
+  (shape :pointer)
+  (offset :double)
+  (join :int))
+
+(defcfun (%offset-wire-2d "offset_wire_2d") :pointer
+  (wire :pointer)
+  (offset :double))
+
+;; --- Draft ---
+
+(defcfun (%draft-face "draft_face") :pointer
+  (shape :pointer)
+  (face :pointer)
+  (angle :double)
+  (dx :double) (dy :double) (dz :double)
+  (px :double) (py :double) (pz :double)
+  (nx :double) (ny :double) (nz :double))
+
+(defcfun (%make-evolved "make_evolved") :pointer
+  (profile :pointer)
+  (spine :pointer)
+  (offset :double)
+  (join :int))
+
+;; --- Mechanical Features (BRepFeat) ---
+
+(defcfun (%make-cylindrical-hole "make_cylindrical_hole") :pointer
+  (shape :pointer)
+  (face :pointer)
+  (radius :double)
+  (depth :double)
+  (through :int))
+
+(defcfun (%make-prism-feature "make_prism_feature") :pointer
+  (shape :pointer)
+  (base-face :pointer)
+  (profile :pointer)
+  (height :double)
+  (dx :double) (dy :double) (dz :double)
+  (operation :int))
+
+(defcfun (%make-revol-feature "make_revol_feature") :pointer
+  (shape :pointer)
+  (base-face :pointer)
+  (profile :pointer)
+  (ax :double) (ay :double) (az :double)
+  (angle :double)
+  (operation :int))
+
+(defcfun (%make-pipe-feature "make_pipe_feature") :pointer
+  (shape :pointer)
+  (base-face :pointer)
+  (profile :pointer)
+  (path :pointer)
+  (operation :int))
+
+;; --- Local Operations (LocOpe) ---
+
+(defcfun (%local-extrude "local_extrude") :pointer
+  (face :pointer)
+  (height :double)
+  (dx :double) (dy :double) (dz :double))
+
+(defcfun (%make-groove "make_groove") :pointer
+  (shape :pointer)
+  (face :pointer)
+  (ax :double) (ay :double) (az :double)
+  (angle :double))
+
+(defcfun (%make-rib "make_rib") :pointer
+  (shape :pointer)
+  (profile :pointer)
+  (thickness :double)
+  (dx :double) (dy :double) (dz :double))
+
+;; --- Shape Fix ---
+
+(defcfun (%fix-shape "fix_shape") :pointer
+  (shape :pointer))
+
+(defcfun (%fix-wire "fix_wire") :pointer
+  (wire :pointer)
+  (face :pointer)
+  (tolerance :double))
+
+(defcfun (%fix-solid "fix_solid") :pointer
+  (shape :pointer))
+
+(defcfun (%fix-edge "fix_edge") :pointer
+  (edge :pointer))
+
+(defcfun (%fix-face "fix_face") :pointer
+  (face :pointer))
+
+(defcfun (%shape-analysis-free-edges "shape_analysis_free_edges") :pointer
+  (shape :pointer))
+
+(defcfun (%shape-analysis-check-intersections "shape_analysis_check_intersections") :int
+  (shape :pointer))
+
+(defcfun (%shape-analysis-wire-contains "shape_analysis_wire_contains") :int
+  (wire :pointer)
+  (x :double)
+  (y :double))
+
+(defcfun (%shape-analysis-contents "shape_analysis_contents") :string
+  (shape :pointer))
+
+;; --- Shape Rebuild ---
+
+(defcfun (%substitute-single "substitute_single") :pointer
+  (shape :pointer)
+  (old-sub :pointer)
+  (new-sub :pointer))
+
+(defcfun (%substitute-batch "substitute_batch") :pointer
+  (shape :pointer)
+  (old-shapes :pointer)
+  (new-shapes :pointer)
+  (count :int))
+
+(defcfun (%shape-to-nurbs "shape_to_nurbs") :pointer
+  (shape :pointer))
+
+(defcfun (%shape-reduce-degree "shape_reduce_degree") :pointer
+  (shape :pointer)
+  (max-degree :int))
+
+(defcfun (%shape-to-rational-bspline "shape_to_rational_bspline") :pointer
+  (shape :pointer))
+
+(defcfun (%shape-split-u "shape_split_u") :pointer
+  (shape :pointer)
+  (num-splits :int))
+
+(defcfun (%shape-upgrade-continuity "shape_upgrade_continuity") :pointer
+  (shape :pointer)
+  (continuity :int))
+
+;; --- Shape Process Pipeline ---
+
+(defcfun (%apply-shape-process "apply_shape_process") :pointer
+  (shape :pointer)
+  (operator-name :string))
+
+(defcfun (%apply-operator-sequence "apply_operator_sequence") :pointer
+  (shape :pointer)
+  (operators :pointer)
+  (count :int))
+
+(defcfun (%apply-healing-pipeline "apply_healing_pipeline") :pointer
+  (shape :pointer)
+  (pipeline-name :string)
+  (resource :string))
+
+(defcfun (%heal-shape-default "heal_shape_default") :pointer
+  (shape :pointer))

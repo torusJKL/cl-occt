@@ -52,8 +52,8 @@ wrap:
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
         -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
-        -lTKV3d -lTKOpenGl -lTKService \
-        -Wl,-rpath,{{occt-install}}/lib
+        -lTKV3d -lTKOpenGl -lTKService -lTKHelix -lTKFillet -lTKOffset -lTKFeat \
+        -Wl,--enable-new-dtags -Wl,-rpath,{{occt-install}}/lib
 
 start:
     LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib \

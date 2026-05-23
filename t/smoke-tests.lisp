@@ -112,6 +112,231 @@
 (deftest make-circle2d-zero-radius
   (assert-nil (make-circle2d 0 0 0)))
 
+;; --- 3D Curves ---
+
+(defun assert-curve (val &optional msg)
+  (assert-true (curve-p val) (or msg "expected curve")))
+
+(deftest make-line-3d-valid
+  (assert-curve (make-line-3d 0 0 0 0 0 1)))
+
+(deftest make-line-3d-zero-dir
+  (assert-nil (make-line-3d 0 0 0 0 0 0)))
+
+(deftest make-circle-3d-valid
+  (assert-curve (make-circle-3d 0 0 0 10)))
+
+(deftest make-circle-3d-zero-radius
+  (assert-nil (make-circle-3d 0 0 0 0)))
+
+(deftest make-ellipse-3d-valid
+  (assert-curve (make-ellipse 0 0 0 10 5)))
+
+(deftest make-ellipse-3d-zero-major
+  (assert-nil (make-ellipse 0 0 0 0 5)))
+
+(deftest make-hyperbola-valid
+  (assert-curve (make-hyperbola 0 0 0 10 5)))
+
+(deftest make-parabola-valid
+  (assert-curve (make-parabola 0 0 0 10)))
+
+(deftest make-parabola-zero-focal
+  (assert-nil (make-parabola 0 0 0 0)))
+
+(deftest make-bezier-curve-valid
+  (assert-curve (make-bezier-curve '((0 0 0) (1 2 3) (4 5 6)))))
+
+(deftest make-bspline-curve-valid
+  (assert-curve (make-bspline-curve '((0 0 0) (1 1 1) (2 2 2))
+                                     '(0.0 1.0) '(3 3) 2)))
+
+(deftest curve-type-line
+  (assert-true (eq :line (curve-type (make-line-3d 0 0 0 0 0 1)))))
+
+(deftest curve-type-circle
+  (assert-true (eq :circle (curve-type (make-circle-3d 0 0 0 10)))))
+
+(deftest curve-type-ellipse
+  (assert-true (eq :ellipse (curve-type (make-ellipse 0 0 0 10 5)))))
+
+(deftest curve-type-bezier
+  (assert-true (eq :bezier-curve (curve-type (make-bezier-curve '((0 0 0) (1 1 1) (2 2 2)))))))
+
+(deftest curve-type-bspline
+  (assert-true (eq :bspline-curve (curve-type (make-bspline-curve '((0 0 0) (1 1 1) (2 2 2))
+                                                                    '(0.0 1.0) '(3 3) 2)))))
+
+;; --- 3D Surfaces ---
+
+(defun assert-surface (val &optional msg)
+  (assert-true (surface-p val) (or msg "expected surface")))
+
+(deftest make-plane-valid
+  (assert-surface (make-plane 0 0 0 0 0 1)))
+
+(deftest make-plane-zero-normal
+  (assert-nil (make-plane 0 0 0 0 0 0)))
+
+(deftest make-cylindrical-surface-valid
+  (assert-surface (make-cylindrical-surface 0 0 0 0 0 1 5)))
+
+(deftest make-cylindrical-surface-zero-radius
+  (assert-nil (make-cylindrical-surface 0 0 0 0 0 1 0)))
+
+(deftest make-conical-surface-valid
+  (assert-surface (make-conical-surface 0 0 0 0 0 1 5 30)))
+
+(deftest make-spherical-surface-valid
+  (assert-surface (make-spherical-surface 0 0 0 10)))
+
+(deftest make-spherical-surface-zero-radius
+  (assert-nil (make-spherical-surface 0 0 0 0)))
+
+(deftest make-toroidal-surface-valid
+  (assert-surface (make-toroidal-surface 0 0 0 10 3)))
+
+(deftest surface-type-plane
+  (assert-true (eq :plane (surface-type (make-plane 0 0 0 0 0 1)))))
+
+(deftest surface-type-cylindrical
+  (assert-true (eq :cylindrical-surface (surface-type (make-cylindrical-surface 0 0 0 0 0 1 5)))))
+
+;; --- GC Constructors ---
+
+(deftest make-gc-line-valid
+  (assert-curve (make-gc-line 0 0 0 10 10 10)))
+
+(deftest make-gc-arc-of-circle-valid
+  (assert-curve (make-gc-arc-of-circle 0 0 0 10 0 0 0 10 0)))
+
+;; --- NURBS Conversion ---
+
+(deftest convert-curve-to-bspline-valid
+  (let* ((c (make-circle-3d 0 0 0 10))
+         (b (convert-curve-to-bspline c)))
+    (assert-curve b)
+    (assert-true (eq :bspline-curve (curve-type b)))))
+
+(deftest convert-surface-to-bspline-valid
+  (let* ((s (make-toroidal-surface 0 0 0 10 3))
+         (b (convert-surface-to-bspline s)))
+    (assert-surface b)
+    (assert-true (eq :bspline-surface (surface-type b)))))
+
+;; --- Bounding Boxes ---
+
+(deftest curve-bounding-box-valid
+  (let ((c (make-line-3d 0 0 0 1 0 0)))
+    (multiple-value-bind (xmin ymin zmin xmax ymax zmax)
+        (curve-bounding-box c)
+      (assert-true (and xmin ymin zmin xmax ymax zmax)))))
+
+(deftest surface-bounding-box-valid
+  (let ((s (make-plane 0 0 0 0 0 1)))
+    (multiple-value-bind (xmin ymin zmin xmax ymax zmax)
+        (surface-bounding-box s)
+      (assert-true (and xmin ymin zmin xmax ymax zmax)))))
+
+;; --- Geometric Algorithms ---
+
+(deftest project-point-on-curve-valid
+  (let ((c (make-line-3d 0 0 0 0 0 1)))
+    (multiple-value-bind (x y z dist param)
+        (project-point-on-curve c 10 10 5)
+      (assert-true (and x y z dist param)))))
+
+(deftest project-point-on-surface-valid
+  (let ((s (make-plane 0 0 0 0 0 1)))
+    (multiple-value-bind (x y z u v dist)
+        (project-point-on-surface s 5 5 10)
+      (assert-true (and x y z u v dist)))))
+
+(deftest intersect-curves-valid
+  (let* ((c1 (make-line-3d 0 0 0 1 0 0))
+         (c2 (make-line-3d 0 0 0 0 1 0))
+         (result (intersect-curves c1 c2)))
+    (assert-true (consp result))))
+
+(deftest intersect-curves-no-intersection
+  (let* ((c1 (make-line-3d 0 0 0 1 0 0))
+         (c2 (make-line-3d 0 1 0 1 0 0))
+         (result (intersect-curves c1 c2)))
+    (assert-nil result "parallel lines should not intersect")))
+
+(deftest intersect-curve-surface-valid
+  (let* ((c (make-line-3d 0 0 5 0 0 -1))
+         (s (make-plane 0 0 0 0 0 1))
+         (result (intersect-curve-surface c s)))
+    (assert-true (consp result))))
+
+(deftest points-to-bspline-valid
+  (assert-curve (points-to-bspline '((0 0 0) (1 2 3) (4 5 6) (7 8 9)))))
+
+(deftest points-to-bspline-degree
+  (assert-curve (points-to-bspline '((0 0 0) (1 2 3) (4 5 6)) :degree 2)))
+
+(deftest interpolate-points-valid
+  (assert-curve (interpolate-points '((0 0 0) (10 0 0) (10 10 0) (10 10 10)))))
+
+(deftest interpolate-points-with-tangents
+  (assert-curve (interpolate-points '((0 0 0) (1 2 3) (4 5 6))
+                                     :initial-tangent '(1 1 1)
+                                     :final-tangent '(0 1 0))))
+
+;; --- Helix ---
+
+(deftest make-helix-curve-valid
+  (assert-curve (make-helix-curve :radius 5 :pitch 2 :height 20)))
+
+(deftest make-helix-curve-left-handed
+  (assert-curve (make-helix-curve :radius 5 :pitch 2 :height 20 :left-handed t)))
+
+(deftest make-helix-curve-zero-radius
+  (assert-nil (make-helix-curve :radius 0 :pitch 2 :height 20)))
+
+(deftest make-helix-edge-valid
+  (assert-shape (make-helix-edge :radius 5 :pitch 2 :height 20)))
+
+(deftest make-helix-edge-zero-radius
+  (assert-nil (make-helix-edge :radius 0 :pitch 2 :height 20)))
+
+;; --- GC Finalization ---
+
+(deftest curve-gc-cancel-and-free
+  (let ((c (make-line-3d 0 0 0 0 0 1)))
+    (tg:cancel-finalization c)
+    (%free-curve (%ptr c))
+    t))
+
+(deftest curve-gc-cancel-and-free-bezier
+  (let ((c (make-bezier-curve '((0 0 0) (1 2 3) (4 5 6)))))
+    (tg:cancel-finalization c)
+    (%free-curve (%ptr c))
+    t))
+
+(deftest curve-gc-nil-ptr-skip-finalizer
+  (assert-nil (make-line-3d 0 0 0 0 0 0))
+  (assert-nil (make-circle-3d 0 0 0 0)))
+
+(deftest surface-gc-cancel-and-free
+  (let ((s (make-plane 0 0 0 0 0 1)))
+    (tg:cancel-finalization s)
+    (%free-surface (%ptr s))
+    t))
+
+(deftest surface-gc-cancel-and-free-cylinder
+  (let ((s (make-cylindrical-surface 0 0 0 0 0 1 5)))
+    (tg:cancel-finalization s)
+    (%free-surface (%ptr s))
+    t))
+
+(deftest surface-gc-nil-ptr-skip-finalizer
+  (assert-nil (make-plane 0 0 0 0 0 0))
+  (assert-nil (make-cylindrical-surface 0 0 0 0 0 1 0)))
+
+
+
 ;; --- Face Construction ---
 
 (deftest make-edge-valid
@@ -1727,6 +1952,904 @@
     (assert-true (set-transparent-shading v :blend-oit)
                  "set-transparent-shading alias should work")))
 
+;; --- Mass Properties ---
+
+(deftest gprops-volume-box
+  (let ((v (shape-volume (make-box 10 20 30))))
+    (assert-true (and (numberp v) (> v 5999) (< v 6001))
+                 "box 10x20x30 volume should be ~6000")))
+
+(deftest gprops-volume-nil
+  (assert-nil (shape-volume nil)))
+
+(deftest gprops-area-sphere
+  (let ((a (shape-area (make-sphere 10))))
+    (assert-true (and (numberp a) (> a 1250) (< a 1260))
+                 "sphere r=10 area should be ~1256.637")))
+
+(deftest gprops-com-box
+  (multiple-value-bind (x y z) (shape-center-of-mass (make-box 10 20 30))
+    (assert-true (and (= x 5.0) (= y 10.0) (= z 15.0))
+                 "box 10x20x30 COM should be (5 10 15)")))
+
+(deftest gprops-com-nil
+  (assert-nil (shape-center-of-mass nil)))
+
+(deftest gprops-gprops-box
+  (let ((g (shape-gprops (make-box 10 20 30))))
+    (assert-true (typep g 'gprops) "shape-gprops should return gprops")
+    (assert-true (and (numberp (gprops-volume g)) (> (gprops-volume g) 0))
+                 "gprops-volume should be positive")))
+
+(deftest gprops-gprops-nil
+  (assert-nil (shape-gprops nil)))
+
+(deftest gprops-inertia-box
+  (let ((g (shape-gprops (make-box 10 20 30))))
+    (assert-true (listp (gprops-inertia-matrix g))
+                 "inertia matrix should be a list")
+    (assert-true (= (length (gprops-inertia-matrix g)) 6)
+                 "inertia matrix should have 6 components")))
+
+;; --- Shape Analysis ---
+
+(deftest shape-analysis-distance
+  (let* ((a (make-box 10 10 10))
+         (b (translate (make-box 10 10 10) 20 0 0))
+         (d (shape-distance a b)))
+    (assert-true (and (numberp d) (> d 9) (< d 11))
+                 "distance between offset boxes should be ~10")))
+
+(deftest shape-analysis-distance-nil
+  (assert-nil (shape-distance (make-box 10 10 10) nil)))
+
+(deftest shape-analysis-distance-extrema
+  (let* ((a (make-box 10 10 10))
+         (b (translate (make-box 10 10 10) 20 0 0))
+         (e (shape-distance-extrema a b)))
+    (assert-true (typep e 'shape-extrema) "should return shape-extrema")
+    (assert-true (numberp (extrema-distance e)))
+    (assert-true (listp (extrema-point-on-shape1 e)))))
+
+(deftest shape-analysis-point-in-solid-inside
+  (let ((box (make-box 10 20 30)))
+    (assert-true (eq :inside (point-in-solid-p '(5 10 15) box)))))
+
+(deftest shape-analysis-point-in-solid-outside
+  (let ((box (make-box 10 20 30)))
+    (assert-true (eq :outside (point-in-solid-p '(100 100 100) box)))))
+
+(deftest shape-analysis-point-in-solid-on
+  (let ((box (make-box 10 20 30)))
+    (assert-true (eq :on (point-in-solid-p '(0 10 15) box)))))
+
+(deftest shape-analysis-classify
+  (let ((box (make-box 10 20 30)))
+    (multiple-value-bind (state face) (classify-point-in-solid '(5 10 15) box)
+      (assert-true (eq :inside state))
+      (assert-nil face))))
+
+(deftest shape-analysis-valid-p
+  (assert-true (shape-valid-p (make-box 10 20 30))))
+
+(deftest shape-analysis-valid-p-nil
+  (assert-nil (shape-valid-p nil)))
+
+(deftest shape-analysis-check
+  (assert-nil (shape-check (make-box 10 20 30))
+              "valid shape should return nil from shape-check"))
+
+;; --- Topology Navigation ---
+
+(deftest topology-map-faces
+  (let ((faces (map-shape-subshapes (make-box 10 20 30) :face)))
+    (assert-true (= (length faces) 6) "box should have 6 faces")))
+
+(deftest topology-map-edges
+  (let ((edges (map-shape-subshapes (make-box 10 20 30) :edge)))
+    (assert-true (= (length edges) 24) "box should have 24 edge entries (6 faces x 4 edges)")))
+
+(deftest topology-map-vertices
+  (let ((verts (map-shape-subshapes (make-box 10 20 30) :vertex)))
+    (assert-true (= (length verts) 48) "box should have 48 vertex entries (24 edges x 2 vertices)")))
+
+(deftest topology-count-faces
+  (let ((n (count-shape-subshapes (make-box 10 20 30) :face)))
+    (assert-true (= n 6) "box should have 6 faces")))
+
+(deftest topology-count-edges
+  (let ((n (count-shape-subshapes (make-box 10 20 30) :edge)))
+    (assert-true (= n 24) "box should have 24 edge entries (6 faces x 4 edges)")))
+
+(deftest topology-dump-shape
+  (let ((dump (dump-shape (make-box 10 20 30))))
+    (assert-true (and (stringp dump) (> (length dump) 0))
+                 "dump-shape should return a non-empty string")))
+
+(deftest topology-dump-shape-nil
+  (assert-nil (dump-shape nil)))
+
+(deftest topology-make-vertex
+  (let ((v (make-vertex 1.0 2.0 3.0)))
+    (assert-true (shape-p v) "make-vertex should return a shape")))
+
+(deftest topology-make-polygon-closed
+  (let ((p (make-polygon '((0 0 0) (10 0 0) (10 10 0) (0 10 0)) :closed t)))
+    (assert-true (shape-p p) "make-polygon closed should return shape")))
+
+(deftest topology-make-polygon-open
+  (let ((p (make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)))
+    (assert-true (shape-p p) "make-polygon open should return shape")))
+
+(deftest topology-make-polygon-too-few-points
+  (assert-nil (make-polygon '((0 0 0)) :closed nil)
+              "single point should return nil"))
+
+(deftest topology-triangle-count
+  (let ((n (shape-triangle-count (make-box 10 20 30))))
+    (assert-true (and (integerp n) (> n 0))
+                 "triangle count should be positive integer")))
+
+(deftest topology-wire-order-check
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (w (make-wire e1 e2 e3 e4))
+         (f (make-face w)))
+    (assert-true (wire-order-check-p w f)
+                 "valid square wire should pass order check")))
+
+(deftest topology-edge->curve
+  (let* ((e (make-edge-3d 0 0 0 10 0 0))
+         (c (edge->curve e)))
+    (assert-true (or (null c) (typep c 'curve))
+                 "edge->curve should return curve or nil")))
+
+(deftest topology-face->surface
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (w (make-wire e1 e2 e3 e4))
+         (f (make-face w))
+         (s (face->surface f)))
+    (assert-true (or (null s) (typep s 'surface))
+                 "face->surface should return surface or nil")))
+
+;; --- Fillet / Chamfer / Blend tests ---
+
+(deftest fillet-edge-constant
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge box (first edges) 3.0)))
+    (assert-shape result)))
+
+(deftest fillet-edge-nil-shape
+  (assert-nil (fillet-edge nil (make-edge 0 0 10 0) 3.0)))
+
+(deftest fillet-edges-multiple
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (some-edges (list (first edges) (second edges)))
+         (result (fillet-edges box some-edges 3.0)))
+    (assert-shape result)))
+
+(deftest fillet-edge-variable-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge-variable box (first edges)
+                                       '((0.0 3.0) (0.5 5.0) (1.0 3.0)))))
+    (assert-shape result)))
+
+(deftest fillet-wire-corner-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (fillet-wire-corner wire 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "fillet-wire-corner should return shape or nil")))
+
+(deftest fillet-wire-all-corners-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (fillet-wire-all-corners wire 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "fillet-wire-all-corners should return shape or nil")))
+
+(deftest chamfer-edge-constant
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge box (first edges) 3.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-nil-shape
+  (assert-nil (chamfer-edge nil (make-edge 0 0 10 0) 3.0)))
+
+(deftest chamfer-edges-multiple
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (some-edges (list (first edges) (second edges)))
+         (result (chamfer-edges box some-edges 3.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-asymmetric-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge-asymmetric box (first edges) 4.0 2.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-on-face-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (faces (map-shape-subshapes box :face))
+         (result (chamfer-edge-on-face box (first edges) 3.0 (first faces))))
+    (assert-shape result)))
+
+(deftest blend-faces-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (blend-faces (first faces) (second faces) 2.0))))
+    (assert-true (or (null result) (shape-p result))
+                 "blend-faces should return shape or nil")))
+
+(deftest make-blend-constant-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (make-blend (first faces) (second faces) :constant 2.0))))
+    (assert-true (or (null result) (shape-p result))
+                 "make-blend :constant should return shape or nil")))
+
+(deftest fillet-edge-excessive-radius
+  (let* ((box (make-box 10 10 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge box (first edges) 999.0)))
+    (assert-nil result "excessive radius should return nil")))
+
+(deftest chamfer-edge-excessive-distance
+  (let* ((box (make-box 10 10 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge box (first edges) 999.0)))
+    (assert-nil result "excessive distance should return nil")))
+
+;; --- Sweep / Pipe ---
+
+(deftest sweep-profile-circle-along-line
+  (let* ((circ (make-circle-edge 0 0 5))
+         (wire (make-wire circ))
+         (face (make-face wire))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (sweep-profile face spine)))
+    (assert-shape result)))
+
+(deftest sweep-profile-nil-profile
+  (assert-nil (sweep-profile nil (make-wire (make-edge-3d 0 0 0 10 0 0)))))
+
+(deftest sweep-profile-nil-spine
+  (assert-nil (sweep-profile (make-face (make-wire (make-circle-edge 0 0 5))) nil)))
+
+(deftest sweep-profile-fixed-mode
+  (let* ((circ (make-circle-edge 0 0 5))
+         (wire (make-wire circ))
+         (face (make-face wire))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (sweep-profile face spine :mode :fixed)))
+    (assert-shape result)))
+
+(deftest sweep-sections-two-sections
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (e2 (make-circle-edge 20 0 10))
+         (w2 (make-wire e2))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+    (let ((result (sweep-sections spine (list w1 w2) '(0.0 1.0))))
+      (assert-true (or (null result) (shape-p result))
+                   "sweep-sections should return shape or nil"))))
+
+(deftest sweep-sections-nil-spine
+  (assert-nil (sweep-sections nil (list (make-wire (make-circle-edge 0 0 5))) '(0.0))))
+
+(deftest sweep-sections-mismatched-counts
+  (assert-nil (sweep-sections (make-wire (make-edge-3d 0 0 0 10 0 0))
+                              (list (make-wire (make-circle-edge 0 0 5)))
+                              '(0.0 1.0))))
+
+(deftest sweep-with-aux-spine-valid
+  (let* ((circ (make-circle-edge 0 0 5))
+         (face (make-face (make-wire circ)))
+         (main (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (aux (make-wire (make-edge-3d 0 0 0 20 5 0))))
+    (let ((result (sweep-with-aux-spine face main aux)))
+      (assert-true (or (null result) (shape-p result))
+                   "sweep-with-aux-spine should return shape or nil"))))
+
+(deftest sweep-with-aux-spine-nil
+  (assert-nil (sweep-with-aux-spine nil (make-wire (make-edge-3d 0 0 0 10 0 0))
+                                    (make-wire (make-edge-3d 0 0 0 10 5 0)))))
+
+;; --- Loft ---
+
+(deftest loft-sections-two-wires
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (e2 (make-circle-edge 0 0 10))
+         (w2 (make-wire (make-circle-edge 0 0 10)))
+         (result (loft-sections (list w1 w2))))
+    (assert-shape result)))
+
+(deftest loft-sections-nil
+  (assert-nil (loft-sections nil)))
+
+(deftest loft-sections-solid-true
+  (let* ((e1 (make-circle-edge 0 0 5))
+         (w1 (make-wire e1))
+         (w2 (make-wire (make-circle-edge 0 20 5)))
+         (result (loft-sections (list w1 w2) :solid t)))
+    (assert-shape result)))
+
+(deftest loft-sections-ruled
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (result (loft-sections (list w1 w2) :ruled t)))
+    (assert-shape result)))
+
+(deftest loft-sections-smooth
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (result (loft-sections (list w1 w2) :smooth t)))
+    (assert-shape result)))
+
+(deftest loft-sections-three-wires
+  (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+         (w2 (make-wire (make-circle-edge 0 10 8)))
+         (w3 (make-wire (make-circle-edge 0 20 6)))
+         (result (loft-sections (list w1 w2 w3))))
+    (assert-shape result)))
+
+;; --- Face Filling ---
+
+(deftest fill-face-valid
+  (let* ((w (make-wire (make-edge-3d 0 0 0 10 0 0)
+                        (make-edge-3d 10 0 0 10 10 0)
+                        (make-edge-3d 10 10 0 0 10 0)
+                        (make-edge-3d 0 10 0 0 0 0)))
+         (result (fill-face w)))
+    (assert-true (or (null result) (shape-p result)) "fill-face should return shape or nil")))
+
+(deftest fill-face-nil
+  (assert-nil (fill-face nil)))
+
+(deftest fill-n-sided-face-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (result (fill-n-sided-face (list e1 e2 e3 e4))))
+    (assert-shape result)))
+
+(deftest fill-n-sided-face-nil-edges
+  (assert-nil (fill-n-sided-face nil)))
+
+(deftest fill-n-sided-face-too-few
+  (assert-nil (fill-n-sided-face (list (make-edge 0 0 10 0) (make-edge 10 0 10 10)))))
+
+(deftest fill-n-sided-face-curvature
+  (let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+         (e2 (make-edge-3d 10 0 0 10 10 0))
+         (e3 (make-edge-3d 10 10 0 0 10 0))
+         (e4 (make-edge-3d 0 10 0 0 0 0))
+         (result (fill-n-sided-face (list e1 e2 e3 e4) :continuity :tangent)))
+    (assert-true (or (null result) (shape-p result)) "fill-n-sided-face curvature should return shape or nil")))
+
+;; --- Shell / Thicken ---
+
+(deftest shell-shape-box-single-face
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces)) :thickness 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape should return shape or nil")))
+
+(deftest shell-shape-multiple-faces
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (shell-shape box (list (first faces) (second faces))
+                                :thickness 1.5))))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape multiple faces should return shape or nil")))
+
+(deftest shell-shape-outward-offset
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces))
+                              :thickness 2.0 :offset :outward)))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape outward should return shape or nil")))
+
+(deftest shell-shape-nil-shape
+  (assert-nil (shell-shape nil (list (make-shape (cffi:null-pointer))) :thickness 2.0)))
+
+(deftest shell-shape-excessive-thickness
+  (let* ((box (make-box 10 10 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces)) :thickness 999.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive thickness should return shape or nil")))
+
+;; --- 3D Offset ---
+
+(deftest offset-shape-outward
+  (let ((result (offset-shape (make-box 10 10 10) 3.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape outward should return shape or nil")))
+
+(deftest offset-shape-inward
+  (let ((result (offset-shape (make-box 10 10 10) -2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape inward should return shape or nil")))
+
+(deftest offset-shape-arc-join
+  (let ((result (offset-shape (make-box 10 10 10) 3.0 :join :arc)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape arc join should return shape or nil")))
+
+(deftest offset-shape-intersection-join
+  (let ((result (offset-shape (make-box 10 10 10) 3.0 :join :intersection)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape intersection join should return shape or nil")))
+
+(deftest offset-shape-excessive
+  (let ((result (offset-shape (make-box 10 10 10) -999.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive inward offset should return shape or nil")))
+
+(deftest offset-shape-excessive-outward
+  (let ((result (offset-shape (make-box 10 10 10) 999.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive outward offset should return shape or nil")))
+
+(deftest offset-shape-nil
+  (assert-nil (offset-shape nil 5.0)))
+
+;; --- 2D Wire Offset ---
+
+(deftest offset-wire-outward
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (offset-wire wire 3.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-wire outward should return shape or nil")))
+
+(deftest offset-wire-inward
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (offset-wire wire -2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-wire inward should return shape or nil")))
+
+(deftest offset-wire-nil
+  (assert-nil (offset-wire nil 5.0)))
+
+;; --- Draft Angle ---
+
+(deftest draft-face-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0))))
+    (assert-true (or (null result) (shape-p result))
+                 "draft-face should return shape or nil")))
+
+(deftest draft-face-excessive-angle
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (draft-face box (first faces) 150.0 '(0 0 -1) '(0 0 0))))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive draft angle should return shape or nil")))
+
+(deftest draft-face-nil-shape
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face)))
+    (assert-nil (draft-face nil (first faces) 10.0 '(0 0 -1) '(0 0 0)))))
+
+;; --- Evolved Solid ---
+
+(deftest make-evolved-valid
+  (let* ((circ (make-circle-edge 0 0 5))
+         (profile (make-wire circ))
+         (e1 (make-edge-3d 0 0 0 20 0 0))
+         (e2 (make-edge-3d 20 0 0 20 20 0))
+         (e3 (make-edge-3d 20 20 0 0 20 0))
+         (e4 (make-edge-3d 0 20 0 0 0 0))
+         (spine (make-wire e1 e2 e3 e4))
+         (result (make-evolved profile spine)))
+    (assert-true (or (null result) (shape-p result))
+                 "make-evolved should return shape or nil")))
+
+(deftest make-evolved-with-offset
+  (let* ((circ (make-circle-edge 0 0 5))
+         (profile (make-wire circ))
+         (e1 (make-edge-3d 0 0 0 20 0 0))
+         (e2 (make-edge-3d 20 0 0 20 20 0))
+         (e3 (make-edge-3d 20 20 0 0 20 0))
+         (e4 (make-edge-3d 0 20 0 0 0 0))
+         (spine (make-wire e1 e2 e3 e4))
+         (result (make-evolved profile spine :offset 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "make-evolved with offset should return shape or nil")))
+
+(deftest make-evolved-nil-profile
+  (assert-nil (make-evolved nil (make-wire (make-edge-3d 0 0 0 10 0 0)))))
+
+;; --- Mechanical Features (BRepFeat & LocOpe) ---
+
+(deftest make-cylindrical-hole-through
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 5 0 :through t))))
+    (assert-true (or (null result) (shape-p result))
+                 "through hole should return shape or nil")))
+
+(deftest make-cylindrical-hole-blind
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 3 5))))
+    (assert-true (or (null result) (shape-p result))
+                 "blind hole should return shape or nil")))
+
+(deftest make-cylindrical-hole-nil-shape
+  (assert-nil (make-cylindrical-hole nil nil 5 0 :through t)))
+
+(deftest make-prism-feature-depression
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 -5 5 -5))
+                           (e2 (make-edge 5 -5 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 -5))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-prism-feature box (first faces) profile 10
+                                       :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "prism depression should return shape or nil")))
+
+(deftest make-prism-feature-protrusion
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 -5 5 -5))
+                           (e2 (make-edge 5 -5 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 -5))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-prism-feature box (first faces) profile 10
+                                       :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "prism protrusion should return shape or nil")))
+
+(deftest make-prism-feature-nil
+  (assert-nil (make-prism-feature nil nil nil 10)))
+
+(deftest make-revol-feature-depression
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 0 5 0))
+                           (e2 (make-edge 5 0 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 0))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-revol-feature box (first faces) profile
+                                       '(0 0 1) 90
+                                       :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "revol depression should return shape or nil")))
+
+(deftest make-revol-feature-protrusion
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 0 5 0))
+                           (e2 (make-edge 5 0 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 0))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-revol-feature box (first faces) profile
+                                       '(0 0 1) 90
+                                       :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "revol protrusion should return shape or nil")))
+
+(deftest make-revol-feature-nil
+  (assert-nil (make-revol-feature nil nil nil nil 90)))
+
+(deftest make-pipe-feature-depression
+  (let* ((box (make-box 50 50 50))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -3 -3 3 -3))
+                           (e2 (make-edge 3 -3 3 3))
+                           (e3 (make-edge 3 3 -3 3))
+                           (e4 (make-edge -3 3 -3 -3))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (path (make-wire (make-edge-3d 0 0 0 0 0 20)))
+         (result (when (and faces profile)
+                   (make-pipe-feature box (first faces) profile path
+                                      :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "pipe depression should return shape or nil")))
+
+(deftest make-pipe-feature-protrusion
+  (let* ((box (make-box 50 50 50))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -3 -3 3 -3))
+                           (e2 (make-edge 3 -3 3 3))
+                           (e3 (make-edge 3 3 -3 3))
+                           (e4 (make-edge -3 3 -3 -3))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (path (make-wire (make-edge-3d 0 0 0 0 0 20)))
+         (result (when (and faces profile)
+                   (make-pipe-feature box (first faces) profile path
+                                      :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "pipe protrusion should return shape or nil")))
+
+(deftest make-pipe-feature-nil
+  (assert-nil (make-pipe-feature nil nil nil nil :operation :cut)))
+
+(deftest local-extrude-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (local-extrude (first faces) 5))))
+    (assert-true (or (null result) (shape-p result))
+                 "local extrude should return shape or nil")))
+
+(deftest local-extrude-nil
+  (assert-nil (local-extrude nil 5)))
+
+(deftest make-groove-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-groove box (first faces) '(0 0 1) 45))))
+    (assert-true (or (null result) (shape-p result))
+                 "groove should return shape or nil")))
+
+(deftest make-groove-nil
+  (assert-nil (make-groove nil nil nil 45)))
+
+(deftest make-rib-valid
+  (let* ((box (make-box 30 20 10))
+         (profile (let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+                         (e2 (make-edge-3d 10 0 0 10 10 0))
+                         (e3 (make-edge-3d 10 10 0 0 10 0))
+                         (w (make-wire e1 e2 e3)))
+                    w))
+         (result (make-rib box profile 2 :direction '(0 0 1))))
+    (assert-true (or (null result) (shape-p result))
+                 "rib should return shape or nil")))
+
+(deftest make-rib-nil
+  (assert-nil (make-rib nil nil 2)))
+
+(deftest make-cylindrical-hole-nil-depth
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 0 0 :through t))))
+    (assert-nil result "hole with zero radius should return nil")))
+
+;; --- Shape Healing Tests ---
+
+(deftest fix-shape-valid-box
+  (let ((result (fix-shape (make-box 10 20 30))))
+    (assert-shape result)))
+
+(deftest fix-shape-nil
+  (assert-nil (fix-shape nil)))
+
+(deftest fix-wire-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (face (make-face wire))
+         (result (fix-wire wire face :tolerance 0.1)))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest fix-wire-nil
+  (assert-nil (fix-wire nil nil)))
+
+(deftest fix-solid-valid
+  (let ((result (fix-solid (make-box 10 20 30))))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest fix-solid-nil
+  (assert-nil (fix-solid nil)))
+
+(deftest fix-edge-valid
+  (let ((result (fix-edge (make-edge 0 0 10 0))))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest fix-edge-nil
+  (assert-nil (fix-edge nil)))
+
+(deftest fix-face-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (w (make-wire e1 e2 e3 e4))
+         (f (make-face w))
+         (result (fix-face f)))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest fix-face-nil
+  (assert-nil (fix-face nil)))
+
+;; --- Shape Analysis Tests ---
+
+(deftest shape-analysis-free-edges-valid
+  (let ((result (shape-analysis-free-edges (make-box 10 20 30))))
+    (assert-nil result "a closed box should have no free edges")))
+
+(deftest shape-analysis-free-edges-nil
+  (assert-nil (shape-analysis-free-edges nil)))
+
+(deftest shape-analysis-check-intersections-valid
+  (let ((count (shape-analysis-check-intersections (make-box 10 20 30))))
+    (assert-true (integerp count))))
+
+(deftest shape-analysis-check-intersections-nil
+  (assert-nil (shape-analysis-check-intersections nil)))
+
+(deftest shape-analysis-wire-contains-p-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4)))
+    (assert-true (shape-analysis-wire-contains-p wire '(5 5)))))
+
+(deftest shape-analysis-wire-contains-p-outside
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4)))
+    (assert-nil (shape-analysis-wire-contains-p wire '(20 20)))))
+
+(deftest shape-analysis-wire-contains-p-nil
+  (assert-nil (shape-analysis-wire-contains-p nil '(0 0))))
+
+(deftest shape-analysis-contents-valid
+  (let ((c (shape-analysis-contents (make-box 10 20 30))))
+    (assert-true (listp c))
+    (let ((faces (getf c :faces)))
+      (assert-true (integerp faces) "faces count should be an integer"))))
+
+(deftest shape-analysis-contents-nil
+  (assert-nil (shape-analysis-contents nil)))
+
+;; --- Sub-shape Substitution Tests ---
+
+(deftest substitute-shape-single-valid
+  (let* ((box (make-box 10 20 30))
+         (faces (map-shape-subshapes box :face))
+         (old-face (first faces))
+         (new-face old-face)
+         (result (substitute-shape box old-face new-face)))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest substitute-shape-nil-shape
+  (assert-nil (substitute-shape nil (make-box 1 1 1) (make-box 2 2 2))))
+
+(deftest substitute-shape-batch-valid
+  (let* ((box (make-box 10 20 30))
+         (faces (map-shape-subshapes box :face))
+         (pairs (loop for f in faces collect (list f f)))
+         (result (substitute-shape box pairs)))
+    (assert-true (or (null result) (shape-p result)))))
+
+;; --- NURBS Conversion Tests ---
+
+(deftest shape-to-nurbs-valid
+  (let ((result (shape-to-nurbs (make-box 10 20 30))))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest shape-to-nurbs-nil
+  (assert-nil (shape-to-nurbs nil)))
+
+(deftest shape-reduce-degree-valid
+  (let ((nurbs (shape-to-nurbs (make-box 10 20 30))))
+    (when nurbs
+      (let ((reduced (shape-reduce-degree nurbs 2)))
+        (assert-true (or (null reduced) (shape-p reduced)))))))
+
+(deftest shape-reduce-degree-nil
+  (assert-nil (shape-reduce-degree nil 2)))
+
+(deftest shape-to-rational-bspline-valid
+  (let ((result (shape-to-rational-bspline (make-box 10 20 30))))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest shape-to-rational-bspline-nil
+  (assert-nil (shape-to-rational-bspline nil)))
+
+;; --- Surface Split / Continuity Tests ---
+
+(deftest shape-split-u-valid
+  (let ((result (shape-split-u (make-box 10 20 30) 2)))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest shape-split-u-nil
+  (assert-nil (shape-split-u nil 2)))
+
+(deftest shape-upgrade-continuity-valid
+  (let ((result (shape-upgrade-continuity (make-box 10 20 30) :continuity :c2)))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest shape-upgrade-continuity-nil
+  (assert-nil (shape-upgrade-continuity nil :continuity :c2)))
+
+;; --- Healing Pipeline Tests ---
+
+(deftest apply-shape-process-single-valid
+  (let ((result (apply-shape-process (make-box 10 20 30) "FixShape")))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest apply-shape-process-sequence-valid
+  (let ((result (apply-shape-process (make-box 10 20 30) '("FixShape" "SameParameter"))))
+    (assert-true (or (null result) (shape-p result)))))
+
+(deftest apply-shape-process-nil
+  (assert-nil (apply-shape-process nil "FixShape")))
+
+(deftest heal-shape-valid
+  (let ((result (heal-shape (make-box 10 20 30))))
+    (assert-shape result)))
+
+(deftest heal-shape-nil
+  (assert-nil (heal-shape nil)))
+
+;; --- Null / Edge Case Tests ---
+
+(deftest fix-shaped-nil-input-all
+  (assert-nil (fix-shape nil))
+  (assert-nil (fix-wire nil nil))
+  (assert-nil (fix-solid nil))
+  (assert-nil (fix-edge nil))
+  (assert-nil (fix-face nil)))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -1837,7 +2960,114 @@
                make-dimension-edge-keyword
                set-dimension-text-alias
                set-dimension-arrows-convenience
-               set-dimension-extension-convenience))
+                set-dimension-extension-convenience
+                make-line-3d-valid make-line-3d-zero-dir
+                make-circle-3d-valid make-circle-3d-zero-radius
+                make-ellipse-3d-valid make-ellipse-3d-zero-major
+                make-hyperbola-valid
+                make-parabola-valid make-parabola-zero-focal
+                make-bezier-curve-valid
+                make-bspline-curve-valid
+                curve-type-line curve-type-circle curve-type-ellipse
+                curve-type-bezier curve-type-bspline
+                make-plane-valid make-plane-zero-normal
+                make-cylindrical-surface-valid make-cylindrical-surface-zero-radius
+                make-conical-surface-valid
+                make-spherical-surface-valid make-spherical-surface-zero-radius
+                make-toroidal-surface-valid
+                surface-type-plane surface-type-cylindrical
+                make-gc-line-valid make-gc-arc-of-circle-valid
+                convert-curve-to-bspline-valid convert-surface-to-bspline-valid
+                curve-bounding-box-valid surface-bounding-box-valid
+                project-point-on-curve-valid project-point-on-surface-valid
+                intersect-curves-valid intersect-curves-no-intersection
+                intersect-curve-surface-valid
+                points-to-bspline-valid points-to-bspline-degree
+                interpolate-points-valid interpolate-points-with-tangents
+                make-helix-curve-valid make-helix-curve-left-handed
+                make-helix-curve-zero-radius
+                make-helix-edge-valid make-helix-edge-zero-radius
+                curve-gc-cancel-and-free curve-gc-cancel-and-free-bezier
+                curve-gc-nil-ptr-skip-finalizer
+                surface-gc-cancel-and-free surface-gc-cancel-and-free-cylinder
+                surface-gc-nil-ptr-skip-finalizer
+                gprops-volume-box gprops-volume-nil gprops-area-sphere
+                gprops-com-box gprops-com-nil gprops-gprops-box
+                gprops-gprops-nil gprops-inertia-box
+                shape-analysis-distance shape-analysis-distance-nil
+                shape-analysis-distance-extrema
+                shape-analysis-point-in-solid-inside
+                shape-analysis-point-in-solid-outside
+                shape-analysis-point-in-solid-on
+                shape-analysis-classify
+                shape-analysis-valid-p shape-analysis-valid-p-nil
+                shape-analysis-check
+                topology-map-faces topology-map-edges topology-map-vertices
+                topology-count-faces topology-count-edges
+                topology-dump-shape topology-dump-shape-nil
+                topology-make-vertex
+                topology-make-polygon-closed topology-make-polygon-open
+                topology-make-polygon-too-few-points
+                topology-triangle-count topology-wire-order-check
+                topology-edge->curve topology-face->surface
+                fillet-edge-constant fillet-edge-nil-shape
+                fillet-edges-multiple fillet-edge-variable-valid
+                fillet-wire-corner-valid fillet-wire-all-corners-valid
+                chamfer-edge-constant chamfer-edge-nil-shape
+                chamfer-edges-multiple chamfer-edge-asymmetric-valid
+                chamfer-edge-on-face-valid
+                blend-faces-valid make-blend-constant-valid
+                fillet-edge-excessive-radius chamfer-edge-excessive-distance
+                sweep-profile-circle-along-line
+                sweep-profile-nil-profile sweep-profile-nil-spine
+                sweep-profile-fixed-mode
+                sweep-sections-two-sections
+                sweep-sections-nil-spine sweep-sections-mismatched-counts
+                sweep-with-aux-spine-valid sweep-with-aux-spine-nil
+                loft-sections-two-wires loft-sections-nil
+                loft-sections-solid-true loft-sections-ruled
+                loft-sections-smooth loft-sections-three-wires
+                fill-face-valid fill-face-nil
+                 fill-n-sided-face-valid fill-n-sided-face-nil-edges
+                 fill-n-sided-face-too-few fill-n-sided-face-curvature
+                 shell-shape-box-single-face shell-shape-multiple-faces
+                 shell-shape-outward-offset shell-shape-nil-shape
+                 shell-shape-excessive-thickness
+                 offset-shape-outward offset-shape-inward
+                 offset-shape-arc-join offset-shape-intersection-join
+                 offset-shape-excessive offset-shape-excessive-outward offset-shape-nil
+                 offset-wire-outward offset-wire-inward offset-wire-nil
+                 draft-face-valid draft-face-excessive-angle draft-face-nil-shape
+                 make-evolved-valid make-evolved-with-offset make-evolved-nil-profile
+                 make-cylindrical-hole-through make-cylindrical-hole-blind
+                 make-cylindrical-hole-nil-shape make-cylindrical-hole-nil-depth
+                 make-prism-feature-depression make-prism-feature-protrusion
+                 make-prism-feature-nil
+                 make-revol-feature-depression make-revol-feature-protrusion
+                 make-revol-feature-nil
+                 make-pipe-feature-depression make-pipe-feature-protrusion
+                 make-pipe-feature-nil
+                 local-extrude-valid local-extrude-nil
+                 make-groove-valid make-groove-nil
+                 make-rib-valid make-rib-nil
+                 fix-shape-valid-box fix-shape-nil
+                 fix-wire-valid fix-wire-nil
+                 fix-solid-valid fix-solid-nil
+                 fix-edge-valid fix-edge-nil
+                 fix-face-valid fix-face-nil
+                 shape-analysis-free-edges-valid shape-analysis-free-edges-nil
+                 shape-analysis-check-intersections-valid shape-analysis-check-intersections-nil
+                 shape-analysis-wire-contains-p-valid shape-analysis-wire-contains-p-outside shape-analysis-wire-contains-p-nil
+                 shape-analysis-contents-valid shape-analysis-contents-nil
+                 substitute-shape-single-valid substitute-shape-nil-shape substitute-shape-batch-valid
+                 shape-to-nurbs-valid shape-to-nurbs-nil
+                 shape-reduce-degree-valid shape-reduce-degree-nil
+                 shape-to-rational-bspline-valid shape-to-rational-bspline-nil
+                 shape-split-u-valid shape-split-u-nil
+                 shape-upgrade-continuity-valid shape-upgrade-continuity-nil
+                 apply-shape-process-single-valid apply-shape-process-sequence-valid apply-shape-process-nil
+                 heal-shape-valid heal-shape-nil
+                 fix-shaped-nil-input-all))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

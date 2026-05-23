@@ -340,6 +340,228 @@ void   ais_context_set_pixel_tolerance(void* ctx, int pixels);
 void   ais_context_set_automatic_hilight(void* ctx, int on);
 void   ais_context_set_to_hilight_selected(void* ctx, int on);
 
+// --- 3D Curves ---
+
+typedef void* occt_curve;
+
+occt_curve make_line_3d(double ox, double oy, double oz, double dx, double dy, double dz);
+occt_curve make_circle_3d(double ox, double oy, double oz, double radius);
+occt_curve make_ellipse_3d(double ox, double oy, double oz, double major_r, double minor_r);
+occt_curve make_hyperbola(double ox, double oy, double oz, double major_r, double minor_r);
+occt_curve make_parabola(double ox, double oy, double oz, double focal);
+occt_curve make_bezier_curve(double* points, int num_points);
+occt_curve make_bspline_curve(double* poles, int num_poles, double* knots, int* mults, int num_knots, int degree);
+void      free_curve(occt_curve curve);
+int       curve_type(occt_curve curve);
+occt_curve make_gc_line(double x1, double y1, double z1, double x2, double y2, double z2);
+occt_curve make_gc_arc_of_circle(double x1, double y1, double z1,
+                                  double x2, double y2, double z2,
+                                  double x3, double y3, double z3);
+occt_curve convert_curve_to_bspline(occt_curve curve);
+int       curve_bounding_box(occt_curve curve,
+                             double* xmin, double* ymin, double* zmin,
+                             double* xmax, double* ymax, double* zmax);
+
+// --- 3D Surfaces ---
+
+typedef void* occt_surface;
+
+occt_surface make_plane(double ox, double oy, double oz, double nx, double ny, double nz);
+occt_surface make_cylindrical_surface(double ox, double oy, double oz, double dx, double dy, double dz, double radius);
+occt_surface make_conical_surface(double ox, double oy, double oz, double dx, double dy, double dz, double radius, double semi_angle);
+occt_surface make_spherical_surface(double ox, double oy, double oz, double radius);
+occt_surface make_toroidal_surface(double ox, double oy, double oz, double major_r, double minor_r);
+occt_surface make_bezier_surface(double* poles, int num_u, int num_v);
+occt_surface make_bspline_surface(double* poles, int num_u_poles, int num_v_poles,
+                                   double* uknots, int* umults, int num_uknots,
+                                   double* vknots, int* vmults, int num_vknots,
+                                   int udeg, int vdeg);
+void        free_surface(occt_surface surface);
+int         surface_type(occt_surface surface);
+occt_surface convert_surface_to_bspline(occt_surface surface);
+int         surface_bounding_box(occt_surface surface,
+                                 double* xmin, double* ymin, double* zmin,
+                                 double* xmax, double* ymax, double* zmax);
+
+// --- Geometric Algorithms ---
+
+int project_point_on_curve(occt_curve curve,
+                           double px, double py, double pz,
+                           double* out_x, double* out_y, double* out_z,
+                           double* out_dist, double* out_param);
+int project_point_on_surface(occt_surface surface,
+                             double px, double py, double pz,
+                             double* out_x, double* out_y, double* out_z,
+                             double* out_u, double* out_v, double* out_dist);
+int intersect_curves(occt_curve c1, occt_curve c2,
+                     double* out_points, int max_points);
+int intersect_curve_surface(occt_curve curve, occt_surface surface,
+                            double* out_points, int max_points);
+int intersect_surfaces(occt_surface s1, occt_surface s2,
+                       occt_curve* out_curves, int max_curves);
+int extrema_curve_curve(occt_curve c1, occt_curve c2,
+                        double* out_dist,
+                        double* out_p1x, double* out_p1y, double* out_p1z,
+                        double* out_p2x, double* out_p2y, double* out_p2z);
+int extrema_curve_surface(occt_curve curve, occt_surface surface,
+                          double* out_dist,
+                          double* out_px, double* out_py, double* out_pz,
+                          double* out_u, double* out_v);
+int intersect_curves_2d(occt_geom2d c1, occt_geom2d c2,
+                        double* out_points, int max_points);
+int project_point_on_curve_2d(occt_geom2d curve,
+                              double px, double py,
+                              double* out_x, double* out_y,
+                              double* out_dist, double* out_param);
+occt_curve points_to_bspline(double* points, int num_points, int degree);
+occt_curve interpolate_points(double* points, int num_points,
+                              double* init_tangent, double* final_tangent);
+
+// --- Helix ---
+
+occt_curve make_helix_curve(double radius, double pitch, double height,
+                            int left_handed, double angle);
+occt_shape make_helix_edge(double radius, double pitch, double height,
+                           int left_handed, double angle,
+                           occt_surface on_surface);
+
+// --- Mass Properties (BRepGProp) ---
+
+double shape_volume(occt_shape shape);
+double shape_area(occt_shape shape);
+int    shape_center_of_mass(occt_shape shape, double* out_x, double* out_y, double* out_z);
+int    shape_inertia(occt_shape shape, double* out_inertia, int inertia_size,
+                     double* out_principal_moments, int pm_size,
+                     double* out_principal_axes, int pa_size);
+
+// --- Shape Analysis Queries ---
+
+double shape_distance(occt_shape shape1, occt_shape shape2);
+int    shape_distance_extrema(occt_shape shape1, occt_shape shape2,
+                              double* out_dist,
+                              double* out_p1x, double* out_p1y, double* out_p1z,
+                              double* out_p2x, double* out_p2y, double* out_p2z);
+int    classify_point_in_solid(occt_shape shape, double px, double py, double pz,
+                               int* out_state, occt_shape* out_face);
+int    shape_is_valid(occt_shape shape);
+const char* shape_analysis_report(occt_shape shape);
+int    intersect_curve_shape(occt_curve curve, occt_shape shape,
+                             double* out_points, double* out_params,
+                             occt_shape* out_faces, int max_results);
+
+// --- Topology Navigation ---
+
+int    map_subshapes(occt_shape shape, int shape_type, int stop_at_type,
+                     occt_shape* out_shapes, int max_shapes);
+int    count_subshapes(occt_shape shape, int shape_type, int stop_at_type);
+const char* dump_shape(occt_shape shape);
+int    shape_triangle_count(occt_shape shape);
+int    wire_order_check(occt_shape wire, occt_shape face);
+occt_curve edge_to_curve(occt_shape edge);
+occt_surface face_to_surface(occt_shape face);
+occt_shape make_vertex(double x, double y, double z);
+occt_shape make_polygon(double* points, int num_points, int closed);
+
+// --- Fillet / Chamfer / Blend ---
+
+occt_shape fillet_edge_constant(occt_shape shape, occt_shape edge, double radius);
+occt_shape fillet_edges_constant(occt_shape shape, occt_shape* edges, int num_edges, double radius);
+occt_shape fillet_edge_variable(occt_shape shape, occt_shape edge, double* params_and_radii, int num_pairs);
+occt_shape fillet_wire_corner(occt_shape wire, double radius);
+occt_shape fillet_wire_all_corners(occt_shape wire, double radius);
+
+occt_shape chamfer_edge_equal(occt_shape shape, occt_shape edge, double distance);
+occt_shape chamfer_edges_equal(occt_shape shape, occt_shape* edges, int num_edges, double distance);
+occt_shape chamfer_edge_asym(occt_shape shape, occt_shape edge, double distance1, double distance2);
+occt_shape chamfer_edge_on_face(occt_shape shape, occt_shape edge, double distance, occt_shape face);
+
+occt_shape blend_faces_constant(occt_shape face1, occt_shape face2, double radius);
+occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius);
+
+// --- Sweep / Pipe ---
+
+occt_shape sweep_pipe(occt_shape profile, occt_shape spine);
+occt_shape sweep_pipe_fixed(occt_shape profile, occt_shape spine);
+occt_shape sweep_pipe_shell(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_sliding(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_fixed(occt_shape spine, occt_shape* sections, double* params, int count);
+occt_shape sweep_pipe_shell_aux(occt_shape profile, occt_shape main_spine, occt_shape aux_spine);
+
+// --- Loft ---
+
+occt_shape loft_sections(occt_shape* wires, int count, int solid);
+occt_shape loft_sections_ruled(occt_shape* wires, int count, int solid, int ruled);
+occt_shape loft_sections_smooth(occt_shape* wires, int count, int solid, int smooth);
+occt_shape loft_sections_tangency(occt_shape* wires, int count, int solid, occt_shape init_face, occt_shape final_face);
+
+// --- Face Filling ---
+
+occt_shape fill_face(occt_shape wire);
+occt_shape fill_face_constrained(occt_shape wire, occt_shape* support_faces, int* continuities, int count);
+occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity);
+
+// --- Shell / Thicken ---
+occt_shape shell_shape(occt_shape shape, occt_shape* faces, int num_faces, double thickness);
+
+// --- Offset ---
+occt_shape offset_shape_3d(occt_shape shape, double offset, int join);
+occt_shape offset_wire_2d(occt_shape wire, double offset);
+
+// --- Draft ---
+occt_shape draft_face(occt_shape shape, occt_shape face, double angle,
+                      double dx, double dy, double dz,
+                      double px, double py, double pz,
+                      double nx, double ny, double nz);
+occt_shape make_evolved(occt_shape profile, occt_shape spine, double offset, int join);
+
+// --- Mechanical Features (BRepFeat) ---
+
+occt_shape make_cylindrical_hole(occt_shape shape, occt_shape face,
+                                 double radius, double depth, int through);
+occt_shape make_prism_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double height, double dx, double dy, double dz, int operation);
+occt_shape make_revol_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double ax, double ay, double az, double angle, int operation);
+occt_shape make_pipe_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                             occt_shape path, int operation);
+
+// --- Local Operations (LocOpe) ---
+
+occt_shape local_extrude(occt_shape face, double height, double dx, double dy, double dz);
+occt_shape make_groove(occt_shape shape, occt_shape face,
+                        double ax, double ay, double az, double angle);
+occt_shape make_rib(occt_shape shape, occt_shape profile, double thickness,
+                    double dx, double dy, double dz);
+
+// --- Shape Fix ---
+
+occt_shape fix_shape(occt_shape shape);
+occt_shape fix_wire(occt_shape wire, occt_shape face, double tolerance);
+occt_shape fix_solid(occt_shape shape);
+occt_shape fix_edge(occt_shape edge);
+occt_shape fix_face(occt_shape face);
+occt_shape shape_analysis_free_edges(occt_shape shape);
+int shape_analysis_check_intersections(occt_shape shape);
+int shape_analysis_wire_contains(occt_shape wire, double x, double y);
+const char* shape_analysis_contents(occt_shape shape);
+
+// --- Shape Rebuild ---
+
+occt_shape substitute_single(occt_shape shape, occt_shape old_sub, occt_shape new_sub);
+occt_shape substitute_batch(occt_shape shape, occt_shape* old_shapes, occt_shape* new_shapes, int count);
+occt_shape shape_to_nurbs(occt_shape shape);
+occt_shape shape_reduce_degree(occt_shape shape, int max_degree);
+occt_shape shape_to_rational_bspline(occt_shape shape);
+occt_shape shape_split_u(occt_shape shape, int num_splits);
+occt_shape shape_upgrade_continuity(occt_shape shape, int continuity);
+
+// --- Shape Process Pipeline ---
+
+occt_shape apply_shape_process(occt_shape shape, const char* operator_name);
+occt_shape apply_operator_sequence(occt_shape shape, const char** operators, int count);
+occt_shape apply_healing_pipeline(occt_shape shape, const char* pipeline_name, const char* resource);
+occt_shape heal_shape_default(occt_shape shape);
+
 #ifdef __cplusplus
 }
 #endif

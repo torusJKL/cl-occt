@@ -241,6 +241,54 @@ Design decisions documented in `openspec/changes/v1-core/design.md`.
 
 Returns `nil` on invalid dimensions or degenerate parameters.
 
+### Mechanical Features (BRepFeat)
+
+Positional features that add or remove material relative to a specific face.
+
+| Function | Description |
+|----------|-------------|
+| `(make-cylindrical-hole shape face radius depth &key through)` | Create a cylindrical hole. When `:through t`, creates a through hole; otherwise a blind hole of given depth |
+| `(make-prism-feature shape base-face profile height &key operation direction)` | Linear extrusion from a face. `:operation` is `:cut` (depression) or `:add` (protrusion). `:direction` is a vector `(dx dy dz)` |
+| `(make-revol-feature shape base-face profile axis angle &key operation)` | Rotational sweep from a face around `axis` by `angle` degrees. `:operation` is `:cut` or `:add` |
+| `(make-pipe-feature shape base-face profile path &key operation)` | Pipe-shaped feature along a path wire. `:operation` is `:cut` or `:add` |
+
+The `profile` argument is a wire defining the cross-section. The `base-face` must be a face of `shape`. All functions propagate nil on invalid inputs.
+
+```lisp
+;; Through hole on the first face of a box
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (make-cylindrical-hole box (first faces) 5 0 :through t))
+
+;; Prismatic depression
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face))
+       (profile (make-wire (make-edge -5 -5 5 -5) (make-edge 5 -5 5 5)
+                           (make-edge 5 5 -5 5) (make-edge -5 5 -5 -5))))
+  (make-prism-feature box (first faces) profile 10 :operation :cut))
+```
+
+### Local Operations (LocOpe)
+
+Lower-level local shape modifications on individual faces.
+
+| Function | Description |
+|----------|-------------|
+| `(local-extrude face height)` | Extrude a single face by a given height along its normal |
+| `(make-groove shape face axis angle)` | Create a revolved cut (groove) on a face around an axis (`angle` in degrees) |
+| `(make-rib shape profile-face thickness &key direction)` | Create a rib by extruding a profile face and fusing it to the shape |
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  ;; Local extrusion of a face
+  (local-extrude (first faces) 5)
+  ;; Groove on a face
+  (make-groove box (first faces) '(0 0 1) 45)
+  ;; Rib from a profile fused to shape
+  (make-rib box (first faces) 2 :direction '(0 0 1)))
+```
+
 ### Booleans
 
 | Function | Description |
@@ -251,6 +299,216 @@ Returns `nil` on invalid dimensions or degenerate parameters.
 | `(section a &rest others)` | Intersection curves/edges between shapes |
 
 All propagate nil: if any argument is nil, result is nil.
+
+### Edge Fillet
+
+| Function | Description |
+|----------|-------------|
+| `(fillet-edge shape edge radius)` | Round a single edge with constant radius |
+| `(fillet-edges shape edges radius)` | Round multiple edges with the same radius |
+| `(fillet-edge-variable shape edge param-radius-pairs)` | Round an edge with variable radius. `param-radius-pairs` is a list of `(param radius)` where param is in [0,1] |
+| `(fillet-wire-corner wire radius)` | Round the first corner of a planar wire (2D fillet) |
+| `(fillet-wire-all-corners wire radius)` | Round all corners of a planar wire |
+
+Edges are obtained via `(map-shape-subshapes shape :edge)`. All functions return `nil` on invalid inputs (nil shape, excessive radius, degenerate geometry).
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (edges (map-shape-subshapes box :edge)))
+  ;; Constant radius fillet on one edge
+  (fillet-edge box (first edges) 5.0)
+  ;; Variable radius fillet
+  (fillet-edge-variable box (first edges)
+                        '((0.0 3.0) (0.5 5.0) (1.0 3.0))))
+```
+
+### Chamfer
+
+| Function | Description |
+|----------|-------------|
+| `(chamfer-edge shape edge distance)` | Bevel an edge with equal distance on both faces |
+| `(chamfer-edges shape edges distance)` | Bevel multiple edges with equal distance |
+| `(chamfer-edge-asymmetric shape edge d1 d2)` | Bevel an edge with different distances on each adjacent face |
+| `(chamfer-edge-on-face shape edge distance face)` | Bevel an edge relative to a specific face |
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (edges (map-shape-subshapes box :edge))
+       (faces (map-shape-subshapes box :face)))
+  (chamfer-edge box (first edges) 3.0)
+  (chamfer-edge-asymmetric box (first edges) 4.0 2.0)
+  (chamfer-edge-on-face box (first edges) 3.0 (first faces)))
+```
+
+### Sweep / Pipe
+
+Sweep a profile (face or wire) along a spine, or sweep with multiple evolving sections.
+
+| Function | Description |
+|----------|-------------|
+| `(sweep-profile profile spine &key mode)` | Sweep a single profile (face or wire) along a spine (wire). `:mode` is `:sliding` (Frenet, default) or `:fixed` (section orientation constant). |
+| `(sweep-sections spine sections params &key mode)` | Sweep with multiple section wires at specified parameters along the spine. `:mode` is `:sliding` or `:fixed`. |
+| `(sweep-with-aux-spine profile main-spine aux-spine)` | Sweep a profile along a main spine guided by an auxiliary spine. |
+
+All return `nil` on invalid inputs (nil args, mismatched section/param counts).
+
+```lisp
+;; Simple pipe sweep: circle face along a line
+(let* ((face (make-face (make-wire (make-circle-edge 0 0 5))))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (sweep-profile face spine))
+
+;; Fixed mode (section doesn't rotate with spine)
+(sweep-profile face spine :mode :fixed)
+
+;; Multi-section sweep: circle morphs from r=5 to r=10
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 20 0 10)))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (sweep-sections spine (list w1 w2) '(0.0 1.0)))
+```
+
+### Loft
+
+Create a solid or shell through multiple section wires.
+
+| Function | Description |
+|----------|-------------|
+| `(loft-sections wires &key solid ruled smooth initial-tangent final-tangent)` | Loft through a list of wire sections. `:solid t` (default) creates a closed solid, `:solid nil` creates a shell. `:ruled t` uses linear interpolation (no smoothing). `:smooth t` enables vertex smoothing. `:initial-tangent` and `:final-tangent` accept face references for tangency constraints. |
+
+Returns `nil` on invalid inputs (nil wires, fewer than 2 wires).
+
+```lisp
+;; Loft two circular wires
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 0 10 8))))
+  (loft-sections (list w1 w2)))
+
+;; Loft three wires with smooth interpolation
+(let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+       (w2 (make-wire (make-circle-edge 0 10 8)))
+       (w3 (make-wire (make-circle-edge 0 20 6))))
+  (loft-sections (list w1 w2 w3) :smooth t))
+
+;; Ruled loft (linear interpolation between sections)
+(loft-sections (list w1 w2) :ruled t)
+
+;; Open shell loft (not closed)
+(loft-sections (list w1 w2) :solid nil)
+```
+
+### Face Filling
+
+Fill an N-sided face from boundary edges or a boundary wire, with optional continuity constraints.
+
+| Function | Description |
+|----------|-------------|
+| `(fill-face boundary-wire &key support-faces continuity)` | Fill a surface from a closed boundary wire. `:support-faces` is a list of reference faces. `:continuity` is a list of continuity keywords (`:c0`, `:tangent`, `:curvature`, `:g3`), one per support face. |
+| `(fill-n-sided-face edges &key continuity)` | Fill an N-sided face from a list of boundary edges. `:continuity` is a keyword (`:c0`, `:tangent`, `:curvature`, `:g3`). |
+
+Returns `nil` on invalid inputs (nil wire, fewer than 3 edges).
+
+```lisp
+;; Fill a square boundary wire
+(let* ((w (make-wire (make-edge-3d 0 0 0 10 0 0)
+                      (make-edge-3d 10 0 0 10 10 0)
+                      (make-edge-3d 10 10 0 0 10 0)
+                      (make-edge-3d 0 10 0 0 0 0))))
+  (fill-face w))
+
+;; Fill an N-sided face from four edges
+(let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+       (e2 (make-edge-3d 10 0 0 10 10 0))
+       (e3 (make-edge-3d 10 10 0 0 10 0))
+       (e4 (make-edge-3d 0 10 0 0 0 0)))
+  (fill-n-sided-face (list e1 e2 e3 e4)))
+```
+
+### Shell / Thicken (Hollow)
+
+Create thin-walled shells by removing faces from a solid.
+
+| Function | Description |
+|----------|-------------|
+| `(shell-shape shape faces &key thickness offset)` | Hollow a solid by removing specified faces. `:thickness` (default 1.0) is wall thickness. `:offset` is `:inward` (default, material removed inward) or `:outward` (material added outward). |
+
+Faces are obtained via `(map-shape-subshapes shape :face)`. Returns `nil` on nil shape, nil faces, or excessive thickness.
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  ;; Remove the top face, 2mm wall thickness
+  (shell-shape box (list (first faces)) :thickness 2.0)
+  ;; Outward offset
+  (shell-shape box (list (first faces)) :thickness 2.0 :offset :outward))
+```
+
+### 3D Shape Offset
+
+Offset a solid or shell outward (enlarged) or inward (reduced).
+
+| Function | Description |
+|----------|-------------|
+| `(offset-shape shape distance &key join)` | Offset a 3D shape by distance (positive = outward, negative = inward). `:join` is `:arc` (default), `:tangent`, or `:intersection`. |
+
+Returns `nil` on nil shape.
+
+```lisp
+(offset-shape (make-box 10 10 10) 3.0)                   ; outward
+(offset-shape (make-box 10 10 10) -2.0)                  ; inward
+(offset-shape (make-box 10 10 10) 3.0 :join :arc)        ; rounded corners
+(offset-shape (make-box 10 10 10) 3.0 :join :intersection) ; sharp corners
+```
+
+### 2D Wire Offset
+
+Offset a planar wire in its plane.
+
+| Function | Description |
+|----------|-------------|
+| `(offset-wire wire distance)` | Offset a planar wire by distance (positive = outward, negative = inward). Returns a shape or nil. |
+
+```lisp
+(let* ((w (make-wire (make-edge 0 0 10 0)
+                      (make-edge 10 0 10 10)
+                      (make-edge 10 10 0 10)
+                      (make-edge 0 10 0 0))))
+  (offset-wire w 3.0)   ; outward
+  (offset-wire w -2.0)) ; inward
+```
+
+### Draft Angle
+
+Apply a taper (draft) angle to faces of a solid.
+
+| Function | Description |
+|----------|-------------|
+| `(draft-face shape face angle pull-direction neutral-plane)` | Apply draft angle (in degrees) to a face. `pull-direction` is a 3D vector `(dx dy dz)`. `neutral-plane` is a point `(x y z)` on the neutral plane. The neutral plane normal is set to the pull direction. |
+
+Returns `nil` on nil inputs or excessive draft angle.
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0)))
+```
+
+### Evolved Solid
+
+Construct an evolved solid by sweeping a profile along a spine.
+
+| Function | Description |
+|----------|-------------|
+| `(make-evolved profile spine &key offset join)` | Sweep profile (wire) along spine (wire). `:offset` (default 0.0) applies further offset. `:join` is `:arc` (default), `:tangent`, or `:intersection`. |
+
+Returns `nil` on nil inputs.
+
+```lisp
+(let* ((profile (make-wire (make-circle-edge 0 0 5)))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (make-evolved profile spine)
+  (make-evolved profile spine :offset 2.0))
+```
 
 ### Transforms
 
@@ -347,6 +605,69 @@ Colors are plists: `(:generic r g b a)`, `(:surf r g b a)`, `(:curv r g b a)` wi
 
 Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
 
+### 3D Curves
+
+| Function | Description |
+|----------|-------------|
+| `(make-line-3d x y z dx dy dz)` | Infinite 3D line through point with direction (nil on zero direction) |
+| `(make-circle-3d x y z radius)` | 3D circle centered at point in XY plane |
+| `(make-ellipse x y z major-r minor-r)` | 3D ellipse in XY plane |
+| `(make-hyperbola x y z major-r minor-r)` | 3D hyperbola in XY plane |
+| `(make-parabola x y z focal)` | 3D parabola in XY plane |
+| `(make-bezier-curve points)` | Bezier curve through list of `(x y z)` points |
+| `(make-bspline-curve poles knots mults degree)` | BSpline curve from poles, knot vector, multiplicities, and degree |
+| `(make-gc-line x1 y1 z1 x2 y2 z2)` | Trimmed line segment between two points |
+| `(make-gc-arc-of-circle x1 y1 z1 x2 y2 z2 x3 y3 z3)` | Circular arc through three points |
+| `(curve-type curve)` | Return keyword type (`:line`, `:circle`, `:ellipse`, `:hyperbola`, `:parabola`, `:bezier-curve`, `:bspline-curve`, `:gc-line`, `:gc-arc-of-circle`, `:helix`) or nil |
+| `(convert-curve-to-bspline curve)` | Convert elementary curve to BSpline representation |
+| `(curve-bounding-box curve)` | Returns `(values xmin ymin zmin xmax ymax zmax)` or nil |
+
+Returns `curve` objects (distinct from `shape` and `geom2d`), GC-managed via `tg:finalize`.
+
+### 3D Surfaces
+
+| Function | Description |
+|----------|-------------|
+| `(make-plane x y z nx ny nz)` | Infinite plane through point with normal |
+| `(make-cylindrical-surface x y z dx dy dz radius)` | Cylindrical surface along axis |
+| `(make-conical-surface x y z dx dy dz radius semi-angle)` | Conical surface (semi-angle in degrees) |
+| `(make-spherical-surface x y z radius)` | Spherical surface |
+| `(make-toroidal-surface x y z major-r minor-r)` | Toroidal surface |
+| `(make-bezier-surface poles num-u num-v)` | Bezier surface from grid of poles |
+| `(make-bspline-surface poles num-u-poles num-v-poles uknots umults vknots vmults udeg vdeg)` | BSpline surface |
+| `(surface-type surface)` | Return keyword type (`:plane`, `:cylindrical-surface`, `:conical-surface`, `:spherical-surface`, `:toroidal-surface`, `:bezier-surface`, `:bspline-surface`) or nil |
+| `(convert-surface-to-bspline surface)` | Convert elementary surface to BSpline representation |
+| `(surface-bounding-box surface)` | Returns `(values xmin ymin zmax ymax zmax)` or nil |
+
+Returns `surface` objects, GC-managed via `tg:finalize`.
+
+### Geometric Algorithms
+
+| Function | Description |
+|----------|-------------|
+| `(project-point-on-curve curve x y z)` | Project point onto 3D curve. Returns `(values x y z dist param)` or nil |
+| `(project-point-on-surface surface x y z)` | Project point onto surface. Returns `(values x y z u v dist)` or nil |
+| `(intersect-curves curve1 curve2)` | Intersect two 3D curves. Returns list of `(x y z)` points or nil |
+| `(intersect-curve-surface curve surface)` | Intersect curve with surface. Returns list of `(x y z)` points or nil |
+| `(intersect-surfaces surface1 surface2)` | Intersect two surfaces. Returns list of `curve` objects or nil |
+| `(extrema-curve-curve curve1 curve2)` | Min distance between two curves. Returns `(values dist point1 point2)` or nil |
+| `(extrema-curve-surface curve surface)` | Min distance from curve to surface. Returns `(values dist point u v)` or nil |
+| `(intersect-curves-2d curve1 curve2)` | Intersect two 2D curves. Returns list of `(x y)` points or nil |
+| `(project-point-on-curve-2d curve x y)` | Project 2D point onto 2D curve. Returns `(values x y dist param)` or nil |
+| `(points-to-bspline points &key degree)` | Approximate points with BSpline curve. Returns `curve` or nil |
+| `(interpolate-points points &key initial-tangent final-tangent)` | Interpolate points exactly. Returns `curve` or nil |
+
+All functions accept nil inputs and return nil, propagating errors gracefully.
+
+### Helix
+
+| Function | Description |
+|----------|-------------|
+| `(make-helix-curve &key radius pitch height left-handed angle)` | Create helical parametric curve. Returns `curve` or nil |
+| `(make-helix-edge &key radius pitch height left-handed angle on-surface)` | Create helical BRep edge. Returns `shape` or nil |
+
+Keyword arguments: `:radius` (mandatory), `:pitch` (mandatory), `:height` (mandatory), `:left-handed` (default nil), `:angle` (taper angle in degrees, default 0.0), `:on-surface` (for edge, optional surface constraint).
+
 ### Face Construction
 
 | Function | Description |
@@ -360,6 +681,196 @@ Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
 | `(make-face-on-plane wire ox oy oz nx ny nz)` | Planar face on an explicit plane |
 
 Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`/`make-revol` to create solids from 2D profiles.
+
+### Mass Properties
+
+Query physical properties of solid shapes via BRepGProp.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-volume shape)` | Volume of a solid. Returns double or nil |
+| `(shape-area shape)` | Surface area of a shape. Returns double or nil |
+| `(shape-center-of-mass shape)` | Center of mass as 3 values: `(x y z)`. Returns nil on error |
+| `(shape-gprops shape)` | Batch compute all mass properties. Returns `gprops` instance |
+| `(shape-inertia shape)` | Alias for `shape-gprops` |
+
+The `gprops` class has readers: `gprops-volume`, `gprops-area`, `gprops-center-of-mass`,
+`gprops-inertia-matrix` (6-component list: Ixx Iyy Izz Ixy Ixz Iyz),
+`gprops-principal-moments` (3 values), `gprops-principal-axes` (9 values, 3x3 matrix).
+
+```lisp
+(let ((g (shape-gprops (make-box 10 20 30))))
+  (gprops-volume g))                ; → 6000.0
+(multiple-value-bind (x y z)
+    (shape-center-of-mass (make-box 10 20 30))
+  (list x y z))                     ; → (5.0 10.0 15.0)
+```
+
+All functions accept nil and return nil.
+
+### Shape Healing
+
+OCCT's shape healing toolkit for repairing topological defects, replacing sub-shapes, converting NURBS, and applying healing pipelines.
+
+#### Shape Fix
+
+Repair common topological defects in shapes. All functions return a repaired shape or `nil` on error/nil input.
+
+| Function | Description |
+|----------|-------------|
+| `(fix-shape shape)` | General repair via `ShapeFix_Shape`. Fixes wires, solids, edges, and faces internally. Returns a repaired shape or nil. |
+| `(fix-wire wire face &key tolerance)` | Fix wire issues (gaps, self-intersections, orientation). `face` is the supporting face (can be nil). `:tolerance` defaults to 0.1. |
+| `(fix-solid shape)` | Fix solid validity issues. |
+| `(fix-edge edge)` | Fix edge problems (missing 3D curve, vertex tolerances). |
+| `(fix-face face)` | Fix face problems (wire orientation, missing geometry). |
+
+```lisp
+(fix-shape (make-box 10 20 30))          ; → shape (no-op on valid shape)
+(fix-wire wire face :tolerance 0.1)      ; → fixed wire
+(fix-solid (make-box 10 20 30))          ; → solid or nil
+(fix-edge edge)                          ; → edge or nil
+(fix-face face)                          ; → face or nil
+```
+
+#### Shape Analysis Diagnostics
+
+Diagnose geometry and topology issues.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-analysis-free-edges shape)` | Return a compound of free (unconnected) edges, or nil if none. |
+| `(shape-analysis-check-intersections shape)` | Count pairs of faces that incorrectly intersect. Returns integer or nil. |
+| `(shape-analysis-wire-contains-p wire point)` | Check if a 2D point `(x y)` is inside the wire boundary. Returns t or nil. |
+| `(shape-analysis-contents shape)` | Return a plist of sub-shape counts: `(:solids N :shells N :faces N :wires N :edges N :vertices N)`. |
+
+```lisp
+(shape-analysis-free-edges shape)              ; → compound of free edges or nil
+(shape-analysis-check-intersections shape)     ; → 0 (no intersections)
+(shape-analysis-wire-contains-p wire '(5 5))   ; → t
+(shape-analysis-contents (make-box 10 20 30))  ; → (:FACES 6 :EDGES 24 ...)
+```
+
+#### Sub-shape Substitution
+
+Replace individual sub-shapes (faces, edges) within a shape using `ShapeBuild_ReShape`.
+
+| Function | Description |
+|----------|-------------|
+| `(substitute-shape orig old new)` | Single replacement: replace `old` sub-shape with `new` in `orig`. Returns a shape or nil. |
+| `(substitute-shape orig pairs)` | Batch replacement: `pairs` is a list of `(old new)` lists. All replacements applied before returning. |
+
+```lisp
+;; Single face replacement
+(substitute-shape box old-face new-face)
+
+;; Batch replacement of multiple faces
+(substitute-shape box '((face1 new-face1) (face2 new-face2)))
+```
+
+#### NURBS Conversion
+
+Convert elementary curves and surfaces to BSpline (NURBS) representation.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-to-nurbs shape)` | Convert all elementary curves/surfaces to BSpline. |
+| `(shape-reduce-degree shape max-degree)` | Reduce BSpline degree to at most `max-degree`. |
+| `(shape-to-rational-bspline shape)` | Convert to rational BSpline form. |
+
+```lisp
+(shape-to-nurbs (make-box 10 20 30))            ; → NURBS shape
+(shape-reduce-degree nurbs-shape 2)             ; → reduced degree
+(shape-to-rational-bspline (make-box 10 20 30)) ; → rational BSpline
+```
+
+#### Surface Splitting and Continuity
+
+Split faces and upgrade surface continuity using `ShapeUpgrade`.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-split-u shape num-splits)` | Split faces along U iso-lines. `num-splits` is a hint for the number of segments. |
+| `(shape-upgrade-continuity shape &key continuity)` | Upgrade surface continuity. `:continuity` is `:c0`, `:c1`, `:c2`, or `:c3` (default `:c1`). |
+
+```lisp
+(shape-split-u shape 2)                             ; → split shape
+(shape-upgrade-continuity shape :continuity :c2)    ; → C2 continuous
+```
+
+#### Healing Pipeline
+
+Scriptable healing via `ShapeProcess` operators and convenience pipeline.
+
+| Function | Description |
+|----------|-------------|
+| `(apply-shape-process shape operator)` | Apply a single `ShapeProcess` operator by name (string). Pass a list of strings to apply multiple operators in sequence. |
+| `(apply-healing-pipeline shape pipeline &key resource)` | Apply a named healing pipeline from a resource file. `:resource` is the resource file name. |
+| `(heal-shape shape)` | Default healing pipeline: `ShapeFix_Shape` + `SameParameter` + `ShapeFix_Solid`. Convenience for common STEP/STL import defects. |
+
+```lisp
+;; Single operator
+(apply-shape-process (make-box 10 20 30) "FixShape")
+
+;; Operator sequence
+(apply-shape-process shape '("FixShape" "SameParameter" "FixWire" "FixSolid"))
+
+;; Default convenience
+(heal-shape shape)  ; one-call healing
+```
+
+### Shape Analysis Queries
+
+Minimum distance, point-in-solid classification, validity checking, and curve-surface intersection.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-distance shape1 shape2)` | Minimum distance between two shapes. Returns double or nil |
+| `(shape-distance-extrema shape1 shape2)` | Distance + closest points. Returns `shape-extrema` or nil |
+| `(point-in-solid-p point shape)` | Classify point as `:inside`, `:outside`, or `:on` |
+| `(classify-point-in-solid point shape)` | Returns two values: keyword and optional face (if `:on`) |
+| `(shape-valid-p shape)` | Check topological validity. Returns t or nil |
+| `(shape-check shape)` | Detailed validity report. Returns list of issues or nil |
+| `(intersect-curve-shape curve shape)` | Intersect curve with BRep shape. Returns list of `(point u v face)` |
+
+```lisp
+(shape-distance box1 box2)                     ; → 10.0
+(point-in-solid-p '(5 10 15) box)              ; → :inside
+(multiple-value-bind (state face)
+    (classify-point-in-solid '(0 10 15) box)
+  state)                                       ; → :on
+(shape-valid-p (make-box 10 20 30))            ; → t
+```
+
+The `shape-extrema` class has readers: `extrema-distance`, `extrema-point-on-shape1`, `extrema-point-on-shape2`.
+
+### Topology Navigation
+
+Walk, inspect, and construct topological entities.
+
+| Function | Description |
+|----------|-------------|
+| `(map-shape-subshapes shape type &key stop-at)` | Explore sub-shapes. Returns list of shapes |
+| `(count-shape-subshapes shape type &key stop-at)` | Count sub-shapes of a type |
+| `(dump-shape shape)` | BRepTools text dump. Returns string or nil |
+| `(shape-triangle-count shape)` | Triangle count after meshing. Returns integer or nil |
+| `(wire-order-check-p wire &optional face)` | Check wire edge ordering. Returns t or nil |
+| `(edge->curve edge)` | Extract 3D curve from edge. Returns `curve` or nil |
+| `(face->surface face)` | Extract surface from face. Returns `surface` or nil |
+| `(make-vertex x y z)` | Construct a vertex shape. Returns shape |
+| `(make-polygon points &key closed)` | Polygon wire from point triples. Returns shape or nil |
+
+Type keywords: `:compound`, `:compsolid`, `:solid`, `:shell`, `:face`, `:wire`, `:edge`, `:vertex`, `:shape`.
+
+```lisp
+(map-shape-subshapes box :face)        ; → list of 6 faces
+(map-shape-subshapes box :edge)        ; → list of 24 edge entries
+(count-shape-subshapes box :face)      ; → 6
+(make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)
+                                       ; → open wire with 3 edges
+(make-vertex 1.0 2.0 3.0)             ; → vertex shape
+```
+
+Note: `TopExp_Explorer` visits every sub-shape at each parent level. A box's 12 unique edges appear as 24 entries (one per face that uses them).
 
 ### Viewer
 
@@ -758,7 +1269,22 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── compounds.lisp make-compound, add-to-compound, compound-shape-p
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
+│   │   ├── shape-fix.lisp      ShapeFix wrappers and ShapeAnalysis queries
+│   │   ├── shape-rebuild.lisp  ShapeBuild_ReShape, ShapeCustom, ShapeUpgrade
+│   │   ├── shape-process.lisp  ShapeProcess pipeline and heal-shape convenience
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
+│   │   ├── mass-properties.lisp  gprops, shape-volume, shape-area, shape-center-of-mass, shape-gprops
+│   │   ├── shape-analysis.lisp   shape-distance, point-in-solid-p, shape-valid-p, shape-check, intersect-curve-shape
+│   │   ├── topology.lisp         map-shape-subshapes, dump-shape, edge->curve, face->surface, make-vertex, make-polygon
+│   │   ├── fillet.lisp           fillet-edge, fillet-edges, fillet-edge-variable, fillet-wire-corner, fillet-wire-all-corners
+│   │   ├── chamfer.lisp          chamfer-edge, chamfer-edges, chamfer-edge-asymmetric, chamfer-edge-on-face
+│   │   ├── blend.lisp            blend-faces, make-blend
+│   │   ├── sweep.lisp            sweep-profile, sweep-sections, sweep-with-aux-spine
+│   │   ├── loft.lisp             loft-sections
+│   │   ├── face-filling.lisp     fill-face, fill-n-sided-face
+│   │   ├── shell.lisp            shell-shape (BRepOffsetAPI_MakeThickSolid)
+│   │   ├── offset.lisp           offset-shape, offset-wire
+│   │   └── draft.lisp            draft-face, make-evolved
 │   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
 │   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
 │   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)
@@ -782,7 +1308,7 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~165 smoke tests
+│   └── smoke-tests.lisp  ~305 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

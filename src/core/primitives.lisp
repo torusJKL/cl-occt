@@ -1,7 +1,7 @@
 (in-package :cl-occt.impl)
 
 (defun make-shape (ptr)
-  (if (cffi:null-pointer-p ptr)
+  (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((s (make-instance 'cl-occt:shape :ptr ptr)))
         (tg:finalize s (lambda () (%free-shape ptr)))

@@ -75,8 +75,117 @@
 #include <Geom_Axis2Placement.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Dir.hxx>
+#include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
+#include <Geom_Line.hxx>
+#include <Geom_Circle.hxx>
+#include <Geom_Ellipse.hxx>
+#include <Geom_Hyperbola.hxx>
+#include <Geom_Parabola.hxx>
+#include <Geom_BezierCurve.hxx>
+#include <Geom_BSplineCurve.hxx>
+#include <Geom_Plane.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <Geom_ConicalSurface.hxx>
+#include <Geom_SphericalSurface.hxx>
+#include <Geom_ToroidalSurface.hxx>
+#include <Geom_BezierSurface.hxx>
+#include <Geom_BSplineSurface.hxx>
+#include <GC_MakeSegment.hxx>
+#include <GC_MakeArcOfCircle.hxx>
+#include <GeomConvert.hxx>
+#include <Bnd_Box.hxx>
+#include <BndLib_Add3dCurve.hxx>
+#include <GeomBndLib_Surface.hxx>
+#include <GeomAPI_ProjectPointOnCurve.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomAPI_IntCS.hxx>
+#include <BRepExtrema_ExtCC.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <BRep_Tool.hxx>
+#include <GeomAPI_IntSS.hxx>
+#include <GeomAPI_ExtremaCurveCurve.hxx>
+#include <GeomAPI_ExtremaCurveSurface.hxx>
+#include <Geom2dAPI_InterCurveCurve.hxx>
+#include <Geom2dAPI_ProjectPointOnCurve.hxx>
+#include <GeomAPI_PointsToBSpline.hxx>
+#include <GeomAPI_Interpolate.hxx>
+#include <TColgp_Array1OfPnt.hxx>
+#include <TColStd_Array1OfReal.hxx>
+#include <TColStd_Array1OfInteger.hxx>
+#include <TColgp_Array2OfPnt.hxx>
+#include <TColStd_Array2OfReal.hxx>
+#include <BRep_Tool.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+#include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_Surface.hxx>
+#include <HelixGeom_BuilderHelix.hxx>
+#include <HelixBRep_BuilderHelix.hxx>
 #include <Graphic3d_TransformPers.hxx>
 #include <Prs3d_DatumMode.hxx>
+#include <GProp_GProps.hxx>
+#include <GProp_PrincipalProps.hxx>
+#include <BRepGProp.hxx>
+#include <BRepExtrema_DistShapeShape.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
+#include <BRepCheck_Analyzer.hxx>
+#include <BRepTools.hxx>
+#include <BRepIntCurveSurface_Inter.hxx>
+#include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_Surface.hxx>
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepFilletAPI_MakeFillet.hxx>
+#include <BRepFilletAPI_MakeFillet2d.hxx>
+#include <BRepFilletAPI_MakeChamfer.hxx>
+#include <BRepOffsetAPI_MakePipe.hxx>
+#include <BRepOffsetAPI_MakePipeShell.hxx>
+#include <BRepOffsetAPI_ThruSections.hxx>
+#include <BRepOffsetAPI_MakeThickSolid.hxx>
+#include <BRepOffsetAPI_MakeOffsetShape.hxx>
+#include <BRepOffsetAPI_MakeOffset.hxx>
+#include <BRepOffsetAPI_DraftAngle.hxx>
+#include <BRepOffsetAPI_MakeEvolved.hxx>
+#include <BRepFeat_MakeCylindricalHole.hxx>
+#include <BRepFeat_MakePrism.hxx>
+#include <BRepFeat_MakeRevol.hxx>
+#include <BRepFeat_MakePipe.hxx>
+#include <LocOpe_DPrism.hxx>
+#include <LocOpe_Revol.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_HSequenceOfShape.hxx>
+#include <BRepFill_Filling.hxx>
+#include <ShapeFix_Shape.hxx>
+#include <ShapeFix_Wire.hxx>
+#include <ShapeFix_Solid.hxx>
+#include <ShapeFix_Edge.hxx>
+#include <ShapeFix_Face.hxx>
+#include <ShapeAnalysis_FreeBounds.hxx>
+#include <ShapeAnalysis_Wire.hxx>
+#include <ShapeAnalysis_ShapeContents.hxx>
+#include <ShapeBuild_ReShape.hxx>
+#include <ShapeCustom.hxx>
+#include <ShapeCustom_BSplineRestriction.hxx>
+#include <ShapeUpgrade_ShapeDivideContinuity.hxx>
+#include <ShapeProcess.hxx>
+#include <ShapeProcess_ShapeContext.hxx>
+#include <ShapeProcessAPI_ApplySequence.hxx>
+#include <BRepClass_FaceClassifier.hxx>
+#include <Standard_ErrorHandler.hxx>
+
+#include <BRepMesh_IncrementalMesh.hxx>
+#include <Poly_Triangulation.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopAbs_ShapeEnum.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Wire.hxx>
+#include <TopoDS_Edge.hxx>
+#include <BRep_Tool.hxx>
+#include <Geom_Curve.hxx>
+#include <Geom_Surface.hxx>
 #include <Prs3d_Drawer.hxx>
 #include <Prs3d_DatumParts.hxx>
 #include <Prs3d_TextAspect.hxx>
@@ -869,6 +978,666 @@ occt_geom2d make_circle_2d(double x, double y, double radius) {
         set_error(e.what());
         return nullptr;
     }
+}
+
+// --- 3D Curve types ---
+
+enum GeomCurveKind {
+    CURVE_LINE = 0,
+    CURVE_CIRCLE,
+    CURVE_ELLIPSE,
+    CURVE_HYPERBOLA,
+    CURVE_PARABOLA,
+    CURVE_BEZIER,
+    CURVE_BSPLINE,
+    CURVE_GC_LINE,
+    CURVE_GC_ARC_CIRCLE,
+    CURVE_HELIX,
+};
+
+struct OccctCurve {
+    GeomCurveKind kind;
+    void* handle;
+};
+
+static OccctCurve* alloc_curve(GeomCurveKind kind, void* handle) {
+    OccctCurve* c = new OccctCurve;
+    c->kind = kind;
+    c->handle = handle;
+    return c;
+}
+
+static Handle(Geom_Curve)* curve_handle(occt_curve c) {
+    return static_cast<Handle(Geom_Curve)*>(static_cast<OccctCurve*>(c)->handle);
+}
+
+static gp_Pnt get_pnt(double x, double y, double z) { return gp_Pnt(x, y, z); }
+static gp_Dir get_dir(double x, double y, double z) { return gp_Dir(x, y, z); }
+
+occt_curve make_line_3d(double ox, double oy, double oz, double dx, double dy, double dz) {
+    clear_error();
+    double mag = sqrt(dx*dx + dy*dy + dz*dz);
+    if (mag < Precision::Confusion()) { set_error("zero direction vector", 2); return nullptr; }
+    try {
+        Handle(Geom_Line)* h = new Handle(Geom_Line)(new Geom_Line(get_pnt(ox, oy, oz), get_dir(dx, dy, dz)));
+        return alloc_curve(CURVE_LINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_circle_3d(double ox, double oy, double oz, double radius) {
+    clear_error();
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax2 ax(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_Circle)* h = new Handle(Geom_Circle)(new Geom_Circle(ax, radius));
+        return alloc_curve(CURVE_CIRCLE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_ellipse_3d(double ox, double oy, double oz, double major_r, double minor_r) {
+    clear_error();
+    if (major_r < Precision::Confusion() || minor_r < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax2 ax(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_Ellipse)* h = new Handle(Geom_Ellipse)(new Geom_Ellipse(ax, major_r, minor_r));
+        return alloc_curve(CURVE_ELLIPSE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_hyperbola(double ox, double oy, double oz, double major_r, double minor_r) {
+    clear_error();
+    if (major_r < Precision::Confusion() || minor_r < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax2 ax(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_Hyperbola)* h = new Handle(Geom_Hyperbola)(new Geom_Hyperbola(ax, major_r, minor_r));
+        return alloc_curve(CURVE_HYPERBOLA, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_parabola(double ox, double oy, double oz, double focal) {
+    clear_error();
+    if (focal < Precision::Confusion()) { set_error("non-positive focal length", 2); return nullptr; }
+    try {
+        gp_Ax2 ax(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_Parabola)* h = new Handle(Geom_Parabola)(new Geom_Parabola(ax, focal));
+        return alloc_curve(CURVE_PARABOLA, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_bezier_curve(double* points, int num_points) {
+    clear_error();
+    if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
+    try {
+        TColgp_Array1OfPnt arr(1, num_points);
+        for (int i = 0; i < num_points; i++)
+            arr.SetValue(i + 1, gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
+        Handle(Geom_BezierCurve)* h = new Handle(Geom_BezierCurve)(new Geom_BezierCurve(arr));
+        return alloc_curve(CURVE_BEZIER, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_bspline_curve(double* poles, int num_poles, double* knots, int* mults, int num_knots, int degree) {
+    clear_error();
+    if (!poles || num_poles < 2 || !knots || !mults || num_knots < 2 || degree < 1) { set_error("invalid bspline parameters", 2); return nullptr; }
+    try {
+        TColgp_Array1OfPnt poleArr(1, num_poles);
+        for (int i = 0; i < num_poles; i++)
+            poleArr.SetValue(i + 1, gp_Pnt(poles[i * 3], poles[i * 3 + 1], poles[i * 3 + 2]));
+        TColStd_Array1OfReal knotArr(1, num_knots);
+        TColStd_Array1OfInteger multArr(1, num_knots);
+        for (int i = 0; i < num_knots; i++) {
+            knotArr.SetValue(i + 1, knots[i]);
+            multArr.SetValue(i + 1, mults[i]);
+        }
+        Handle(Geom_BSplineCurve)* h = new Handle(Geom_BSplineCurve)(new Geom_BSplineCurve(poleArr, knotArr, multArr, degree));
+        return alloc_curve(CURVE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+void free_curve(occt_curve c) {
+    if (!c) return;
+    OccctCurve* oc = static_cast<OccctCurve*>(c);
+    switch (oc->kind) {
+        case CURVE_LINE:        delete static_cast<Handle(Geom_Line)*>(oc->handle); break;
+        case CURVE_CIRCLE:      delete static_cast<Handle(Geom_Circle)*>(oc->handle); break;
+        case CURVE_ELLIPSE:     delete static_cast<Handle(Geom_Ellipse)*>(oc->handle); break;
+        case CURVE_HYPERBOLA:   delete static_cast<Handle(Geom_Hyperbola)*>(oc->handle); break;
+        case CURVE_PARABOLA:    delete static_cast<Handle(Geom_Parabola)*>(oc->handle); break;
+        case CURVE_BEZIER:      delete static_cast<Handle(Geom_BezierCurve)*>(oc->handle); break;
+        case CURVE_BSPLINE:     delete static_cast<Handle(Geom_BSplineCurve)*>(oc->handle); break;
+        case CURVE_GC_LINE:
+        case CURVE_GC_ARC_CIRCLE: delete static_cast<Handle(Geom_TrimmedCurve)*>(oc->handle); break;
+        case CURVE_HELIX:       delete static_cast<Handle(Geom_Curve)*>(oc->handle); break;
+    }
+    delete oc;
+}
+
+int curve_type(occt_curve c) {
+    if (!c) return -1;
+    return static_cast<OccctCurve*>(c)->kind;
+}
+
+occt_curve make_gc_line(double x1, double y1, double z1, double x2, double y2, double z2) {
+    clear_error();
+    try {
+        GC_MakeSegment maker(gp_Pnt(x1, y1, z1), gp_Pnt(x2, y2, z2));
+        if (!maker.IsDone()) { set_error("GC_MakeSegment failed"); return nullptr; }
+        Handle(Geom_TrimmedCurve)* h = new Handle(Geom_TrimmedCurve)(maker.Value());
+        return alloc_curve(CURVE_GC_LINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve make_gc_arc_of_circle(double x1, double y1, double z1,
+                                  double x2, double y2, double z2,
+                                  double x3, double y3, double z3) {
+    clear_error();
+    try {
+        GC_MakeArcOfCircle maker(gp_Pnt(x1, y1, z1), gp_Pnt(x2, y2, z2), gp_Pnt(x3, y3, z3));
+        if (!maker.IsDone()) { set_error("GC_MakeArcOfCircle failed"); return nullptr; }
+        Handle(Geom_TrimmedCurve)* h = new Handle(Geom_TrimmedCurve)(maker.Value());
+        return alloc_curve(CURVE_GC_ARC_CIRCLE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve convert_curve_to_bspline(occt_curve c) {
+    clear_error();
+    if (!c) { set_error("null curve", 2); return nullptr; }
+    try {
+        Handle(Geom_Curve) gc = *curve_handle(c);
+        Handle(Geom_BSplineCurve) bs = GeomConvert::CurveToBSplineCurve(gc);
+        if (bs.IsNull()) { set_error("curve conversion failed"); return nullptr; }
+        Handle(Geom_BSplineCurve)* h = new Handle(Geom_BSplineCurve)(bs);
+        return alloc_curve(CURVE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+int curve_bounding_box(occt_curve c,
+                       double* xmin, double* ymin, double* zmin,
+                       double* xmax, double* ymax, double* zmax) {
+    clear_error();
+    if (!c || !xmin || !ymin || !zmin || !xmax || !ymax || !zmax) { set_error("null argument", 2); return 0; }
+    try {
+        Bnd_Box box;
+        GeomAdaptor_Curve adaptor(*curve_handle(c));
+        BndLib_Add3dCurve::Add(adaptor, Precision::Confusion(), box);
+        if (box.IsVoid()) return 0;
+        box.Get(*xmin, *ymin, *zmin, *xmax, *ymax, *zmax);
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+// --- 3D Surface types ---
+
+enum GeomSurfaceKind {
+    SURFACE_PLANE = 0,
+    SURFACE_CYLINDRICAL,
+    SURFACE_CONICAL,
+    SURFACE_SPHERICAL,
+    SURFACE_TOROIDAL,
+    SURFACE_BEZIER,
+    SURFACE_BSPLINE,
+};
+
+struct OccctSurface {
+    GeomSurfaceKind kind;
+    void* handle;
+};
+
+static OccctSurface* alloc_surface(GeomSurfaceKind kind, void* handle) {
+    OccctSurface* s = new OccctSurface;
+    s->kind = kind;
+    s->handle = handle;
+    return s;
+}
+
+static Handle(Geom_Surface)* surface_handle(occt_surface s) {
+    return static_cast<Handle(Geom_Surface)*>(static_cast<OccctSurface*>(s)->handle);
+}
+
+occt_surface make_plane(double ox, double oy, double oz, double nx, double ny, double nz) {
+    clear_error();
+    double nmag = sqrt(nx*nx + ny*ny + nz*nz);
+    if (nmag < Precision::Confusion()) { set_error("zero normal vector", 2); return nullptr; }
+    try {
+        Handle(Geom_Plane)* h = new Handle(Geom_Plane)(new Geom_Plane(get_pnt(ox, oy, oz), get_dir(nx, ny, nz)));
+        return alloc_surface(SURFACE_PLANE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_cylindrical_surface(double ox, double oy, double oz, double dx, double dy, double dz, double radius) {
+    clear_error();
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    double dmag = sqrt(dx*dx + dy*dy + dz*dz);
+    if (dmag < Precision::Confusion()) { set_error("zero direction vector", 2); return nullptr; }
+    try {
+        gp_Ax3 ax3(get_pnt(ox, oy, oz), get_dir(dx, dy, dz));
+        Handle(Geom_CylindricalSurface)* h = new Handle(Geom_CylindricalSurface)(new Geom_CylindricalSurface(ax3, radius));
+        return alloc_surface(SURFACE_CYLINDRICAL, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_conical_surface(double ox, double oy, double oz, double dx, double dy, double dz, double radius, double semi_angle) {
+    clear_error();
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    double dmag = sqrt(dx*dx + dy*dy + dz*dz);
+    if (dmag < Precision::Confusion()) { set_error("zero direction vector", 2); return nullptr; }
+    try {
+        gp_Ax3 ax3(get_pnt(ox, oy, oz), get_dir(dx, dy, dz));
+        Handle(Geom_ConicalSurface)* h = new Handle(Geom_ConicalSurface)(new Geom_ConicalSurface(ax3, semi_angle * M_PI / 180.0, radius));
+        return alloc_surface(SURFACE_CONICAL, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_spherical_surface(double ox, double oy, double oz, double radius) {
+    clear_error();
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax3 ax3(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_SphericalSurface)* h = new Handle(Geom_SphericalSurface)(new Geom_SphericalSurface(ax3, radius));
+        return alloc_surface(SURFACE_SPHERICAL, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_toroidal_surface(double ox, double oy, double oz, double major_r, double minor_r) {
+    clear_error();
+    if (major_r < Precision::Confusion() || minor_r < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax3 ax3(get_pnt(ox, oy, oz), gp_Dir(0, 0, 1));
+        Handle(Geom_ToroidalSurface)* h = new Handle(Geom_ToroidalSurface)(new Geom_ToroidalSurface(ax3, major_r, minor_r));
+        return alloc_surface(SURFACE_TOROIDAL, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_bezier_surface(double* poles, int num_u, int num_v) {
+    clear_error();
+    if (!poles || num_u < 2 || num_v < 2) { set_error("need at least 2x2 poles", 2); return nullptr; }
+    try {
+        TColgp_Array2OfPnt arr(1, num_u, 1, num_v);
+        for (int u = 0; u < num_u; u++)
+            for (int v = 0; v < num_v; v++) {
+                int idx = (u * num_v + v) * 3;
+                arr.SetValue(u + 1, v + 1, gp_Pnt(poles[idx], poles[idx + 1], poles[idx + 2]));
+            }
+        Handle(Geom_BezierSurface)* h = new Handle(Geom_BezierSurface)(new Geom_BezierSurface(arr));
+        return alloc_surface(SURFACE_BEZIER, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_surface make_bspline_surface(double* poles, int num_u_poles, int num_v_poles,
+                                   double* uknots, int* umults, int num_uknots,
+                                   double* vknots, int* vmults, int num_vknots,
+                                   int udeg, int vdeg) {
+    clear_error();
+    if (!poles || num_u_poles < 2 || num_v_poles < 2) { set_error("need at least 2x2 poles", 2); return nullptr; }
+    if (!uknots || !umults || num_uknots < 2 || !vknots || !vmults || num_vknots < 2) { set_error("invalid knot data", 2); return nullptr; }
+    if (udeg < 1 || vdeg < 1) { set_error("degree must be >= 1", 2); return nullptr; }
+    try {
+        TColgp_Array2OfPnt poleArr(1, num_u_poles, 1, num_v_poles);
+        for (int u = 0; u < num_u_poles; u++)
+            for (int v = 0; v < num_v_poles; v++) {
+                int idx = (u * num_v_poles + v) * 3;
+                poleArr.SetValue(u + 1, v + 1, gp_Pnt(poles[idx], poles[idx + 1], poles[idx + 2]));
+            }
+        TColStd_Array1OfReal uKnotArr(1, num_uknots);
+        TColStd_Array1OfInteger uMultArr(1, num_uknots);
+        for (int i = 0; i < num_uknots; i++) { uKnotArr.SetValue(i + 1, uknots[i]); uMultArr.SetValue(i + 1, umults[i]); }
+        TColStd_Array1OfReal vKnotArr(1, num_vknots);
+        TColStd_Array1OfInteger vMultArr(1, num_vknots);
+        for (int i = 0; i < num_vknots; i++) { vKnotArr.SetValue(i + 1, vknots[i]); vMultArr.SetValue(i + 1, vmults[i]); }
+        Handle(Geom_BSplineSurface)* h = new Handle(Geom_BSplineSurface)(new Geom_BSplineSurface(poleArr, uKnotArr, vKnotArr, uMultArr, vMultArr, udeg, vdeg));
+        return alloc_surface(SURFACE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+void free_surface(occt_surface s) {
+    if (!s) return;
+    OccctSurface* os = static_cast<OccctSurface*>(s);
+    switch (os->kind) {
+        case SURFACE_PLANE:        delete static_cast<Handle(Geom_Plane)*>(os->handle); break;
+        case SURFACE_CYLINDRICAL:  delete static_cast<Handle(Geom_CylindricalSurface)*>(os->handle); break;
+        case SURFACE_CONICAL:      delete static_cast<Handle(Geom_ConicalSurface)*>(os->handle); break;
+        case SURFACE_SPHERICAL:    delete static_cast<Handle(Geom_SphericalSurface)*>(os->handle); break;
+        case SURFACE_TOROIDAL:     delete static_cast<Handle(Geom_ToroidalSurface)*>(os->handle); break;
+        case SURFACE_BEZIER:       delete static_cast<Handle(Geom_BezierSurface)*>(os->handle); break;
+        case SURFACE_BSPLINE:      delete static_cast<Handle(Geom_BSplineSurface)*>(os->handle); break;
+    }
+    delete os;
+}
+
+int surface_type(occt_surface s) {
+    if (!s) return -1;
+    return static_cast<OccctSurface*>(s)->kind;
+}
+
+occt_surface convert_surface_to_bspline(occt_surface s) {
+    clear_error();
+    if (!s) { set_error("null surface", 2); return nullptr; }
+    try {
+        Handle(Geom_Surface) gs = *surface_handle(s);
+        Handle(Geom_BSplineSurface) bs = GeomConvert::SurfaceToBSplineSurface(gs);
+        if (bs.IsNull()) { set_error("surface conversion failed"); return nullptr; }
+        Handle(Geom_BSplineSurface)* h = new Handle(Geom_BSplineSurface)(bs);
+        return alloc_surface(SURFACE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+int surface_bounding_box(occt_surface s,
+                         double* xmin, double* ymin, double* zmin,
+                         double* xmax, double* ymax, double* zmax) {
+    clear_error();
+    if (!s || !xmin || !ymin || !zmin || !xmax || !ymax || !zmax) { set_error("null argument", 2); return 0; }
+    try {
+        GeomBndLib_Surface bnd(*surface_handle(s));
+        Bnd_Box box = bnd.Box(Precision::Confusion());
+        if (box.IsVoid()) return 0;
+        box.Get(*xmin, *ymin, *zmin, *xmax, *ymax, *zmax);
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+// --- Geometric Algorithms ---
+
+int project_point_on_curve(occt_curve c,
+                           double px, double py, double pz,
+                           double* out_x, double* out_y, double* out_z,
+                           double* out_dist, double* out_param) {
+    clear_error();
+    if (!c || !out_x || !out_y || !out_z || !out_dist || !out_param) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_ProjectPointOnCurve proj(gp_Pnt(px, py, pz), *curve_handle(c));
+        if (!proj.NbPoints()) return 0;
+        gp_Pnt p = proj.NearestPoint();
+        *out_x = p.X(); *out_y = p.Y(); *out_z = p.Z();
+        *out_dist = proj.LowerDistance();
+        *out_param = proj.LowerDistanceParameter();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int project_point_on_surface(occt_surface s,
+                             double px, double py, double pz,
+                             double* out_x, double* out_y, double* out_z,
+                             double* out_u, double* out_v, double* out_dist) {
+    clear_error();
+    if (!s || !out_x || !out_y || !out_z || !out_u || !out_v || !out_dist) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_ProjectPointOnSurf proj(gp_Pnt(px, py, pz), *surface_handle(s));
+        if (!proj.NbPoints()) return 0;
+        gp_Pnt p = proj.NearestPoint();
+        *out_x = p.X(); *out_y = p.Y(); *out_z = p.Z();
+        proj.LowerDistanceParameters(*out_u, *out_v);
+        *out_dist = proj.LowerDistance();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int intersect_curves(occt_curve c1, occt_curve c2,
+                     double* out_points, int max_points) {
+    clear_error();
+    if (!c1 || !c2 || (!out_points && max_points > 0)) { set_error("null argument", 2); return 0; }
+    try {
+        BRepBuilderAPI_MakeEdge edgeMaker1(*curve_handle(c1));
+        BRepBuilderAPI_MakeEdge edgeMaker2(*curve_handle(c2));
+        if (!edgeMaker1.IsDone() || !edgeMaker2.IsDone()) { set_error("failed to create edges", 2); return 0; }
+        const TopoDS_Edge& e1 = edgeMaker1.Edge();
+        const TopoDS_Edge& e2 = edgeMaker2.Edge();
+        BRepExtrema_ExtCC extrema(e1, e2);
+        if (!extrema.IsDone()) return 0;
+        if (extrema.IsParallel()) return 0;
+        int n = extrema.NbExt();
+        int count = 0;
+        for (int i = 1; i <= n && (count < max_points || max_points == 0); i++) {
+            gp_Pnt p1 = extrema.PointOnE1(i);
+            gp_Pnt p2 = extrema.PointOnE2(i);
+            double dist = p1.Distance(p2);
+            if (dist < Precision::Confusion()) {
+                if (out_points && count < max_points) {
+                    out_points[count * 3] = p1.X();
+                    out_points[count * 3 + 1] = p1.Y();
+                    out_points[count * 3 + 2] = p1.Z();
+                }
+                count++;
+            }
+        }
+        return count;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int intersect_curve_surface(occt_curve c, occt_surface s,
+                            double* out_points, int max_points) {
+    clear_error();
+    if (!c || !s || (!out_points && max_points > 0)) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_IntCS intersector(*curve_handle(c), *surface_handle(s));
+        if (!intersector.NbPoints()) return 0;
+        int n = intersector.NbPoints();
+        if (out_points && max_points > 0) {
+            int count = (n < max_points) ? n : max_points;
+            for (int i = 0; i < count; i++) {
+                gp_Pnt p = intersector.Point(i + 1);
+                out_points[i * 3] = p.X();
+                out_points[i * 3 + 1] = p.Y();
+                out_points[i * 3 + 2] = p.Z();
+            }
+        }
+        return n;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int intersect_surfaces(occt_surface s1, occt_surface s2,
+                       occt_curve* out_curves, int max_curves) {
+    clear_error();
+    if (!s1 || !s2 || (!out_curves && max_curves > 0)) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_IntSS intersector(*surface_handle(s1), *surface_handle(s2), Precision::Confusion());
+        if (!intersector.NbLines()) return 0;
+        int n = intersector.NbLines();
+        if (out_curves && max_curves > 0) {
+            int count = (n < max_curves) ? n : max_curves;
+            for (int i = 0; i < count; i++) {
+                Handle(Geom_Curve) curve = intersector.Line(i + 1);
+                Handle(Geom_Curve)* h = new Handle(Geom_Curve)(curve);
+                out_curves[i] = alloc_curve(CURVE_BSPLINE, h);
+            }
+        }
+        return n;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int extrema_curve_curve(occt_curve c1, occt_curve c2,
+                        double* out_dist,
+                        double* out_p1x, double* out_p1y, double* out_p1z,
+                        double* out_p2x, double* out_p2y, double* out_p2z) {
+    clear_error();
+    if (!c1 || !c2 || !out_dist || !out_p1x || !out_p1y || !out_p1z || !out_p2x || !out_p2y || !out_p2z) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_ExtremaCurveCurve extrema(*curve_handle(c1), *curve_handle(c2));
+        if (!extrema.NbExtrema()) return 0;
+        gp_Pnt p1, p2;
+        extrema.NearestPoints(p1, p2);
+        *out_p1x = p1.X(); *out_p1y = p1.Y(); *out_p1z = p1.Z();
+        *out_p2x = p2.X(); *out_p2y = p2.Y(); *out_p2z = p2.Z();
+        *out_dist = extrema.LowerDistance();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int extrema_curve_surface(occt_curve c, occt_surface s,
+                          double* out_dist,
+                          double* out_px, double* out_py, double* out_pz,
+                          double* out_u, double* out_v) {
+    clear_error();
+    if (!c || !s || !out_dist || !out_px || !out_py || !out_pz || !out_u || !out_v) { set_error("null argument", 2); return 0; }
+    try {
+        GeomAPI_ExtremaCurveSurface extrema(*curve_handle(c), *surface_handle(s));
+        int n = extrema.NbExtrema();
+        if (!n) return 0;
+        double bestDist = DBL_MAX;
+        gp_Pnt bestP;
+        double bestU = 0, bestV = 0;
+        for (int i = 1; i <= n; i++) {
+            gp_Pnt p1, p2;
+            double w, u, v;
+            extrema.Points(i, p1, p2);
+            extrema.Parameters(i, w, u, v);
+            double d = p1.Distance(p2);
+            if (d < bestDist) {
+                bestDist = d;
+                bestP = (p1.X() != 0 || p1.Y() != 0 || p1.Z() != 0) ? p1 : p2;
+                bestU = u;
+                bestV = v;
+            }
+        }
+        *out_dist = bestDist;
+        *out_px = bestP.X(); *out_py = bestP.Y(); *out_pz = bestP.Z();
+        *out_u = bestU;
+        *out_v = bestV;
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+static Handle(Geom2d_Curve) get_geom2d_curve(occt_geom2d g) {
+    Geom2dObj* o = static_cast<Geom2dObj*>(g);
+    if (o->kind == KIND_LINE2D)
+        return *static_cast<Handle(Geom2d_Line)*>(o->obj);
+    if (o->kind == KIND_CIRCLE2D)
+        return *static_cast<Handle(Geom2d_Circle)*>(o->obj);
+    return Handle(Geom2d_Curve)();
+}
+
+int intersect_curves_2d(occt_geom2d c1, occt_geom2d c2,
+                        double* out_points, int max_points) {
+    clear_error();
+    if (!c1 || !c2 || (!out_points && max_points > 0)) { set_error("null argument", 2); return 0; }
+    try {
+        Handle(Geom2d_Curve) hc1 = get_geom2d_curve(c1);
+        Handle(Geom2d_Curve) hc2 = get_geom2d_curve(c2);
+        if (hc1.IsNull() || hc2.IsNull()) { set_error("both arguments must be 2D curves", 2); return 0; }
+        Geom2dAPI_InterCurveCurve intersector(hc1, hc2);
+        if (!intersector.NbPoints()) return 0;
+        int n = intersector.NbPoints();
+        if (out_points && max_points > 0) {
+            int count = (n < max_points) ? n : max_points;
+            for (int i = 0; i < count; i++) {
+                gp_Pnt2d p = intersector.Point(i + 1);
+                out_points[i * 2] = p.X();
+                out_points[i * 2 + 1] = p.Y();
+            }
+        }
+        return n;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int project_point_on_curve_2d(occt_geom2d curve,
+                              double px, double py,
+                              double* out_x, double* out_y,
+                              double* out_dist, double* out_param) {
+    clear_error();
+    if (!curve || !out_x || !out_y || !out_dist || !out_param) { set_error("null argument", 2); return 0; }
+    try {
+        Handle(Geom2d_Curve) hc = get_geom2d_curve(curve);
+        if (hc.IsNull()) { set_error("must be a 2D curve", 2); return 0; }
+        Geom2dAPI_ProjectPointOnCurve proj(gp_Pnt2d(px, py), hc);
+        if (!proj.NbPoints()) return 0;
+        gp_Pnt2d p = proj.NearestPoint();
+        *out_x = p.X(); *out_y = p.Y();
+        *out_dist = proj.LowerDistance();
+        *out_param = proj.LowerDistanceParameter();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+occt_curve points_to_bspline(double* points, int num_points, int degree) {
+    clear_error();
+    if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
+    try {
+        TColgp_Array1OfPnt arr(1, num_points);
+        for (int i = 0; i < num_points; i++)
+            arr.SetValue(i + 1, gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
+        int deg = (degree > 0) ? degree : 3;
+        GeomAPI_PointsToBSpline fitter(arr, deg);
+        Handle(Geom_BSplineCurve)* h = new Handle(Geom_BSplineCurve)(fitter.Curve());
+        return alloc_curve(CURVE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_curve interpolate_points(double* points, int num_points,
+                              double* init_tangent, double* final_tangent) {
+    clear_error();
+    if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
+    try {
+        occ::handle<NCollection_HArray1<gp_Pnt>> harr = new NCollection_HArray1<gp_Pnt>(1, num_points);
+        for (int i = 0; i < num_points; i++)
+            harr->SetValue(i + 1, gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
+        GeomAPI_Interpolate interpolator(harr, false, Precision::Confusion());
+        gp_Vec initV(0, 0, 0), finalV(0, 0, 0);
+        bool hasInit = init_tangent != nullptr;
+        bool hasFinal = final_tangent != nullptr;
+        if (hasInit) initV = gp_Vec(init_tangent[0], init_tangent[1], init_tangent[2]);
+        if (hasFinal) finalV = gp_Vec(final_tangent[0], final_tangent[1], final_tangent[2]);
+        if (hasInit || hasFinal)
+            interpolator.Load(initV, finalV, true);
+        interpolator.Perform();
+        if (!interpolator.IsDone()) { set_error("interpolation failed", 2); return nullptr; }
+        Handle(Geom_BSplineCurve)* h = new Handle(Geom_BSplineCurve)(interpolator.Curve());
+        return alloc_curve(CURVE_BSPLINE, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+// --- Helix ---
+
+occt_curve make_helix_curve(double radius, double pitch, double height,
+                            int left_handed, double angle) {
+    clear_error();
+    if (radius < Precision::Confusion() || pitch < Precision::Confusion() || height < Precision::Confusion()) {
+        set_error("non-positive parameter", 2); return nullptr;
+    }
+    try {
+        double totalAngle = (height / pitch) * 2.0 * M_PI;
+        double taperAngle = angle * M_PI / 180.0;
+        HelixGeom_BuilderHelix builder;
+        builder.SetPosition(gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)));
+        builder.SetCurveParameters(0.0, totalAngle, pitch, radius, taperAngle, left_handed != 0);
+        builder.SetApproxParameters(GeomAbs_C1, 8, 100);
+        builder.SetTolerance(Precision::Confusion());
+        builder.Perform();
+        if (builder.ErrorStatus() != 0) { set_error("helix curve construction failed"); return nullptr; }
+        const auto& curves = builder.Curves();
+        if (curves.Size() < 1) { set_error("helix produced no curves"); return nullptr; }
+        Handle(Geom_Curve) curve = curves.First();
+        if (curve.IsNull()) { set_error("helix curve is null"); return nullptr; }
+        Handle(Geom_Curve)* h = new Handle(Geom_Curve)(curve);
+        return alloc_curve(CURVE_HELIX, h);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
+}
+
+occt_shape make_helix_edge(double radius, double pitch, double height,
+                           int left_handed, double angle,
+                           occt_surface on_surface) {
+    clear_error();
+    if (radius < Precision::Confusion() || height < Precision::Confusion()) {
+        set_error("non-positive parameter", 2); return nullptr;
+    }
+    if (fabs(pitch) < Precision::Confusion()) {
+        set_error("pitch too small", 2); return nullptr;
+    }
+    (void)on_surface; // surface constraint for future use
+    try {
+        gp_Ax3 axis(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1));
+        double effectivePitch = left_handed ? -fabs(pitch) : fabs(pitch);
+        NCollection_Array1<double> pitches(1, 1);
+        pitches(1) = effectivePitch;
+        NCollection_Array1<double> nbTurns(1, 1);
+        nbTurns(1) = height / fabs(pitch);
+
+        HelixBRep_BuilderHelix builder;
+        builder.SetParameters(axis, 2.0 * radius, nbTurns, pitches);
+        builder.Perform();
+        if (builder.ErrorStatus() != 0) { set_error("helix edge construction failed"); return nullptr; }
+        const TopoDS_Shape& shape = builder.Shape();
+        if (shape.IsNull()) { set_error("helix edge is null"); return nullptr; }
+        return from_shape(shape);
+    } catch (Standard_Failure& e) { set_error(e.what()); return nullptr; }
 }
 
 // --- Edge construction ---
@@ -3391,6 +4160,358 @@ void prsdim_set_angle_edges(void* dim_ptr, void* edge1_ptr, void* edge2_ptr) {
     }
 }
 
+// --- Sweep / Pipe ---
+
+occt_shape sweep_pipe(occt_shape profile, occt_shape spine) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipe maker(TopoDS::Wire(*to_shape(spine)), *to_shape(profile));
+        if (!maker.IsDone()) { set_error("MakePipe failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_fixed(occt_shape profile, occt_shape spine) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipe maker(TopoDS::Wire(*to_shape(spine)), *to_shape(profile));
+        if (!maker.IsDone()) { set_error("MakePipe failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_sliding(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        maker.SetMode(true);
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell sliding failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_fixed(occt_shape spine, occt_shape* sections, double* params, int count) {
+    clear_error();
+    if (!spine || !sections || !params || count < 1) { set_error("invalid arguments", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(spine)));
+        maker.SetMode(false);
+        for (int i = 0; i < count; i++) {
+            maker.Add(*to_shape(sections[i]), params[i], true);
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell fixed failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape sweep_pipe_shell_aux(occt_shape profile, occt_shape main_spine, occt_shape aux_spine) {
+    clear_error();
+    if (!profile || !main_spine || !aux_spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(*to_shape(main_spine)));
+        maker.SetMode(TopoDS::Wire(*to_shape(aux_spine)));
+        maker.Add(*to_shape(profile), 0.0, true);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakePipeShell aux spine failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Loft ---
+
+occt_shape loft_sections(occt_shape* wires, int count, int solid) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, false);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_ruled(occt_shape* wires, int count, int solid, int ruled) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, ruled == 0);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections ruled failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_smooth(occt_shape* wires, int count, int solid, int smooth) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, smooth != 0);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections smooth failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape loft_sections_tangency(occt_shape* wires, int count, int solid,
+                                   occt_shape init_face, occt_shape final_face) {
+    clear_error();
+    if (!wires || count < 2) { set_error("need at least 2 wires", 2); return nullptr; }
+    (void)init_face;
+    (void)final_face;
+    try {
+        BRepOffsetAPI_ThruSections maker(solid != 0, false);
+        for (int i = 0; i < count; i++) {
+            if (!wires[i]) { set_error("null wire in loft", 2); return nullptr; }
+            maker.AddWire(TopoDS::Wire(*to_shape(wires[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("ThruSections tangency failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Face Filling ---
+
+occt_shape fill_face(occt_shape wire) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        TopExp_Explorer exp(*to_shape(wire), TopAbs_EDGE);
+        for (; exp.More(); exp.Next()) {
+            filler.Add(TopoDS::Edge(exp.Current()), GeomAbs_C0, false);
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fill_face_constrained(occt_shape wire, occt_shape* support_faces, int* continuities, int count) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        TopExp_Explorer exp(*to_shape(wire), TopAbs_EDGE);
+        for (; exp.More(); exp.Next()) {
+            filler.Add(TopoDS::Edge(exp.Current()), GeomAbs_C0, false);
+        }
+        for (int i = 0; i < count; i++) {
+            if (support_faces[i]) {
+                GeomAbs_Shape cont = GeomAbs_C0;
+                if (continuities[i] == 1) cont = GeomAbs_C1;
+                else if (continuities[i] == 2) cont = GeomAbs_C2;
+                else if (continuities[i] == 3) cont = GeomAbs_C3;
+                filler.Add(TopoDS::Face(*to_shape(support_faces[i])), cont);
+            }
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling constrained failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity) {
+    clear_error();
+    if (!edges || count < 3) { set_error("need at least 3 edges", 2); return nullptr; }
+    try {
+        BRepFill_Filling filler;
+        GeomAbs_Shape cont = GeomAbs_C0;
+        if (continuity == 1) cont = GeomAbs_C1;
+        else if (continuity == 2) cont = GeomAbs_C2;
+        else if (continuity == 3) cont = GeomAbs_C3;
+        for (int i = 0; i < count; i++) {
+            if (!edges[i]) { set_error("null edge in fill", 2); return nullptr; }
+            filler.Add(TopoDS::Edge(*to_shape(edges[i])), cont);
+        }
+        filler.Build();
+        if (!filler.IsDone()) { set_error("BRepFill_Filling N-sided failed"); return nullptr; }
+        return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shell / Thicken ---
+
+occt_shape shell_shape(occt_shape shape, occt_shape* faces, int num_faces, double thickness) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        NCollection_List<TopoDS_Shape> facesToRemove;
+        for (int i = 0; i < num_faces; i++) {
+            if (faces[i]) {
+                facesToRemove.Append(*to_shape(faces[i]));
+            }
+        }
+        BRepOffsetAPI_MakeThickSolid maker;
+        maker.MakeThickSolidByJoin(*to_shape(shape), facesToRemove, thickness,
+                                   Precision::Confusion(), BRepOffset_Skin);
+        if (!maker.IsDone()) { set_error("MakeThickSolid failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Offset ---
+
+occt_shape offset_shape_3d(occt_shape shape, double offset, int join) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        GeomAbs_JoinType joinType = GeomAbs_Arc;
+        if (join == 1) joinType = GeomAbs_Tangent;
+        else if (join == 2) joinType = GeomAbs_Intersection;
+        BRepOffsetAPI_MakeOffsetShape maker;
+        maker.PerformByJoin(*to_shape(shape), offset, Precision::Confusion(),
+                            BRepOffset_Skin, false, false, joinType);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakeOffsetShape failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape offset_wire_2d(occt_shape wire, double offset) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakeOffset maker(TopoDS::Wire(*to_shape(wire)), GeomAbs_Arc);
+        maker.Perform(offset);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakeOffset failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Draft ---
+
+occt_shape draft_face(occt_shape shape, occt_shape face, double angle,
+                      double dx, double dy, double dz,
+                      double px, double py, double pz,
+                      double nx, double ny, double nz) {
+    clear_error();
+    if (!shape || !face) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_DraftAngle maker(*to_shape(shape));
+        maker.Add(TopoDS::Face(*to_shape(face)), gp_Dir(dx, dy, dz),
+                  angle, gp_Pln(gp_Pnt(px, py, pz), gp_Dir(nx, ny, nz)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("DraftAngle failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_evolved(occt_shape profile, occt_shape spine, double /*offset*/, int join) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    TopoDS_Shape* spineShape = to_shape(spine);
+    TopoDS_Shape* profShape  = to_shape(profile);
+    if (spineShape->IsNull() || profShape->IsNull()) {
+        set_error("null shape argument", 2);
+        return nullptr;
+    }
+    if (spineShape->ShapeType() != TopAbs_WIRE && spineShape->ShapeType() != TopAbs_FACE) {
+        set_error("spine must be a wire or face", 2);
+        return nullptr;
+    }
+    try {
+        GeomAbs_JoinType joinType = GeomAbs_Arc;
+        if (join == 1) joinType = GeomAbs_Tangent;
+        else if (join == 2) joinType = GeomAbs_Intersection;
+        BRepOffsetAPI_MakeEvolved maker(*spineShape,
+                                         TopoDS::Wire(*profShape),
+                                         joinType, true, false, false,
+                                         0.0000001, false, false);
+        if (!maker.IsDone()) { set_error("MakeEvolved failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
 // --- Dimension: set extension size ---
 
 void prsdim_set_extension_size(void* dim_ptr, double v) {
@@ -3761,4 +4882,1386 @@ int get_error_code(void) {
 
 const char* get_error_message(void) {
     return g_error_message;
+}
+
+// --- Mass Properties (BRepGProp) ---
+
+double shape_volume(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        GProp_GProps props;
+        BRepGProp::VolumeProperties(*to_shape(shape), props);
+        return props.Mass();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+double shape_area(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        GProp_GProps props;
+        BRepGProp::SurfaceProperties(*to_shape(shape), props);
+        return props.Mass();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int shape_center_of_mass(occt_shape shape, double* out_x, double* out_y, double* out_z) {
+    clear_error();
+    if (!shape || !out_x || !out_y || !out_z) { set_error("null argument", 2); return 0; }
+    try {
+        GProp_GProps props;
+        BRepGProp::VolumeProperties(*to_shape(shape), props);
+        gp_Pnt cm = props.CentreOfMass();
+        *out_x = cm.X(); *out_y = cm.Y(); *out_z = cm.Z();
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int shape_inertia(occt_shape shape, double* out_inertia, int inertia_size,
+                  double* out_principal_moments, int pm_size,
+                  double* out_principal_axes, int pa_size) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        GProp_GProps props;
+        BRepGProp::VolumeProperties(*to_shape(shape), props);
+        gp_Mat inertia = props.MatrixOfInertia();
+        // Inertia matrix: Ixx, Iyy, Izz, Ixy, Ixz, Iyz (6 components)
+        if (out_inertia && inertia_size >= 6) {
+            out_inertia[0] = inertia(1,1); out_inertia[1] = inertia(2,2); out_inertia[2] = inertia(3,3);
+            out_inertia[3] = inertia(1,2); out_inertia[4] = inertia(1,3); out_inertia[5] = inertia(2,3);
+        }
+        // Principal moments and axes via GProp_PrincipalProps
+        if ((out_principal_moments && pm_size >= 3) || (out_principal_axes && pa_size >= 9)) {
+            GProp_PrincipalProps pp = props.PrincipalProperties();
+            if (out_principal_moments && pm_size >= 3) {
+                double Ixx, Iyy, Izz;
+                pp.Moments(Ixx, Iyy, Izz);
+                out_principal_moments[0] = Ixx;
+                out_principal_moments[1] = Iyy;
+                out_principal_moments[2] = Izz;
+            }
+            if (out_principal_axes && pa_size >= 9) {
+                gp_Vec v1 = pp.FirstAxisOfInertia();
+                gp_Vec v2 = pp.SecondAxisOfInertia();
+                gp_Vec v3 = pp.ThirdAxisOfInertia();
+                out_principal_axes[0] = v1.X(); out_principal_axes[1] = v1.Y(); out_principal_axes[2] = v1.Z();
+                out_principal_axes[3] = v2.X(); out_principal_axes[4] = v2.Y(); out_principal_axes[5] = v2.Z();
+                out_principal_axes[6] = v3.X(); out_principal_axes[7] = v3.Y(); out_principal_axes[8] = v3.Z();
+            }
+        }
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+// --- Shape Analysis Queries ---
+
+double shape_distance(occt_shape shape1, occt_shape shape2) {
+    clear_error();
+    if (!shape1 || !shape2) { set_error("null shape argument", 2); return -1; }
+    try {
+        BRepExtrema_DistShapeShape extrema(*to_shape(shape1), *to_shape(shape2));
+        if (!extrema.IsDone()) { set_error("distance computation failed"); return -1; }
+        return extrema.Value();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return -1;
+    }
+}
+
+int shape_distance_extrema(occt_shape shape1, occt_shape shape2,
+                           double* out_dist,
+                           double* out_p1x, double* out_p1y, double* out_p1z,
+                           double* out_p2x, double* out_p2y, double* out_p2z) {
+    clear_error();
+    if (!shape1 || !shape2 || !out_dist || !out_p1x || !out_p1y || !out_p1z || !out_p2x || !out_p2y || !out_p2z) {
+        set_error("null argument", 2); return 0;
+    }
+    try {
+        BRepExtrema_DistShapeShape extrema(*to_shape(shape1), *to_shape(shape2));
+        if (!extrema.IsDone()) { set_error("distance computation failed"); return 0; }
+        *out_dist = extrema.Value();
+        if (extrema.NbSolution() >= 1) {
+            gp_Pnt p1 = extrema.PointOnShape1(1);
+            gp_Pnt p2 = extrema.PointOnShape2(1);
+            *out_p1x = p1.X(); *out_p1y = p1.Y(); *out_p1z = p1.Z();
+            *out_p2x = p2.X(); *out_p2y = p2.Y(); *out_p2z = p2.Z();
+        }
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int classify_point_in_solid(occt_shape shape, double px, double py, double pz,
+                            int* out_state, occt_shape* out_face) {
+    clear_error();
+    if (!shape || !out_state) { set_error("null argument", 2); return 0; }
+    try {
+        BRepClass3d_SolidClassifier classifier(*to_shape(shape), gp_Pnt(px, py, pz), Precision::Confusion());
+        TopAbs_State state = classifier.State();
+        // State mapping: 0=IN, 1=OUT, 2=ON, 3=UNKNOWN
+        switch (state) {
+            case TopAbs_IN:      *out_state = 0; break;
+            case TopAbs_OUT:     *out_state = 1; break;
+            case TopAbs_ON:      *out_state = 2; break;
+            default:             *out_state = 3; break;
+        }
+        if (out_face && state == TopAbs_ON) {
+            TopoDS_Face face = classifier.Face();
+            if (!face.IsNull()) {
+                *out_face = new TopoDS_Shape(face);
+            } else {
+                *out_face = nullptr;
+            }
+        } else if (out_face) {
+            *out_face = nullptr;
+        }
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int shape_is_valid(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        BRepCheck_Analyzer analyzer(*to_shape(shape));
+        return analyzer.IsValid() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+const char* shape_analysis_report(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        static std::string result;
+        result.clear();
+        BRepCheck_Analyzer analyzer(*to_shape(shape));
+        if (analyzer.IsValid()) {
+            result = "Shape is valid.";
+        } else {
+            result = "Shape has issues.";
+        }
+        return result.c_str();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int intersect_curve_shape(occt_curve curve, occt_shape shape,
+                          double* out_points, double* out_params,
+                          occt_shape* out_faces, int max_results) {
+    clear_error();
+    if (!curve || !shape) { set_error("null argument", 2); return 0; }
+    try {
+        Handle(Geom_Curve) gc = *curve_handle(curve);
+        BRepIntCurveSurface_Inter intersector;
+        intersector.Init(*to_shape(shape), gc, Precision::Confusion());
+        int count = 0;
+        while (intersector.More() && (max_results <= 0 || count < max_results)) {
+            if (out_points && count < max_results) {
+                gp_Pnt p = intersector.Pnt();
+                out_points[count * 3]     = p.X();
+                out_points[count * 3 + 1] = p.Y();
+                out_points[count * 3 + 2] = p.Z();
+            }
+            if (out_params && count < max_results) {
+                out_params[count * 2]     = intersector.U();
+                out_params[count * 2 + 1] = intersector.V();
+            }
+            if (out_faces && count < max_results) {
+                TopoDS_Face face = intersector.Face();
+                if (!face.IsNull()) {
+                    out_faces[count] = new TopoDS_Shape(face);
+                } else {
+                    out_faces[count] = nullptr;
+                }
+            }
+            count++;
+            intersector.Next();
+        }
+        return count;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+// --- Topology Navigation ---
+
+static TopAbs_ShapeEnum topabs_from_int(int type) {
+    switch (type) {
+        case 0: return TopAbs_COMPOUND;
+        case 1: return TopAbs_COMPSOLID;
+        case 2: return TopAbs_SOLID;
+        case 3: return TopAbs_SHELL;
+        case 4: return TopAbs_FACE;
+        case 5: return TopAbs_WIRE;
+        case 6: return TopAbs_EDGE;
+        case 7: return TopAbs_VERTEX;
+        case 8: return TopAbs_SHAPE;
+        default: return TopAbs_SHAPE;
+    }
+}
+
+int map_subshapes(occt_shape shape, int shape_type, int stop_at_type,
+                  occt_shape* out_shapes, int max_shapes) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        TopAbs_ShapeEnum type = topabs_from_int(shape_type);
+        TopAbs_ShapeEnum stop = topabs_from_int(stop_at_type);
+        TopExp_Explorer exp(*to_shape(shape), type, stop);
+        int count = 0;
+        while (exp.More() && (max_shapes <= 0 || count < max_shapes)) {
+            if (out_shapes && count < max_shapes) {
+                out_shapes[count] = new TopoDS_Shape(exp.Current());
+            }
+            count++;
+            exp.Next();
+        }
+        return count;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int count_subshapes(occt_shape shape, int shape_type, int stop_at_type) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        TopAbs_ShapeEnum type = topabs_from_int(shape_type);
+        TopAbs_ShapeEnum stop = topabs_from_int(stop_at_type);
+        TopExp_Explorer exp(*to_shape(shape), type, stop);
+        int count = 0;
+        while (exp.More()) { count++; exp.Next(); }
+        return count;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+const char* dump_shape(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        static std::string result;
+        result.clear();
+        std::ostringstream oss;
+        BRepTools::Dump(*to_shape(shape), oss);
+        result = oss.str();
+        return result.c_str();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int shape_triangle_count(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        BRepMesh_IncrementalMesh mesh(*to_shape(shape), 0.1);
+        TopExp_Explorer exp(*to_shape(shape), TopAbs_FACE);
+        int total = 0;
+        while (exp.More()) {
+            TopoDS_Face face = TopoDS::Face(exp.Current());
+            TopLoc_Location loc;
+            Handle(Poly_Triangulation) tri = BRep_Tool::Triangulation(face, loc);
+            if (!tri.IsNull()) {
+                total += tri->NbTriangles();
+            }
+            exp.Next();
+        }
+        return total;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int wire_order_check(occt_shape wire, occt_shape face) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return 0; }
+    try {
+        TopoDS_Wire w = TopoDS::Wire(*to_shape(wire));
+        if (face) {
+            TopoDS_Face f = TopoDS::Face(*to_shape(face));
+            // Check wire validity relative to face using BRepCheck
+            BRepCheck_Analyzer analyzer(w);
+            BRepCheck_Analyzer faceAnalyzer(f);
+            return (analyzer.IsValid() && faceAnalyzer.IsValid()) ? 1 : 0;
+        }
+        // Without face, just check basic wire structure
+        BRepCheck_Analyzer analyzer(w);
+        return analyzer.IsValid() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+occt_curve edge_to_curve(occt_shape edge) {
+    clear_error();
+    if (!edge) { set_error("null edge argument", 2); return nullptr; }
+    try {
+        TopoDS_Edge e = TopoDS::Edge(*to_shape(edge));
+        BRepAdaptor_Curve adaptor(e);
+        Handle(Geom_Curve) curve = adaptor.Curve().Curve();
+        if (curve.IsNull()) { set_error("edge has no curve"); return nullptr; }
+        // Classify the curve type
+        GeomCurveKind kind;
+        if (curve->DynamicType() == STANDARD_TYPE(Geom_Line))
+            kind = CURVE_LINE;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_Circle))
+            kind = CURVE_CIRCLE;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_Ellipse))
+            kind = CURVE_ELLIPSE;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_Parabola))
+            kind = CURVE_PARABOLA;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_Hyperbola))
+            kind = CURVE_HYPERBOLA;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_BezierCurve))
+            kind = CURVE_BEZIER;
+        else if (curve->DynamicType() == STANDARD_TYPE(Geom_BSplineCurve))
+            kind = CURVE_BSPLINE;
+        else
+            kind = CURVE_BSPLINE;
+        Handle(Geom_Curve)* h = new Handle(Geom_Curve)(curve);
+        return alloc_curve(kind, h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_surface face_to_surface(occt_shape face) {
+    clear_error();
+    if (!face) { set_error("null face argument", 2); return nullptr; }
+    try {
+        TopoDS_Face f = TopoDS::Face(*to_shape(face));
+        BRepAdaptor_Surface adaptor(f);
+        Handle(Geom_Surface) surface = adaptor.Surface().Surface();
+        if (surface.IsNull()) { set_error("face has no surface"); return nullptr; }
+        GeomSurfaceKind kind;
+        if (surface->DynamicType() == STANDARD_TYPE(Geom_Plane))
+            kind = SURFACE_PLANE;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_CylindricalSurface))
+            kind = SURFACE_CYLINDRICAL;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_ConicalSurface))
+            kind = SURFACE_CONICAL;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_SphericalSurface))
+            kind = SURFACE_SPHERICAL;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_ToroidalSurface))
+            kind = SURFACE_TOROIDAL;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_BezierSurface))
+            kind = SURFACE_BEZIER;
+        else if (surface->DynamicType() == STANDARD_TYPE(Geom_BSplineSurface))
+            kind = SURFACE_BSPLINE;
+        else
+            kind = SURFACE_BSPLINE;
+        Handle(Geom_Surface)* h = new Handle(Geom_Surface)(surface);
+        return alloc_surface(kind, h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_vertex(double x, double y, double z) {
+    clear_error();
+    try {
+        BRepBuilderAPI_MakeVertex maker(gp_Pnt(x, y, z));
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_polygon(double* points, int num_points, int closed) {
+    clear_error();
+    if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
+    try {
+        BRepBuilderAPI_MakePolygon maker;
+        for (int i = 0; i < num_points; i++) {
+            maker.Add(gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
+        }
+        if (closed) maker.Close();
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// ---------------------------------------------------------------------------
+//  Fillet / Chamfer / Blend
+// ---------------------------------------------------------------------------
+
+occt_shape fillet_edge_constant(occt_shape shape, occt_shape edge, double radius) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        maker.Add(radius, TopoDS::Edge(*to_shape(edge)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_edges_constant(occt_shape shape, occt_shape* edges, int num_edges, double radius) {
+    clear_error();
+    if (!shape || !edges || num_edges < 1) { set_error("invalid arguments", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        for (int i = 0; i < num_edges; i++) {
+            if (!edges[i]) { set_error("null edge in array", 2); return nullptr; }
+            maker.Add(radius, TopoDS::Edge(*to_shape(edges[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_edge_variable(occt_shape shape, occt_shape edge, double* params_and_radii, int num_pairs) {
+    clear_error();
+    if (!shape || !edge || !params_and_radii || num_pairs < 1) {
+        set_error("invalid arguments", 2); return nullptr;
+    }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        const TopoDS_Edge& edgeRef = TopoDS::Edge(*to_shape(edge));
+        // Build array of (parameter, radius) pairs for OCCT
+        NCollection_Array1<gp_Pnt2d> uAndR(0, num_pairs - 1);
+        for (int i = 0; i < num_pairs; i++) {
+            uAndR[i].SetX(params_and_radii[i * 2]);
+            uAndR[i].SetY(params_and_radii[i * 2 + 1]);
+        }
+        maker.Add(uAndR, edgeRef);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("variable fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_wire_corner(occt_shape wire, double radius) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        // Build a planar face from the wire, then fillet its vertices
+        BRepBuilderAPI_MakeFace faceMaker(TopoDS::Wire(*to_shape(wire)));
+        if (!faceMaker.IsDone()) { set_error("cannot make face from wire", 2); return nullptr; }
+        TopoDS_Face face = faceMaker.Face();
+
+        BRepFilletAPI_MakeFillet2d maker(face);
+        // Find first vertex and fillet it
+        TopExp_Explorer exp(face, TopAbs_VERTEX);
+        if (!exp.More()) { set_error("no vertices in wire", 2); return nullptr; }
+        maker.AddFillet(TopoDS::Vertex(exp.Current()), radius);
+        if (!maker.IsDone()) { set_error("2D fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_wire_all_corners(occt_shape wire, double radius) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepBuilderAPI_MakeFace faceMaker(TopoDS::Wire(*to_shape(wire)));
+        if (!faceMaker.IsDone()) { set_error("cannot make face from wire", 2); return nullptr; }
+        TopoDS_Face face = faceMaker.Face();
+
+        BRepFilletAPI_MakeFillet2d maker(face);
+        // Fillet every vertex
+        TopExp_Explorer exp(face, TopAbs_VERTEX);
+        int vertexCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.AddFillet(TopoDS::Vertex(exp.Current()), radius);
+            vertexCount++;
+        }
+        if (vertexCount == 0) { set_error("no vertices in wire", 2); return nullptr; }
+        if (!maker.IsDone()) { set_error("2D fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_equal(occt_shape shape, occt_shape edge, double distance) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        maker.Add(distance, TopoDS::Edge(*to_shape(edge)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edges_equal(occt_shape shape, occt_shape* edges, int num_edges, double distance) {
+    clear_error();
+    if (!shape || !edges || num_edges < 1) { set_error("invalid arguments", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        for (int i = 0; i < num_edges; i++) {
+            if (!edges[i]) { set_error("null edge in array", 2); return nullptr; }
+            maker.Add(distance, TopoDS::Edge(*to_shape(edges[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_asym(occt_shape shape, occt_shape edge, double distance1, double distance2) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance1 <= 0 || distance2 <= 0) { set_error("distances must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        // For asymmetric chamfer, use Add with two distances and a null face
+        TopoDS_Face nullFace;
+        maker.Add(distance1, distance2, TopoDS::Edge(*to_shape(edge)), nullFace);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("asymmetric chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_on_face(occt_shape shape, occt_shape edge, double distance, occt_shape face) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        TopoDS_Face faceRef;
+        if (face) {
+            faceRef = TopoDS::Face(*to_shape(face));
+        }
+        // Use asymmetric Add with second distance = first (equal), specifying the face
+        maker.Add(distance, distance, TopoDS::Edge(*to_shape(edge)), faceRef);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape blend_faces_constant(occt_shape face1, occt_shape face2, double radius) {
+    clear_error();
+    if (!face1 || !face2) { set_error("null face argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        // Build a shell from the two faces and fillet the shared edge
+        TopoDS_Shell shell;
+        BRep_Builder builder;
+        builder.MakeShell(shell);
+        builder.Add(shell, TopoDS::Face(*to_shape(face1)));
+        builder.Add(shell, TopoDS::Face(*to_shape(face2)));
+
+        BRepFilletAPI_MakeFillet maker(shell);
+        TopExp_Explorer exp(shell, TopAbs_EDGE);
+        int edgeCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.Add(radius, TopoDS::Edge(exp.Current()));
+            edgeCount++;
+        }
+        if (edgeCount == 0) { set_error("no edges between faces", 2); return nullptr; }
+
+        maker.Build();
+        if (!maker.IsDone()) { set_error("blend not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius) {
+    clear_error();
+    if (!face1 || !face2) { set_error("null face argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        TopoDS_Shell shell;
+        BRep_Builder builder;
+        builder.MakeShell(shell);
+        builder.Add(shell, TopoDS::Face(*to_shape(face1)));
+        builder.Add(shell, TopoDS::Face(*to_shape(face2)));
+
+        BRepFilletAPI_MakeFillet maker(shell);
+        TopExp_Explorer exp(shell, TopAbs_EDGE);
+        int edgeCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.Add(radius, TopoDS::Edge(exp.Current()));
+            edgeCount++;
+        }
+        if (edgeCount == 0) { set_error("no edges between faces", 2); return nullptr; }
+
+        maker.Build();
+        if (!maker.IsDone()) { set_error("blend not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+// --- Mechanical Features (BRepFeat) ---
+
+// Compute hole axis from face: use face center and normal.
+static gp_Ax1 face_to_axis(const TopoDS_Face& face) {
+    BRepAdaptor_Surface adaptor(face);
+    double u1, u2, v1, v2;
+    adaptor.Surface().Bounds(u1, u2, v1, v2);
+    double u = (u1 + u2) / 2.0;
+    double v = (v1 + v2) / 2.0;
+    gp_Pnt pt = adaptor.Value(u, v);
+    gp_Dir normal = adaptor.Plane().Axis().Direction();
+    if (face.Orientation() == TopAbs_REVERSED) {
+        normal.Reverse();
+    }
+    return gp_Ax1(pt, normal);
+}
+
+occt_shape make_cylindrical_hole(occt_shape shape, occt_shape face,
+                                 double radius, double depth, int through) {
+    clear_error();
+    if (!shape || !face) { set_error("null shape or face", 2); return nullptr; }
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        TopoDS_Face faceShape = TopoDS::Face(*to_shape(face));
+        gp_Ax1 axis = face_to_axis(faceShape);
+        BRepFeat_MakeCylindricalHole feat;
+        feat.Init(*to_shape(shape), axis);
+        if (through) {
+            feat.PerformThruNext(radius, true);
+        } else {
+            feat.PerformBlind(radius, depth, true);
+        }
+        feat.Build();
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakeCylindricalHole produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_prism_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double height, double dx, double dy, double dz, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile) { set_error("null argument", 2); return nullptr; }
+    double dir_mag = sqrt(dx*dx + dy*dy + dz*dz);
+    try {
+        gp_Dir dir(0, 0, 1);
+        if (dir_mag >= Precision::Confusion()) {
+            dir = gp_Dir(dx, dy, dz);
+        }
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakePrism feat(*to_shape(shape), profShape,
+                                 TopoDS::Face(*to_shape(base_face)),
+                                 dir, fuse, false);
+        feat.Perform(height);
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakePrism produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_revol_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double ax, double ay, double az, double angle, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile) { set_error("null argument", 2); return nullptr; }
+    double axis_mag = sqrt(ax*ax + ay*ay + az*az);
+    if (axis_mag < Precision::Confusion()) { set_error("zero axis direction", 2); return nullptr; }
+    double ang = angle * M_PI / 180.0;
+    if (fabs(ang) < Precision::Confusion()) { set_error("zero revolution angle", 2); return nullptr; }
+    try {
+        gp_Ax1 axis(gp_Pnt(0, 0, 0), gp_Dir(ax, ay, az));
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakeRevol feat(*to_shape(shape), profShape,
+                                 TopoDS::Face(*to_shape(base_face)),
+                                 axis, fuse, false);
+        feat.Perform(ang);
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakeRevol produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_pipe_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                             occt_shape path, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile || !path) { set_error("null argument", 2); return nullptr; }
+    try {
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakePipe feat(*to_shape(shape), profShape,
+                                TopoDS::Face(*to_shape(base_face)),
+                                TopoDS::Wire(*to_shape(path)),
+                                fuse, false);
+        feat.Perform();
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakePipe produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Local Operations (LocOpe) ---
+
+occt_shape local_extrude(occt_shape face, double height, double dx, double dy, double dz) {
+    clear_error();
+    if (!face) { set_error("null face", 2); return nullptr; }
+    if (height < Precision::Confusion()) { set_error("non-positive height", 2); return nullptr; }
+    try {
+        LocOpe_DPrism prism(TopoDS::Face(*to_shape(face)), height, 0.0);
+        if (!prism.IsDone()) { set_error("LocOpe_DPrism not done"); return nullptr; }
+        TopoDS_Shape result = prism.Shape();
+        if (result.IsNull()) { set_error("LocOpe_DPrism produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_groove(occt_shape shape, occt_shape face,
+                        double ax, double ay, double az, double angle) {
+    clear_error();
+    if (!shape || !face) { set_error("null argument", 2); return nullptr; }
+    double axis_mag = sqrt(ax*ax + ay*ay + az*az);
+    if (axis_mag < Precision::Confusion()) { set_error("zero axis direction", 2); return nullptr; }
+    if (angle < Precision::Confusion()) { set_error("non-positive angle", 2); return nullptr; }
+    try {
+        gp_Ax1 axis(gp_Pnt(0, 0, 0), gp_Dir(ax, ay, az));
+        double ang = angle * M_PI / 180.0;
+        LocOpe_Revol rev;
+        rev.Perform(*to_shape(face), axis, ang);
+        TopoDS_Shape revShape = rev.Shape();
+        if (revShape.IsNull()) { set_error("LocOpe_Revol produced null shape"); return nullptr; }
+        BRepAlgoAPI_Cut cut(*to_shape(shape), revShape);
+        if (!cut.IsDone()) { set_error("Groove boolean cut not done"); return nullptr; }
+        TopoDS_Shape cutResult = cut.Shape();
+        if (cutResult.IsNull() || is_empty_shape(cutResult)) { set_error("Groove produced empty result"); return nullptr; }
+        return from_shape(cutResult);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_rib(occt_shape shape, occt_shape profile_face, double thickness,
+                    double dx, double dy, double dz) {
+    clear_error();
+    if (!shape || !profile_face) { set_error("null argument", 2); return nullptr; }
+    if (thickness < Precision::Confusion()) { set_error("non-positive thickness", 2); return nullptr; }
+    try {
+        gp_Vec dir(dx, dy, dz);
+        dir.Multiply(thickness);
+        TopoDS_Shape profShape = *to_shape(profile_face);
+        BRepPrimAPI_MakePrism prism(TopoDS::Face(profShape), dir);
+        if (!prism.IsDone()) { set_error("rib prism not done"); return nullptr; }
+        TopoDS_Shape ribShape = prism.Shape();
+        if (ribShape.IsNull()) { set_error("rib prism produced null"); return nullptr; }
+        BRepAlgoAPI_Fuse fuse(*to_shape(shape), ribShape);
+        if (!fuse.IsDone()) { set_error("rib fuse not done"); return nullptr; }
+        TopoDS_Shape result = fuse.Shape();
+        if (result.IsNull() || is_empty_shape(result)) { set_error("rib produced empty result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shape Fix ---
+
+static thread_local char g_contents_buffer[512];
+
+static TopoDS_Shape make_shape_compound_of_faces(const TopoDS_Shape& shape) {
+    TopoDS_Compound comp;
+    BRep_Builder builder;
+    builder.MakeCompound(comp);
+    TopExp_Explorer exp(shape, TopAbs_FACE);
+    for (; exp.More(); exp.Next()) {
+        builder.Add(comp, exp.Current());
+    }
+    return comp;
+}
+
+occt_shape fix_shape(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        ShapeFix_Shape fixer(*to_shape(shape));
+        fixer.SetPrecision(Precision::Confusion());
+        fixer.SetMaxTolerance(Precision::Confusion() * 100);
+        fixer.Perform();
+        TopoDS_Shape result = fixer.Shape();
+        if (!result.IsNull()) return from_shape(result);
+        set_error("ShapeFix_Shape produced null result");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fix_wire(occt_shape wire, occt_shape face, double tolerance) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        TopoDS_Wire w = TopoDS::Wire(*to_shape(wire));
+        TopoDS_Face f;
+        if (face) f = TopoDS::Face(*to_shape(face));
+        ShapeFix_Wire fixer;
+        fixer.Load(w);
+        if (!f.IsNull()) fixer.SetFace(f);
+        fixer.SetMaxTolerance(tolerance > 0 ? tolerance : Precision::Confusion());
+        if (fixer.Perform()) {
+            return from_shape(fixer.Wire());
+        }
+        set_error("ShapeFix_Wire::Perform failed");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fix_solid(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Solid solid = TopoDS::Solid(*to_shape(shape));
+        ShapeFix_Solid fixer(solid);
+        fixer.SetPrecision(Precision::Confusion());
+        fixer.SetMaxTolerance(Precision::Confusion() * 100);
+        fixer.Perform();
+        TopoDS_Shape result = fixer.Solid();
+        if (!result.IsNull()) return from_shape(result);
+        set_error("ShapeFix_Solid produced null result");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fix_edge(occt_shape edge) {
+    clear_error();
+    if (!edge) { set_error("null edge argument", 2); return nullptr; }
+    try {
+        TopoDS_Edge e = TopoDS::Edge(*to_shape(edge));
+        ShapeFix_Edge fixer;
+        fixer.FixAddCurve3d(e);
+        fixer.FixVertexTolerance(e);
+        return from_shape(e);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fix_face(occt_shape face) {
+    clear_error();
+    if (!face) { set_error("null face argument", 2); return nullptr; }
+    try {
+        TopoDS_Face f = TopoDS::Face(*to_shape(face));
+        ShapeFix_Face fixer(f);
+        fixer.SetPrecision(Precision::Confusion());
+        fixer.SetMaxTolerance(Precision::Confusion() * 100);
+        fixer.Perform();
+        TopoDS_Face result = fixer.Face();
+        if (!result.IsNull()) return from_shape(result);
+        set_error("ShapeFix_Face produced null result");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_analysis_free_edges(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Compound compOfFaces;
+        BRep_Builder builder;
+        builder.MakeCompound(compOfFaces);
+        TopExp_Explorer exp(*to_shape(shape), TopAbs_FACE);
+        for (; exp.More(); exp.Next()) {
+            builder.Add(compOfFaces, exp.Current());
+        }
+        ShapeAnalysis_FreeBounds freeBounds(compOfFaces, Precision::Confusion(), false, true);
+        const TopoDS_Compound& closed = freeBounds.GetClosedWires();
+        const TopoDS_Compound& open = freeBounds.GetOpenWires();
+        TopoDS_Compound result;
+        builder.MakeCompound(result);
+        TopExp_Explorer cExp(closed, TopAbs_EDGE);
+        for (; cExp.More(); cExp.Next())
+            builder.Add(result, cExp.Current());
+        TopExp_Explorer oExp(open, TopAbs_EDGE);
+        for (; oExp.More(); oExp.Next())
+            builder.Add(result, oExp.Current());
+        if (is_empty_shape(result)) return nullptr;
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int shape_analysis_check_intersections(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return 0; }
+    try {
+        TopTools_ListOfShape faces;
+        TopExp_Explorer exp(*to_shape(shape), TopAbs_FACE);
+        for (; exp.More(); exp.Next())
+            faces.Append(exp.Current());
+
+        int count = 0;
+        TopTools_ListIteratorOfListOfShape it1(faces);
+        for (; it1.More(); it1.Next()) {
+            TopTools_ListIteratorOfListOfShape it2(faces);
+            for (; it2.More(); it2.Next()) {
+                if (it1.Value().IsSame(it2.Value())) continue;
+                BRepAlgoAPI_Section section(it1.Value(), it2.Value());
+                section.Build();
+                if (!section.IsDone()) continue;
+                TopExp_Explorer edgeExp(section.Shape(), TopAbs_EDGE);
+                if (edgeExp.More()) count++;
+            }
+        }
+        return count;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int shape_analysis_wire_contains(occt_shape wire, double x, double y) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return 0; }
+    try {
+        TopoDS_Wire w = TopoDS::Wire(*to_shape(wire));
+        gp_Pln plane(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1));
+        BRepBuilderAPI_MakeFace faceMaker(plane, w);
+        if (!faceMaker.IsDone()) return 0;
+        TopoDS_Face face = faceMaker.Face();
+        gp_Pnt p3d(x, y, 0);
+        BRepClass_FaceClassifier classifier;
+        classifier.Perform(face, p3d, Precision::Confusion());
+        return (classifier.State() == TopAbs_IN) ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+const char* shape_analysis_contents(occt_shape shape) {
+    clear_error();
+    g_contents_buffer[0] = '\0';
+    if (!shape) { set_error("null shape argument", 2); return g_contents_buffer; }
+    try {
+        const TopoDS_Shape& s = *to_shape(shape);
+        int nSolids = 0, nShells = 0, nFaces = 0, nWires = 0, nEdges = 0, nVerts = 0;
+        TopExp_Explorer exp;
+        exp.Init(s, TopAbs_SOLID); for (; exp.More(); exp.Next()) nSolids++;
+        exp.Init(s, TopAbs_SHELL); for (; exp.More(); exp.Next()) nShells++;
+        exp.Init(s, TopAbs_FACE);  for (; exp.More(); exp.Next()) nFaces++;
+        exp.Init(s, TopAbs_WIRE);  for (; exp.More(); exp.Next()) nWires++;
+        exp.Init(s, TopAbs_EDGE);  for (; exp.More(); exp.Next()) nEdges++;
+        exp.Init(s, TopAbs_VERTEX); for (; exp.More(); exp.Next()) nVerts++;
+        snprintf(g_contents_buffer, sizeof(g_contents_buffer),
+                 "{\"solids\":%d,\"shells\":%d,\"faces\":%d,\"wires\":%d,\"edges\":%d,\"vertices\":%d}",
+                 nSolids, nShells, nFaces, nWires, nEdges, nVerts);
+        return g_contents_buffer;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return g_contents_buffer;
+    }
+}
+
+// --- Shape Rebuild ---
+
+occt_shape substitute_single(occt_shape shape, occt_shape old_sub, occt_shape new_sub) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!old_sub) { set_error("null old sub-shape argument", 2); return nullptr; }
+    if (!new_sub) { set_error("null new sub-shape argument", 2); return nullptr; }
+    try {
+        Handle(ShapeBuild_ReShape) builder = new ShapeBuild_ReShape();
+        builder->Replace(*to_shape(old_sub), *to_shape(new_sub));
+        TopoDS_Shape result = builder->Apply(*to_shape(shape));
+        if (result.IsNull()) { set_error("ReShape produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape substitute_batch(occt_shape shape, occt_shape* old_shapes, occt_shape* new_shapes, int count) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!old_shapes || !new_shapes || count < 1) { set_error("invalid batch arguments", 2); return nullptr; }
+    try {
+        Handle(ShapeBuild_ReShape) builder = new ShapeBuild_ReShape();
+        for (int i = 0; i < count; i++) {
+            if (old_shapes[i] && new_shapes[i])
+                builder->Replace(*to_shape(old_shapes[i]), *to_shape(new_shapes[i]));
+        }
+        TopoDS_Shape result = builder->Apply(*to_shape(shape));
+        if (result.IsNull()) { set_error("ReShape batch produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_to_nurbs(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Shape result = ShapeCustom::ConvertToBSpline(*to_shape(shape), true, true, true, false);
+        if (!result.IsNull()) return from_shape(result);
+        set_error("ConvertToBSpline failed");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_reduce_degree(occt_shape shape, int max_degree) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (max_degree < 1) { set_error("max_degree must be >= 1", 2); return nullptr; }
+    try {
+        Handle(ShapeCustom_BSplineRestriction) modifier =
+            new ShapeCustom_BSplineRestriction(true, true, true,
+                                                Precision::Confusion(), Precision::Confusion(),
+                                                GeomAbs_C1, GeomAbs_C1,
+                                                max_degree, 100, true, false);
+        BRepTools_Modifier bmod(*to_shape(shape));
+        bmod.Perform(modifier);
+        if (bmod.IsDone()) {
+            TopoDS_Shape result = bmod.ModifiedShape(*to_shape(shape));
+            if (!result.IsNull()) return from_shape(result);
+        }
+        set_error("ReduceDegree failed");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_to_rational_bspline(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        Handle(ShapeCustom_BSplineRestriction) modifier =
+            new ShapeCustom_BSplineRestriction(true, true, true,
+                                                Precision::Confusion(), Precision::Confusion(),
+                                                GeomAbs_C1, GeomAbs_C1,
+                                                25, 200, false, true);
+        BRepTools_Modifier bmod(*to_shape(shape));
+        bmod.Perform(modifier);
+        if (bmod.IsDone()) {
+            TopoDS_Shape result = bmod.ModifiedShape(*to_shape(shape));
+            if (!result.IsNull()) return from_shape(result);
+        }
+        set_error("ConvertToRationalBSpline failed");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_split_u(occt_shape shape, int num_splits) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    (void)num_splits;
+    try {
+        ShapeUpgrade_ShapeDivideContinuity splitter(*to_shape(shape));
+        splitter.SetTolerance(Precision::Confusion());
+        splitter.SetBoundaryCriterion(GeomAbs_C0);
+        splitter.SetPCurveCriterion(GeomAbs_C0);
+        splitter.SetSurfaceCriterion(GeomAbs_C0);
+        splitter.Perform();
+        TopoDS_Shape result = splitter.Result();
+        if (result.IsNull()) { set_error("Split produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape shape_upgrade_continuity(occt_shape shape, int continuity) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (continuity < 0 || continuity > 3) { set_error("continuity must be 0-3 (C0-C3)", 2); return nullptr; }
+    try {
+        static const GeomAbs_Shape contMap[] = { GeomAbs_C0, GeomAbs_C1, GeomAbs_C2, GeomAbs_C3 };
+        ShapeUpgrade_ShapeDivideContinuity upgrader(*to_shape(shape));
+        upgrader.SetTolerance(Precision::Confusion());
+        upgrader.SetBoundaryCriterion(contMap[continuity]);
+        upgrader.SetSurfaceCriterion(contMap[continuity]);
+        upgrader.Perform();
+        TopoDS_Shape result = upgrader.Result();
+        if (result.IsNull()) { set_error("Continuity upgrade produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shape Process Pipeline ---
+
+// Dispatch a named operator on a shape. Used by apply_shape_process and
+// apply_operator_sequence.
+static bool dispatch_operator(TopoDS_Shape& shape, const char* name) {
+    std::string op(name);
+    if (op == "FixShape") {
+        ShapeFix_Shape fixer(shape);
+        fixer.SetPrecision(Precision::Confusion());
+        fixer.SetMaxTolerance(Precision::Confusion() * 100);
+        if (fixer.Perform()) { shape = fixer.Shape(); return true; }
+        return false;
+    }
+    if (op == "FixSolid") {
+        TopExp_Explorer exp(shape, TopAbs_SOLID);
+        Handle(ShapeBuild_ReShape) reshape = new ShapeBuild_ReShape();
+        bool any = false;
+        for (; exp.More(); exp.Next()) {
+            TopoDS_Solid solid = TopoDS::Solid(exp.Current());
+            ShapeFix_Solid fixer(solid);
+            fixer.SetPrecision(Precision::Confusion());
+            fixer.SetMaxTolerance(Precision::Confusion() * 100);
+            fixer.Perform();
+            TopoDS_Shape result = fixer.Solid();
+            if (!result.IsNull()) {
+                reshape->Replace(solid, result);
+                any = true;
+            }
+        }
+        if (any) { shape = reshape->Apply(shape); return true; }
+        return false;
+    }
+    if (op == "FixWire") {
+        TopExp_Explorer exp(shape, TopAbs_WIRE);
+        Handle(ShapeBuild_ReShape) reshape = new ShapeBuild_ReShape();
+        bool any = false;
+        for (; exp.More(); exp.Next()) {
+            TopoDS_Wire w = TopoDS::Wire(exp.Current());
+            ShapeFix_Wire fixer;
+            fixer.Load(w);
+            fixer.SetMaxTolerance(Precision::Confusion());
+            if (fixer.Perform()) {
+                reshape->Replace(w, fixer.Wire());
+                any = true;
+            }
+        }
+        if (any) { shape = reshape->Apply(shape); return true; }
+        return false;
+    }
+    if (op == "FixEdge") {
+        TopExp_Explorer exp(shape, TopAbs_EDGE);
+        Handle(ShapeBuild_ReShape) reshape = new ShapeBuild_ReShape();
+        bool any = false;
+        for (; exp.More(); exp.Next()) {
+            TopoDS_Edge e = TopoDS::Edge(exp.Current());
+            ShapeFix_Edge fixer;
+            fixer.FixAddCurve3d(e);
+            any = true;
+        }
+        if (any) { shape = reshape->Apply(shape); return true; }
+        return false;
+    }
+    if (op == "FixFace") {
+        TopExp_Explorer exp(shape, TopAbs_FACE);
+        Handle(ShapeBuild_ReShape) reshape = new ShapeBuild_ReShape();
+        bool any = false;
+        for (; exp.More(); exp.Next()) {
+            TopoDS_Face f = TopoDS::Face(exp.Current());
+            ShapeFix_Face fixer(f);
+            fixer.SetPrecision(Precision::Confusion());
+            fixer.SetMaxTolerance(Precision::Confusion() * 100);
+            fixer.Perform();
+            TopoDS_Face result = fixer.Face();
+            if (!result.IsNull()) {
+                reshape->Replace(f, result);
+                any = true;
+            }
+        }
+        if (any) { shape = reshape->Apply(shape); return true; }
+        return false;
+    }
+    if (op == "SameParameter") {
+        BRepTools::Clean(shape);
+        BRepTools::Update(shape);
+        return true;
+    }
+    if (op == "SplitContinuity") {
+        ShapeUpgrade_ShapeDivideContinuity splitter(shape);
+        splitter.SetTolerance(Precision::Confusion());
+        splitter.SetBoundaryCriterion(GeomAbs_C1);
+        splitter.Perform();
+        shape = splitter.Result();
+        return !shape.IsNull();
+    }
+    return false;
+}
+
+occt_shape apply_shape_process(occt_shape shape, const char* operator_name) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!operator_name) { set_error("null operator_name", 2); return nullptr; }
+    try {
+        TopoDS_Shape current = *to_shape(shape);
+        if (dispatch_operator(current, operator_name) && !current.IsNull())
+            return from_shape(current);
+        set_error("ShapeProcess operator failed");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape apply_operator_sequence(occt_shape shape, const char** operators, int count) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!operators || count < 1) { set_error("invalid operator sequence", 2); return nullptr; }
+    try {
+        TopoDS_Shape current = *to_shape(shape);
+        for (int i = 0; i < count; i++) {
+            if (!operators[i]) continue;
+            if (!dispatch_operator(current, operators[i])) {
+                set_error("ShapeProcess operator failed");
+                return nullptr;
+            }
+        }
+        if (current.IsNull()) { set_error("operator sequence produced null result"); return nullptr; }
+        return from_shape(current);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape apply_healing_pipeline(occt_shape shape, const char* pipeline_name, const char* resource) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!pipeline_name || !resource) { set_error("null pipeline or resource name", 2); return nullptr; }
+    try {
+        ShapeProcessAPI_ApplySequence applier(resource, pipeline_name);
+        TopoDS_Shape result = applier.PrepareShape(*to_shape(shape));
+        if (!result.IsNull()) return from_shape(result);
+        set_error("healing pipeline produced null result");
+        return nullptr;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape heal_shape_default(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Shape current = *to_shape(shape);
+
+        // Apply FixShape
+        if (!dispatch_operator(current, "FixShape")) {
+            // Non-fatal, continue with original
+        }
+
+        // Apply SameParameter
+        dispatch_operator(current, "SameParameter");
+
+        // Apply FixSolid
+        dispatch_operator(current, "FixSolid");
+
+        if (current.IsNull()) { set_error("default healing produced null result"); return nullptr; }
+        return from_shape(current);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
 }
