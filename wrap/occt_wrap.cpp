@@ -148,6 +148,12 @@
 #include <BRepOffsetAPI_MakeOffset.hxx>
 #include <BRepOffsetAPI_DraftAngle.hxx>
 #include <BRepOffsetAPI_MakeEvolved.hxx>
+#include <BRepFeat_MakeCylindricalHole.hxx>
+#include <BRepFeat_MakePrism.hxx>
+#include <BRepFeat_MakeRevol.hxx>
+#include <BRepFeat_MakePipe.hxx>
+#include <LocOpe_DPrism.hxx>
+#include <LocOpe_Revol.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <BRepFill_Filling.hxx>
 
@@ -5523,6 +5529,185 @@ occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius
         maker.Build();
         if (!maker.IsDone()) { set_error("blend not done"); return nullptr; }
         return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+// --- Mechanical Features (BRepFeat) ---
+
+// Compute hole axis from face: use face center and normal.
+static gp_Ax1 face_to_axis(const TopoDS_Face& face) {
+    BRepAdaptor_Surface adaptor(face);
+    double u1, u2, v1, v2;
+    adaptor.Surface().Bounds(u1, u2, v1, v2);
+    double u = (u1 + u2) / 2.0;
+    double v = (v1 + v2) / 2.0;
+    gp_Pnt pt = adaptor.Value(u, v);
+    gp_Dir normal = adaptor.Plane().Axis().Direction();
+    if (face.Orientation() == TopAbs_REVERSED) {
+        normal.Reverse();
+    }
+    return gp_Ax1(pt, normal);
+}
+
+occt_shape make_cylindrical_hole(occt_shape shape, occt_shape face,
+                                 double radius, double depth, int through) {
+    clear_error();
+    if (!shape || !face) { set_error("null shape or face", 2); return nullptr; }
+    if (radius < Precision::Confusion()) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        TopoDS_Face faceShape = TopoDS::Face(*to_shape(face));
+        gp_Ax1 axis = face_to_axis(faceShape);
+        BRepFeat_MakeCylindricalHole feat;
+        feat.Init(*to_shape(shape), axis);
+        if (through) {
+            feat.PerformThruNext(radius, true);
+        } else {
+            feat.PerformBlind(radius, depth, true);
+        }
+        feat.Build();
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakeCylindricalHole produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_prism_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double height, double dx, double dy, double dz, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile) { set_error("null argument", 2); return nullptr; }
+    double dir_mag = sqrt(dx*dx + dy*dy + dz*dz);
+    try {
+        gp_Dir dir(0, 0, 1);
+        if (dir_mag >= Precision::Confusion()) {
+            dir = gp_Dir(dx, dy, dz);
+        }
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakePrism feat(*to_shape(shape), profShape,
+                                 TopoDS::Face(*to_shape(base_face)),
+                                 dir, fuse, false);
+        feat.Perform(height);
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakePrism produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_revol_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                              double ax, double ay, double az, double angle, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile) { set_error("null argument", 2); return nullptr; }
+    double axis_mag = sqrt(ax*ax + ay*ay + az*az);
+    if (axis_mag < Precision::Confusion()) { set_error("zero axis direction", 2); return nullptr; }
+    double ang = angle * M_PI / 180.0;
+    if (fabs(ang) < Precision::Confusion()) { set_error("zero revolution angle", 2); return nullptr; }
+    try {
+        gp_Ax1 axis(gp_Pnt(0, 0, 0), gp_Dir(ax, ay, az));
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakeRevol feat(*to_shape(shape), profShape,
+                                 TopoDS::Face(*to_shape(base_face)),
+                                 axis, fuse, false);
+        feat.Perform(ang);
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakeRevol produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_pipe_feature(occt_shape shape, occt_shape base_face, occt_shape profile,
+                             occt_shape path, int operation) {
+    clear_error();
+    if (!shape || !base_face || !profile || !path) { set_error("null argument", 2); return nullptr; }
+    try {
+        TopoDS_Shape profShape = *to_shape(profile);
+        int fuse = (operation != 0) ? 1 : 0;
+        BRepFeat_MakePipe feat(*to_shape(shape), profShape,
+                                TopoDS::Face(*to_shape(base_face)),
+                                TopoDS::Wire(*to_shape(path)),
+                                fuse, false);
+        feat.Perform();
+        TopoDS_Shape result = feat.Shape();
+        if (result.IsNull()) { set_error("MakePipe produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Local Operations (LocOpe) ---
+
+occt_shape local_extrude(occt_shape face, double height, double dx, double dy, double dz) {
+    clear_error();
+    if (!face) { set_error("null face", 2); return nullptr; }
+    if (height < Precision::Confusion()) { set_error("non-positive height", 2); return nullptr; }
+    try {
+        LocOpe_DPrism prism(TopoDS::Face(*to_shape(face)), height, 0.0);
+        if (!prism.IsDone()) { set_error("LocOpe_DPrism not done"); return nullptr; }
+        TopoDS_Shape result = prism.Shape();
+        if (result.IsNull()) { set_error("LocOpe_DPrism produced null shape"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_groove(occt_shape shape, occt_shape face,
+                        double ax, double ay, double az, double angle) {
+    clear_error();
+    if (!shape || !face) { set_error("null argument", 2); return nullptr; }
+    double axis_mag = sqrt(ax*ax + ay*ay + az*az);
+    if (axis_mag < Precision::Confusion()) { set_error("zero axis direction", 2); return nullptr; }
+    if (angle < Precision::Confusion()) { set_error("non-positive angle", 2); return nullptr; }
+    try {
+        gp_Ax1 axis(gp_Pnt(0, 0, 0), gp_Dir(ax, ay, az));
+        double ang = angle * M_PI / 180.0;
+        LocOpe_Revol rev;
+        rev.Perform(*to_shape(face), axis, ang);
+        TopoDS_Shape revShape = rev.Shape();
+        if (revShape.IsNull()) { set_error("LocOpe_Revol produced null shape"); return nullptr; }
+        BRepAlgoAPI_Cut cut(*to_shape(shape), revShape);
+        if (!cut.IsDone()) { set_error("Groove boolean cut not done"); return nullptr; }
+        TopoDS_Shape cutResult = cut.Shape();
+        if (cutResult.IsNull() || is_empty_shape(cutResult)) { set_error("Groove produced empty result"); return nullptr; }
+        return from_shape(cutResult);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_rib(occt_shape shape, occt_shape profile_face, double thickness,
+                    double dx, double dy, double dz) {
+    clear_error();
+    if (!shape || !profile_face) { set_error("null argument", 2); return nullptr; }
+    if (thickness < Precision::Confusion()) { set_error("non-positive thickness", 2); return nullptr; }
+    try {
+        gp_Vec dir(dx, dy, dz);
+        dir.Multiply(thickness);
+        TopoDS_Shape profShape = *to_shape(profile_face);
+        BRepPrimAPI_MakePrism prism(TopoDS::Face(profShape), dir);
+        if (!prism.IsDone()) { set_error("rib prism not done"); return nullptr; }
+        TopoDS_Shape ribShape = prism.Shape();
+        if (ribShape.IsNull()) { set_error("rib prism produced null"); return nullptr; }
+        BRepAlgoAPI_Fuse fuse(*to_shape(shape), ribShape);
+        if (!fuse.IsDone()) { set_error("rib fuse not done"); return nullptr; }
+        TopoDS_Shape result = fuse.Shape();
+        if (result.IsNull() || is_empty_shape(result)) { set_error("rib produced empty result"); return nullptr; }
+        return from_shape(result);
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return nullptr;

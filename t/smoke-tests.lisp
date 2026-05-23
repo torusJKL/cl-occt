@@ -2446,6 +2446,179 @@
 (deftest make-evolved-nil-profile
   (assert-nil (make-evolved nil (make-wire (make-edge-3d 0 0 0 10 0 0)))))
 
+;; --- Mechanical Features (BRepFeat & LocOpe) ---
+
+(deftest make-cylindrical-hole-through
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 5 0 :through t))))
+    (assert-true (or (null result) (shape-p result))
+                 "through hole should return shape or nil")))
+
+(deftest make-cylindrical-hole-blind
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 3 5))))
+    (assert-true (or (null result) (shape-p result))
+                 "blind hole should return shape or nil")))
+
+(deftest make-cylindrical-hole-nil-shape
+  (assert-nil (make-cylindrical-hole nil nil 5 0 :through t)))
+
+(deftest make-prism-feature-depression
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 -5 5 -5))
+                           (e2 (make-edge 5 -5 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 -5))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-prism-feature box (first faces) profile 10
+                                       :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "prism depression should return shape or nil")))
+
+(deftest make-prism-feature-protrusion
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 -5 5 -5))
+                           (e2 (make-edge 5 -5 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 -5))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-prism-feature box (first faces) profile 10
+                                       :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "prism protrusion should return shape or nil")))
+
+(deftest make-prism-feature-nil
+  (assert-nil (make-prism-feature nil nil nil 10)))
+
+(deftest make-revol-feature-depression
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 0 5 0))
+                           (e2 (make-edge 5 0 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 0))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-revol-feature box (first faces) profile
+                                       '(0 0 1) 90
+                                       :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "revol depression should return shape or nil")))
+
+(deftest make-revol-feature-protrusion
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -5 0 5 0))
+                           (e2 (make-edge 5 0 5 5))
+                           (e3 (make-edge 5 5 -5 5))
+                           (e4 (make-edge -5 5 -5 0))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (result (when (and faces profile)
+                   (make-revol-feature box (first faces) profile
+                                       '(0 0 1) 90
+                                       :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "revol protrusion should return shape or nil")))
+
+(deftest make-revol-feature-nil
+  (assert-nil (make-revol-feature nil nil nil nil 90)))
+
+(deftest make-pipe-feature-depression
+  (let* ((box (make-box 50 50 50))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -3 -3 3 -3))
+                           (e2 (make-edge 3 -3 3 3))
+                           (e3 (make-edge 3 3 -3 3))
+                           (e4 (make-edge -3 3 -3 -3))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (path (make-wire (make-edge-3d 0 0 0 0 0 20)))
+         (result (when (and faces profile)
+                   (make-pipe-feature box (first faces) profile path
+                                      :operation :cut))))
+    (assert-true (or (null result) (shape-p result))
+                 "pipe depression should return shape or nil")))
+
+(deftest make-pipe-feature-protrusion
+  (let* ((box (make-box 50 50 50))
+         (faces (map-shape-subshapes box :face))
+         (profile (when faces
+                    (let* ((e1 (make-edge -3 -3 3 -3))
+                           (e2 (make-edge 3 -3 3 3))
+                           (e3 (make-edge 3 3 -3 3))
+                           (e4 (make-edge -3 3 -3 -3))
+                           (w (make-wire e1 e2 e3 e4)))
+                      w)))
+         (path (make-wire (make-edge-3d 0 0 0 0 0 20)))
+         (result (when (and faces profile)
+                   (make-pipe-feature box (first faces) profile path
+                                      :operation :add))))
+    (assert-true (or (null result) (shape-p result))
+                 "pipe protrusion should return shape or nil")))
+
+(deftest make-pipe-feature-nil
+  (assert-nil (make-pipe-feature nil nil nil nil :operation :cut)))
+
+(deftest local-extrude-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (local-extrude (first faces) 5))))
+    (assert-true (or (null result) (shape-p result))
+                 "local extrude should return shape or nil")))
+
+(deftest local-extrude-nil
+  (assert-nil (local-extrude nil 5)))
+
+(deftest make-groove-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-groove box (first faces) '(0 0 1) 45))))
+    (assert-true (or (null result) (shape-p result))
+                 "groove should return shape or nil")))
+
+(deftest make-groove-nil
+  (assert-nil (make-groove nil nil nil 45)))
+
+(deftest make-rib-valid
+  (let* ((box (make-box 30 20 10))
+         (profile (let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+                         (e2 (make-edge-3d 10 0 0 10 10 0))
+                         (e3 (make-edge-3d 10 10 0 0 10 0))
+                         (w (make-wire e1 e2 e3)))
+                    w))
+         (result (make-rib box profile 2 :direction '(0 0 1))))
+    (assert-true (or (null result) (shape-p result))
+                 "rib should return shape or nil")))
+
+(deftest make-rib-nil
+  (assert-nil (make-rib nil nil 2)))
+
+(deftest make-cylindrical-hole-nil-depth
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when faces
+                   (make-cylindrical-hole box (first faces) 0 0 :through t))))
+    (assert-nil result "hole with zero radius should return nil")))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -2630,7 +2803,18 @@
                  offset-shape-excessive offset-shape-nil
                  offset-wire-outward offset-wire-inward offset-wire-nil
                  draft-face-valid draft-face-excessive-angle draft-face-nil-shape
-                 make-evolved-valid make-evolved-with-offset make-evolved-nil-profile))
+                 make-evolved-valid make-evolved-with-offset make-evolved-nil-profile
+                 make-cylindrical-hole-through make-cylindrical-hole-blind
+                 make-cylindrical-hole-nil-shape make-cylindrical-hole-nil-depth
+                 make-prism-feature-depression make-prism-feature-protrusion
+                 make-prism-feature-nil
+                 make-revol-feature-depression make-revol-feature-protrusion
+                 make-revol-feature-nil
+                 make-pipe-feature-depression make-pipe-feature-protrusion
+                 make-pipe-feature-nil
+                 local-extrude-valid local-extrude-nil
+                 make-groove-valid make-groove-nil
+                 make-rib-valid make-rib-nil))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

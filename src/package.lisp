@@ -349,6 +349,13 @@
          :%offset-wire-2d
          :%draft-face
          :%make-evolved
+         :%make-cylindrical-hole
+         :%make-prism-feature
+         :%make-revol-feature
+         :%make-pipe-feature
+         :%local-extrude
+         :%make-groove
+         :%make-rib
         :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
@@ -762,5 +769,12 @@
              :shell-shape
              :offset-shape
              :offset-wire
-             :draft-face
-             :make-evolved))
+              :draft-face
+              :make-evolved
+              :make-cylindrical-hole
+              :make-prism-feature
+              :make-revol-feature
+              :make-pipe-feature
+              :local-extrude
+              :make-groove
+              :make-rib))

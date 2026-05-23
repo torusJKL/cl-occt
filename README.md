@@ -241,6 +241,54 @@ Design decisions documented in `openspec/changes/v1-core/design.md`.
 
 Returns `nil` on invalid dimensions or degenerate parameters.
 
+### Mechanical Features (BRepFeat)
+
+Positional features that add or remove material relative to a specific face.
+
+| Function | Description |
+|----------|-------------|
+| `(make-cylindrical-hole shape face radius depth &key through)` | Create a cylindrical hole. When `:through t`, creates a through hole; otherwise a blind hole of given depth |
+| `(make-prism-feature shape base-face profile height &key operation direction)` | Linear extrusion from a face. `:operation` is `:cut` (depression) or `:add` (protrusion). `:direction` is a vector `(dx dy dz)` |
+| `(make-revol-feature shape base-face profile axis angle &key operation)` | Rotational sweep from a face around `axis` by `angle` degrees. `:operation` is `:cut` or `:add` |
+| `(make-pipe-feature shape base-face profile path &key operation)` | Pipe-shaped feature along a path wire. `:operation` is `:cut` or `:add` |
+
+The `profile` argument is a wire defining the cross-section. The `base-face` must be a face of `shape`. All functions propagate nil on invalid inputs.
+
+```lisp
+;; Through hole on the first face of a box
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (make-cylindrical-hole box (first faces) 5 0 :through t))
+
+;; Prismatic depression
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face))
+       (profile (make-wire (make-edge -5 -5 5 -5) (make-edge 5 -5 5 5)
+                           (make-edge 5 5 -5 5) (make-edge -5 5 -5 -5))))
+  (make-prism-feature box (first faces) profile 10 :operation :cut))
+```
+
+### Local Operations (LocOpe)
+
+Lower-level local shape modifications on individual faces.
+
+| Function | Description |
+|----------|-------------|
+| `(local-extrude face height)` | Extrude a single face by a given height along its normal |
+| `(make-groove shape face axis angle)` | Create a revolved cut (groove) on a face around an axis (`angle` in degrees) |
+| `(make-rib shape profile-face thickness &key direction)` | Create a rib by extruding a profile face and fusing it to the shape |
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  ;; Local extrusion of a face
+  (local-extrude (first faces) 5)
+  ;; Groove on a face
+  (make-groove box (first faces) '(0 0 1) 45)
+  ;; Rib from a profile fused to shape
+  (make-rib box (first faces) 2 :direction '(0 0 1)))
+```
+
 ### Booleans
 
 | Function | Description |
