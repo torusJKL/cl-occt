@@ -424,6 +424,86 @@ Keyword arguments: `:radius` (mandatory), `:pitch` (mandatory), `:height` (manda
 
 Returns `nil` on invalid input. Use `make-wire` → `make-face` → `make-prism`/`make-revol` to create solids from 2D profiles.
 
+### Mass Properties
+
+Query physical properties of solid shapes via BRepGProp.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-volume shape)` | Volume of a solid. Returns double or nil |
+| `(shape-area shape)` | Surface area of a shape. Returns double or nil |
+| `(shape-center-of-mass shape)` | Center of mass as 3 values: `(x y z)`. Returns nil on error |
+| `(shape-gprops shape)` | Batch compute all mass properties. Returns `gprops` instance |
+| `(shape-inertia shape)` | Alias for `shape-gprops` |
+
+The `gprops` class has readers: `gprops-volume`, `gprops-area`, `gprops-center-of-mass`,
+`gprops-inertia-matrix` (6-component list: Ixx Iyy Izz Ixy Ixz Iyz),
+`gprops-principal-moments` (3 values), `gprops-principal-axes` (9 values, 3x3 matrix).
+
+```lisp
+(let ((g (shape-gprops (make-box 10 20 30))))
+  (gprops-volume g))                ; → 6000.0
+(multiple-value-bind (x y z)
+    (shape-center-of-mass (make-box 10 20 30))
+  (list x y z))                     ; → (5.0 10.0 15.0)
+```
+
+All functions accept nil and return nil.
+
+### Shape Analysis Queries
+
+Minimum distance, point-in-solid classification, validity checking, and curve-surface intersection.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-distance shape1 shape2)` | Minimum distance between two shapes. Returns double or nil |
+| `(shape-distance-extrema shape1 shape2)` | Distance + closest points. Returns `shape-extrema` or nil |
+| `(point-in-solid-p point shape)` | Classify point as `:inside`, `:outside`, or `:on` |
+| `(classify-point-in-solid point shape)` | Returns two values: keyword and optional face (if `:on`) |
+| `(shape-valid-p shape)` | Check topological validity. Returns t or nil |
+| `(shape-check shape)` | Detailed validity report. Returns list of issues or nil |
+| `(intersect-curve-shape curve shape)` | Intersect curve with BRep shape. Returns list of `(point u v face)` |
+
+```lisp
+(shape-distance box1 box2)                     ; → 10.0
+(point-in-solid-p '(5 10 15) box)              ; → :inside
+(multiple-value-bind (state face)
+    (classify-point-in-solid '(0 10 15) box)
+  state)                                       ; → :on
+(shape-valid-p (make-box 10 20 30))            ; → t
+```
+
+The `shape-extrema` class has readers: `extrema-distance`, `extrema-point-on-shape1`, `extrema-point-on-shape2`.
+
+### Topology Navigation
+
+Walk, inspect, and construct topological entities.
+
+| Function | Description |
+|----------|-------------|
+| `(map-shape-subshapes shape type &key stop-at)` | Explore sub-shapes. Returns list of shapes |
+| `(count-shape-subshapes shape type &key stop-at)` | Count sub-shapes of a type |
+| `(dump-shape shape)` | BRepTools text dump. Returns string or nil |
+| `(shape-triangle-count shape)` | Triangle count after meshing. Returns integer or nil |
+| `(wire-order-check-p wire &optional face)` | Check wire edge ordering. Returns t or nil |
+| `(edge->curve edge)` | Extract 3D curve from edge. Returns `curve` or nil |
+| `(face->surface face)` | Extract surface from face. Returns `surface` or nil |
+| `(make-vertex x y z)` | Construct a vertex shape. Returns shape |
+| `(make-polygon points &key closed)` | Polygon wire from point triples. Returns shape or nil |
+
+Type keywords: `:compound`, `:compsolid`, `:solid`, `:shell`, `:face`, `:wire`, `:edge`, `:vertex`, `:shape`.
+
+```lisp
+(map-shape-subshapes box :face)        ; → list of 6 faces
+(map-shape-subshapes box :edge)        ; → list of 24 edge entries
+(count-shape-subshapes box :face)      ; → 6
+(make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)
+                                       ; → open wire with 3 edges
+(make-vertex 1.0 2.0 3.0)             ; → vertex shape
+```
+
+Note: `TopExp_Explorer` visits every sub-shape at each parent level. A box's 12 unique edges appear as 24 entries (one per face that uses them).
+
 ### Viewer
 
 | Function | Description |
@@ -822,6 +902,9 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
+│   │   ├── mass-properties.lisp  gprops, shape-volume, shape-area, shape-center-of-mass, shape-gprops
+│   │   ├── shape-analysis.lisp   shape-distance, point-in-solid-p, shape-valid-p, shape-check, intersect-curve-shape
+│   │   └── topology.lisp         map-shape-subshapes, dump-shape, edge->curve, face->surface, make-vertex, make-polygon
 │   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
 │   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
 │   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)
@@ -845,7 +928,7 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │       ├── defmodel.lisp defmodel macro, model-ref function
 │       └── api.lisp      help function
 ├── t/
-│   └── smoke-tests.lisp  ~165 smoke tests
+│   └── smoke-tests.lisp  ~267 smoke tests
 ├── openspec/             OpenSpec change management
 └── AGENTS.md             AI agent instructions
 ```

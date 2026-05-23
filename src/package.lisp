@@ -299,10 +299,32 @@
       :%project-point-on-curve-2d
       :%points-to-bspline
       :%interpolate-points
-      :%make-helix-curve
-      :%make-helix-edge
-      :%curve-kind->keyword
-      :%surface-kind->keyword
+       :%make-helix-curve
+       :%make-helix-edge
+       :%shape-volume
+       :%shape-area
+       :%shape-center-of-mass
+       :%shape-inertia
+       :%shape-distance
+       :%shape-distance-extrema
+       :%classify-point-in-solid
+       :%shape-is-valid
+       :%shape-analysis-report
+       :%intersect-curve-shape
+       :%map-subshapes
+       :%count-subshapes
+       :%dump-shape
+       :%shape-triangle-count
+       :%wire-order-check
+       :%edge-to-curve
+       :%face-to-surface
+       :%make-vertex
+       :%make-polygon
+       :%shape-gprops-internal
+       :%shape-distance-extrema-internal
+       :%shape-type-to-int
+     :%curve-kind->keyword
+     :%surface-kind->keyword
     :*params*
    :model
    :make-model
@@ -657,5 +679,37 @@
          :project-point-on-curve-2d
          :points-to-bspline
          :interpolate-points
-         :make-helix-curve
-         :make-helix-edge))
+          :make-helix-curve
+          :make-helix-edge
+          :gprops
+          :gprops-volume
+          :gprops-area
+          :gprops-center-of-mass
+          :gprops-inertia-matrix
+          :gprops-principal-moments
+          :gprops-principal-axes
+          :shape-gprops
+          :shape-volume
+          :shape-area
+          :shape-center-of-mass
+          :shape-inertia
+          :shape-extrema
+          :extrema-distance
+          :extrema-point-on-shape1
+          :extrema-point-on-shape2
+          :shape-distance
+          :shape-distance-extrema
+          :point-in-solid-p
+          :classify-point-in-solid
+          :shape-valid-p
+          :shape-check
+          :intersect-curve-shape
+          :map-shape-subshapes
+          :count-shape-subshapes
+          :dump-shape
+          :shape-triangle-count
+          :wire-order-check-p
+          :edge-&gt;curve
+          :face-&gt;surface
+          :make-vertex
+          :make-polygon))
