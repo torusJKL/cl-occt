@@ -2081,6 +2081,108 @@
     (assert-true (or (null s) (typep s 'surface))
                  "face->surface should return surface or nil")))
 
+;; --- Fillet / Chamfer / Blend tests ---
+
+(deftest fillet-edge-constant
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge box (first edges) 3.0)))
+    (assert-shape result)))
+
+(deftest fillet-edge-nil-shape
+  (assert-nil (fillet-edge nil (make-edge 0 0 10 0) 3.0)))
+
+(deftest fillet-edges-multiple
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (some-edges (list (first edges) (second edges)))
+         (result (fillet-edges box some-edges 3.0)))
+    (assert-shape result)))
+
+(deftest fillet-edge-variable-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge-variable box (first edges)
+                                       '((0.0 3.0) (0.5 5.0) (1.0 3.0)))))
+    (assert-shape result)))
+
+(deftest fillet-wire-corner-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (fillet-wire-corner wire 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "fillet-wire-corner should return shape or nil")))
+
+(deftest fillet-wire-all-corners-valid
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (fillet-wire-all-corners wire 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "fillet-wire-all-corners should return shape or nil")))
+
+(deftest chamfer-edge-constant
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge box (first edges) 3.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-nil-shape
+  (assert-nil (chamfer-edge nil (make-edge 0 0 10 0) 3.0)))
+
+(deftest chamfer-edges-multiple
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (some-edges (list (first edges) (second edges)))
+         (result (chamfer-edges box some-edges 3.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-asymmetric-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge-asymmetric box (first edges) 4.0 2.0)))
+    (assert-shape result)))
+
+(deftest chamfer-edge-on-face-valid
+  (let* ((box (make-box 30 20 10))
+         (edges (map-shape-subshapes box :edge))
+         (faces (map-shape-subshapes box :face))
+         (result (chamfer-edge-on-face box (first edges) 3.0 (first faces))))
+    (assert-shape result)))
+
+(deftest blend-faces-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (blend-faces (first faces) (second faces) 2.0))))
+    (assert-true (or (null result) (shape-p result))
+                 "blend-faces should return shape or nil")))
+
+(deftest make-blend-constant-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (make-blend (first faces) (second faces) :constant 2.0))))
+    (assert-true (or (null result) (shape-p result))
+                 "make-blend :constant should return shape or nil")))
+
+(deftest fillet-edge-excessive-radius
+  (let* ((box (make-box 10 10 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (fillet-edge box (first edges) 999.0)))
+    (assert-nil result "excessive radius should return nil")))
+
+(deftest chamfer-edge-excessive-distance
+  (let* ((box (make-box 10 10 10))
+         (edges (map-shape-subshapes box :edge))
+         (result (chamfer-edge box (first edges) 999.0)))
+    (assert-nil result "excessive distance should return nil")))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -2236,7 +2338,15 @@
                 topology-make-polygon-closed topology-make-polygon-open
                 topology-make-polygon-too-few-points
                 topology-triangle-count topology-wire-order-check
-                topology-edge->curve topology-face->surface))
+                topology-edge->curve topology-face->surface
+                fillet-edge-constant fillet-edge-nil-shape
+                fillet-edges-multiple fillet-edge-variable-valid
+                fillet-wire-corner-valid fillet-wire-all-corners-valid
+                chamfer-edge-constant chamfer-edge-nil-shape
+                chamfer-edges-multiple chamfer-edge-asymmetric-valid
+                chamfer-edge-on-face-valid
+                blend-faces-valid make-blend-constant-valid
+                fillet-edge-excessive-radius chamfer-edge-excessive-distance))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

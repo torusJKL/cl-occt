@@ -137,6 +137,9 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBuilderAPI_MakeVertex.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepFilletAPI_MakeFillet.hxx>
+#include <BRepFilletAPI_MakeFillet2d.hxx>
+#include <BRepFilletAPI_MakeChamfer.hxx>
 
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <Poly_Triangulation.hxx>
@@ -4922,6 +4925,251 @@ occt_shape make_polygon(double* points, int num_points, int closed) {
             maker.Add(gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
         }
         if (closed) maker.Close();
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// ---------------------------------------------------------------------------
+//  Fillet / Chamfer / Blend
+// ---------------------------------------------------------------------------
+
+occt_shape fillet_edge_constant(occt_shape shape, occt_shape edge, double radius) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        maker.Add(radius, TopoDS::Edge(*to_shape(edge)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_edges_constant(occt_shape shape, occt_shape* edges, int num_edges, double radius) {
+    clear_error();
+    if (!shape || !edges || num_edges < 1) { set_error("invalid arguments", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        for (int i = 0; i < num_edges; i++) {
+            if (!edges[i]) { set_error("null edge in array", 2); return nullptr; }
+            maker.Add(radius, TopoDS::Edge(*to_shape(edges[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_edge_variable(occt_shape shape, occt_shape edge, double* params_and_radii, int num_pairs) {
+    clear_error();
+    if (!shape || !edge || !params_and_radii || num_pairs < 1) {
+        set_error("invalid arguments", 2); return nullptr;
+    }
+    try {
+        BRepFilletAPI_MakeFillet maker(*to_shape(shape));
+        const TopoDS_Edge& edgeRef = TopoDS::Edge(*to_shape(edge));
+        // Build array of (parameter, radius) pairs for OCCT
+        NCollection_Array1<gp_Pnt2d> uAndR(0, num_pairs - 1);
+        for (int i = 0; i < num_pairs; i++) {
+            uAndR[i].SetX(params_and_radii[i * 2]);
+            uAndR[i].SetY(params_and_radii[i * 2 + 1]);
+        }
+        maker.Add(uAndR, edgeRef);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("variable fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_wire_corner(occt_shape wire, double radius) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        // Build a planar face from the wire, then fillet its vertices
+        BRepBuilderAPI_MakeFace faceMaker(TopoDS::Wire(*to_shape(wire)));
+        if (!faceMaker.IsDone()) { set_error("cannot make face from wire", 2); return nullptr; }
+        TopoDS_Face face = faceMaker.Face();
+
+        BRepFilletAPI_MakeFillet2d maker(face);
+        // Find first vertex and fillet it
+        TopExp_Explorer exp(face, TopAbs_VERTEX);
+        if (!exp.More()) { set_error("no vertices in wire", 2); return nullptr; }
+        maker.AddFillet(TopoDS::Vertex(exp.Current()), radius);
+        if (!maker.IsDone()) { set_error("2D fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape fillet_wire_all_corners(occt_shape wire, double radius) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        BRepBuilderAPI_MakeFace faceMaker(TopoDS::Wire(*to_shape(wire)));
+        if (!faceMaker.IsDone()) { set_error("cannot make face from wire", 2); return nullptr; }
+        TopoDS_Face face = faceMaker.Face();
+
+        BRepFilletAPI_MakeFillet2d maker(face);
+        // Fillet every vertex
+        TopExp_Explorer exp(face, TopAbs_VERTEX);
+        int vertexCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.AddFillet(TopoDS::Vertex(exp.Current()), radius);
+            vertexCount++;
+        }
+        if (vertexCount == 0) { set_error("no vertices in wire", 2); return nullptr; }
+        if (!maker.IsDone()) { set_error("2D fillet not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_equal(occt_shape shape, occt_shape edge, double distance) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        maker.Add(distance, TopoDS::Edge(*to_shape(edge)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edges_equal(occt_shape shape, occt_shape* edges, int num_edges, double distance) {
+    clear_error();
+    if (!shape || !edges || num_edges < 1) { set_error("invalid arguments", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        for (int i = 0; i < num_edges; i++) {
+            if (!edges[i]) { set_error("null edge in array", 2); return nullptr; }
+            maker.Add(distance, TopoDS::Edge(*to_shape(edges[i])));
+        }
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_asym(occt_shape shape, occt_shape edge, double distance1, double distance2) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance1 <= 0 || distance2 <= 0) { set_error("distances must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        // For asymmetric chamfer, use Add with two distances and a null face
+        TopoDS_Face nullFace;
+        maker.Add(distance1, distance2, TopoDS::Edge(*to_shape(edge)), nullFace);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("asymmetric chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape chamfer_edge_on_face(occt_shape shape, occt_shape edge, double distance, occt_shape face) {
+    clear_error();
+    if (!shape || !edge) { set_error("null shape argument", 2); return nullptr; }
+    if (distance <= 0) { set_error("distance must be positive", 2); return nullptr; }
+    try {
+        BRepFilletAPI_MakeChamfer maker(*to_shape(shape));
+        TopoDS_Face faceRef;
+        if (face) {
+            faceRef = TopoDS::Face(*to_shape(face));
+        }
+        // Use asymmetric Add with second distance = first (equal), specifying the face
+        maker.Add(distance, distance, TopoDS::Edge(*to_shape(edge)), faceRef);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("chamfer not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape blend_faces_constant(occt_shape face1, occt_shape face2, double radius) {
+    clear_error();
+    if (!face1 || !face2) { set_error("null face argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        // Build a shell from the two faces and fillet the shared edge
+        TopoDS_Shell shell;
+        BRep_Builder builder;
+        builder.MakeShell(shell);
+        builder.Add(shell, TopoDS::Face(*to_shape(face1)));
+        builder.Add(shell, TopoDS::Face(*to_shape(face2)));
+
+        BRepFilletAPI_MakeFillet maker(shell);
+        TopExp_Explorer exp(shell, TopAbs_EDGE);
+        int edgeCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.Add(radius, TopoDS::Edge(exp.Current()));
+            edgeCount++;
+        }
+        if (edgeCount == 0) { set_error("no edges between faces", 2); return nullptr; }
+
+        maker.Build();
+        if (!maker.IsDone()) { set_error("blend not done"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius) {
+    clear_error();
+    if (!face1 || !face2) { set_error("null face argument", 2); return nullptr; }
+    if (radius <= 0) { set_error("radius must be positive", 2); return nullptr; }
+    try {
+        TopoDS_Shell shell;
+        BRep_Builder builder;
+        builder.MakeShell(shell);
+        builder.Add(shell, TopoDS::Face(*to_shape(face1)));
+        builder.Add(shell, TopoDS::Face(*to_shape(face2)));
+
+        BRepFilletAPI_MakeFillet maker(shell);
+        TopExp_Explorer exp(shell, TopAbs_EDGE);
+        int edgeCount = 0;
+        for (; exp.More(); exp.Next()) {
+            maker.Add(radius, TopoDS::Edge(exp.Current()));
+            edgeCount++;
+        }
+        if (edgeCount == 0) { set_error("no edges between faces", 2); return nullptr; }
+
+        maker.Build();
+        if (!maker.IsDone()) { set_error("blend not done"); return nullptr; }
         return from_shape(maker.Shape());
     } catch (Standard_Failure& e) {
         set_error(e.what());

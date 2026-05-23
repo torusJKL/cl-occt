@@ -252,6 +252,60 @@ Returns `nil` on invalid dimensions or degenerate parameters.
 
 All propagate nil: if any argument is nil, result is nil.
 
+### Edge Fillet
+
+| Function | Description |
+|----------|-------------|
+| `(fillet-edge shape edge radius)` | Round a single edge with constant radius |
+| `(fillet-edges shape edges radius)` | Round multiple edges with the same radius |
+| `(fillet-edge-variable shape edge param-radius-pairs)` | Round an edge with variable radius. `param-radius-pairs` is a list of `(param radius)` where param is in [0,1] |
+| `(fillet-wire-corner wire radius)` | Round the first corner of a planar wire (2D fillet) |
+| `(fillet-wire-all-corners wire radius)` | Round all corners of a planar wire |
+
+Edges are obtained via `(map-shape-subshapes shape :edge)`. All functions return `nil` on invalid inputs (nil shape, excessive radius, degenerate geometry).
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (edges (map-shape-subshapes box :edge)))
+  ;; Constant radius fillet on one edge
+  (fillet-edge box (first edges) 5.0)
+  ;; Variable radius fillet
+  (fillet-edge-variable box (first edges)
+                        '((0.0 3.0) (0.5 5.0) (1.0 3.0))))
+```
+
+### Chamfer
+
+| Function | Description |
+|----------|-------------|
+| `(chamfer-edge shape edge distance)` | Bevel an edge with equal distance on both faces |
+| `(chamfer-edges shape edges distance)` | Bevel multiple edges with equal distance |
+| `(chamfer-edge-asymmetric shape edge d1 d2)` | Bevel an edge with different distances on each adjacent face |
+| `(chamfer-edge-on-face shape edge distance face)` | Bevel an edge relative to a specific face |
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (edges (map-shape-subshapes box :edge))
+       (faces (map-shape-subshapes box :face)))
+  (chamfer-edge box (first edges) 3.0)
+  (chamfer-edge-asymmetric box (first edges) 4.0 2.0)
+  (chamfer-edge-on-face box (first edges) 3.0 (first faces)))
+```
+
+### Surface Blend
+
+| Function | Description |
+|----------|-------------|
+| `(blend-faces face1 face2 radius)` | Create a smooth blending surface between two faces (constant radius) |
+| `(make-blend face1 face2 type radius-or-law)` | General blend construction. `:constant` type with radius value. `:evolving` type not yet supported (returns nil) |
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (blend-faces (first faces) (second faces) 2.0)
+  (make-blend (first faces) (second faces) :constant 2.0))
+```
+
 ### Transforms
 
 | Function | Description |
@@ -904,7 +958,10 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
 │   │   ├── mass-properties.lisp  gprops, shape-volume, shape-area, shape-center-of-mass, shape-gprops
 │   │   ├── shape-analysis.lisp   shape-distance, point-in-solid-p, shape-valid-p, shape-check, intersect-curve-shape
-│   │   └── topology.lisp         map-shape-subshapes, dump-shape, edge->curve, face->surface, make-vertex, make-polygon
+│   │   ├── topology.lisp         map-shape-subshapes, dump-shape, edge->curve, face->surface, make-vertex, make-polygon
+│   │   ├── fillet.lisp           fillet-edge, fillet-edges, fillet-edge-variable, fillet-wire-corner, fillet-wire-all-corners
+│   │   ├── chamfer.lisp          chamfer-edge, chamfer-edges, chamfer-edge-asymmetric, chamfer-edge-on-face
+│   │   ├── blend.lisp            blend-faces, make-blend
 │   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
 │   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
 │   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)

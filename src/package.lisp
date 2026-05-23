@@ -318,9 +318,20 @@
        :%wire-order-check
        :%edge-to-curve
        :%face-to-surface
-       :%make-vertex
-       :%make-polygon
-       :%shape-gprops-internal
+        :%make-vertex
+        :%make-polygon
+        :%fillet-edge-constant
+        :%fillet-edges-constant
+        :%fillet-edge-variable
+        :%fillet-wire-corner
+        :%fillet-wire-all-corners
+        :%chamfer-edge-equal
+        :%chamfer-edges-equal
+        :%chamfer-edge-asym
+        :%chamfer-edge-on-face
+        :%blend-faces-constant
+        :%blend-make-constant
+        :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
      :%curve-kind->keyword
@@ -711,5 +722,16 @@
           :wire-order-check-p
           :edge-&gt;curve
           :face-&gt;surface
-          :make-vertex
-          :make-polygon))
+           :make-vertex
+           :make-polygon
+           :fillet-edge
+           :fillet-edges
+           :fillet-edge-variable
+           :fillet-wire-corner
+           :fillet-wire-all-corners
+           :chamfer-edge
+           :chamfer-edges
+           :chamfer-edge-asymmetric
+           :chamfer-edge-on-face
+           :blend-faces
+           :make-blend))

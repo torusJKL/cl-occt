@@ -1195,3 +1195,63 @@
   (points :pointer)
   (num-points :int)
   (closed :int))
+
+;; --- Fillet / Chamfer / Blend ---
+
+(defcfun (%fillet-edge-constant "fillet_edge_constant") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (radius :double))
+
+(defcfun (%fillet-edges-constant "fillet_edges_constant") :pointer
+  (shape :pointer)
+  (edges :pointer)
+  (num-edges :int)
+  (radius :double))
+
+(defcfun (%fillet-edge-variable "fillet_edge_variable") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (params-and-radii :pointer)
+  (num-pairs :int))
+
+(defcfun (%fillet-wire-corner "fillet_wire_corner") :pointer
+  (wire :pointer)
+  (radius :double))
+
+(defcfun (%fillet-wire-all-corners "fillet_wire_all_corners") :pointer
+  (wire :pointer)
+  (radius :double))
+
+(defcfun (%chamfer-edge-equal "chamfer_edge_equal") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance :double))
+
+(defcfun (%chamfer-edges-equal "chamfer_edges_equal") :pointer
+  (shape :pointer)
+  (edges :pointer)
+  (num-edges :int)
+  (distance :double))
+
+(defcfun (%chamfer-edge-asym "chamfer_edge_asym") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance1 :double)
+  (distance2 :double))
+
+(defcfun (%chamfer-edge-on-face "chamfer_edge_on_face") :pointer
+  (shape :pointer)
+  (edge :pointer)
+  (distance :double)
+  (face :pointer))
+
+(defcfun (%blend-faces-constant "blend_faces_constant") :pointer
+  (face1 :pointer)
+  (face2 :pointer)
+  (radius :double))
+
+(defcfun (%blend-make-constant "blend_make_constant") :pointer
+  (face1 :pointer)
+  (face2 :pointer)
+  (radius :double))
