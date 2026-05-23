@@ -54,3 +54,24 @@ User SHALL be able to read metadata from a registered model using accessor funct
 #### Scenario: Read model name
 - **WHEN** user evaluates `(defmodel named-box () (:name "Part A") (make-box 10 20 30))` then calls `(model-name 'named-box)`
 - **THEN** the result SHALL be `"Part A"`
+
+## REMOVED Requirements
+
+### Requirement: Specify color on a model
+**Reason**: Metadata clauses on `defmodel` removed. No OCCT counterpart.
+**Migration**: Use `make-part` with `:color` keyword or AIS display attributes.
+
+### Requirement: Specify name on a model
+**Reason**: Metadata clauses on `defmodel` removed.
+**Migration**: Use `make-part` with `:name` keyword.
+
+### Requirement: Specify layer on a model
+**Reason**: Metadata clauses on `defmodel` removed.
+**Migration**: Use AIS display layer directly.
+
+### Requirement: No metadata by default
+**Reason**: Metadata on `defmodel` removed.
+
+### Requirement: Metadata accessible via model accessors
+**Reason**: `model-color`, `model-name`, `model-layer` removed.
+**Migration**: Use `part-color`, `part-name` from assembly module.

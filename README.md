@@ -1,9 +1,8 @@
 # cl-occt — Common Lisp OCCT Library
 
-A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for parametric 3D CAD geometry.
+A Common Lisp library wrapping [OCCT 8.0](https://dev.opencascade.org/) for 3D CAD geometry.
 Provides CFFI bindings, a CLOS shape wrapper with GC, primitives, booleans, transforms, STEP I/O, STL I/O,
-a reactive DAG engine, a parametric DSL (`defmodel`, `param`, `model-ref`), a full 3D viewer with object display,
-styling, camera control, and a trihedron orientation aid.
+a full 3D viewer with object display, styling, camera control, and a trihedron orientation aid.
 
 This is a **library**, not an application. Use it to build CAD tools, scripts, or GUIs in SBCL.
 
@@ -60,7 +59,7 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
 
 ## Quickstart
 
-### Direct geometry (no DAG)
+### Geometry
 
 ```lisp
 (in-package :cl-occt)
@@ -76,68 +75,6 @@ This loads Quicklisp, finds the `cl-occt` system, and drops you into the `CL-OCC
   (write-stl (make-compound (list box sphere))
              "compound.stl"
              :deflection 0.05))
-```
-
-### Parametric DAG
-
-```lisp
-(in-package :cl-occt)
-
-(set-params! :w 30 :d 20 :h 10 :r 8)
-
-(defmodel my-box (:w :d :h)
-  (make-box (param :w) (param :d) (param :h)))
-
-(defmodel holey-box (:r :w :d :h)
-  (let ((box (model-ref 'my-box))
-        (sphere (make-sphere (param :r))))
-    (cut box (translate sphere
-                        (/ (param :w) 2)
-                        (/ (param :d) 2)
-                        (/ (param :h) 2)))))
-
-(write-step (model-ref 'holey-box) "holey.step")
-
-(set-param! :r 12)
-(write-step (model-ref 'holey-box) "holey-bigger-hole.step")
-```
-
-### Local parameter override
-
-```lisp
-(my-box :w 100 :d 200 :h 300)  ; uses local params, doesn't touch globals
-(param :w)                       ; => 30, global unchanged
-```
-
-### Model metadata (color, name, layer)
-
-Models carry optional metadata that round-trips through STEP export.
-
-```lisp
-(set-params! :w 30 :d 20 :h 10 :col '(:generic 1.0 0.0 0.0 1.0))
-
-;; Static metadata
-(defmodel red-box (:w :d :h)
-  (:color (:generic 1.0 0.0 0.0 1.0))
-  (:name "Red Box")
-  (:layer "mechanical")
-  (make-box (param :w) (param :d) (param :h)))
-
-;; Parametric metadata — color from a parameter
-(defmodel colored-box (:w :d :h :col)
-  (:color (param :col))
-  (make-box (param :w) (param :d) (param :h)))
-
-;; Read metadata
-(model-color 'red-box)        ; => (:generic 1.0 0.0 0.0 1.0)
-(model-display-name 'red-box) ; => "Red Box"
-(model-layer 'red-box)        ; => "mechanical"
-
-;; Export all DAG models with metadata to STEP
-(write-dag-models-to-step "models.step")
-
-;; Import a STEP assembly into the DAG registry
-(read-step-into-dag "models.step")
 ```
 
 ### 3D Viewer (requires a GUI window)
@@ -220,8 +157,6 @@ Three layers:
 - `wrap/occt_wrap.cpp` — 95 `extern "C"` functions wrapping OCCT. No business logic.
 - `src/ffi/` — CFFI `defcfun` bindings. Functions prefixed with `%` (e.g. `%make-box`).
 - `src/core/` — CLOS `shape`, `geom2d`, `ais-context`, and `ais-object` classes with `tg:finalize` GC, primitives, booleans, compounds, transforms, STEP I/O, STL I/O, 2D geometry, face construction, viewer, AIS display.
-- `src/dag/` — Reactive DAG: parameter store, model registry, topological sort, dirty propagation.
-- `src/dsl/` — `defmodel`, `param`, `model-ref`, `set-param!`, `with-params` macros.
 
 Design decisions documented in `openspec/changes/v1-core/design.md`.
 
@@ -525,8 +460,6 @@ Original shape is unchanged. Nil in → nil out.
 |----------|-------------|
 | `(write-step shape path)` | Export to STEP AP203 file |
 | `(read-step path)` | Import from STEP file |
-| `(write-dag-models-to-step path)` | Export all DAG models with metadata to STEP |
-| `(read-step-into-dag path)` | Import STEP assembly into DAG registry as models |
 
 ### STL I/O
 
@@ -577,21 +510,6 @@ Nil shapes in the input list are silently skipped. If all shapes are nil or the 
 | `(write-step-assembly assembly path)` | Write an assembly tree to STEP preserving colors |
 
 Colors are plists: `(:generic r g b a)`, `(:surf r g b a)`, `(:curv r g b a)` with components in [0,1]. Locations are row-major 4×4 matrices as `#(16 double-floats)` or nil for identity.
-
-### Parametric DSL
-
-| Form | Description |
-|------|-------------|
-| `(defmodel name (keys) body...)` | Define a parametric model. Body may include `(:color ...)`, `(:name "...")`, `(:layer "...")` metadata clauses before shape forms |
-| `(param key)` | Read parameter (local then global) |
-| `(model-ref name)` | Reference another model's cached result |
-| `(model-color name)` | Get model's color plist `(:type r g b a)` or nil |
-| `(model-display-name name)` | Get model's display name string or nil |
-| `(model-layer name)` | Get model's layer string or nil |
-| `(set-param! key value)` | Set global parameter, trigger propagation |
-| `(set-params! &rest kv)` | Batch-set parameters, single propagation pass |
-| `(with-params (&rest kv) body...)` | Local parameter scope |
-| `(name :key val ...)` | Call model function with local overrides |
 
 ### 2D Geometry (Geom2d)
 
@@ -1296,17 +1214,7 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── viewer-text-labels.lisp  text label angle, alignment, display type
 │   │   ├── viewer-defaults.lisp   viewer-level defaults (bg, projection, size)
 │   │   ├── viewer-drawer.lisp    Prs3d drawer: line/point/text/shading aspect control
-│   │   ├── viewer-dimensions.lisp  length, angle, diameter, radius dimensions
-│   │   └── api.lisp      set-param!, set-params!
-│   ├── dag/
-│   │   ├── params.lisp   *params* global parameter store
-│   │   ├── registry.lisp *model-registry* hash table
-│   │   ├── model.lisp    Model struct definition
-│   │   └── propagation.lisp Topological sort, dirty propagation
-│   └── dsl/
-│       ├── param.lisp    param function, with-params macro
-│       ├── defmodel.lisp defmodel macro, model-ref function
-│       └── api.lisp      help function
+│   │   └── viewer-dimensions.lisp  length, angle, diameter, radius dimensions
 ├── t/
 │   └── smoke-tests.lisp  ~305 smoke tests
 ├── openspec/             OpenSpec change management
@@ -1315,8 +1223,7 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 
 ## Error handling
 
-Invalid operations (nil inputs, degenerate geometry) return `nil` rather than
-signaling an error. In the DAG, nil propagates to dependents.
+Invalid operations (nil inputs, degenerate geometry) return `nil` rather than signaling an error.
 
 C-level errors can be inspected:
 

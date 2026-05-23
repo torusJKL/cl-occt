@@ -25,3 +25,13 @@ The `text` macro helper SHALL work both inside and outside `defmodel` forms.
 #### Scenario: text outside defmodel
 - **WHEN** user calls `(text "Hello" :font my-font)`
 - **THEN** system returns a shape directly (same as `make-text-shape`)
+
+## REMOVED Requirements
+
+### Requirement: Text in defmodel
+**Reason**: `text` convenience macro inside `defmodel` removed. No OCCT counterpart.
+**Migration**: Use `make-text-shape` directly.
+
+### Requirement: make-text-shape works in DSL without defmodel
+**Reason**: `text` convenience macro removed.
+**Migration**: Use `make-text-shape` directly with the same arguments.

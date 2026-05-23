@@ -722,83 +722,7 @@
   (let ((node (make-part (make-box 1 2 3))))
     (assert-nil (assembly-name node))))
 
-;; --- DAG ---
 
-(deftest dag-set-param
-  (let ((key (gensym "PARAM")))
-    (set-param! key 42)
-    (assert-true (eql (getf cl-occt.impl:*params* key) 42))))
-
-(deftest dag-set-params-batch
-  (set-params! :test-a 1 :test-b 2)
-  (assert-true (and (eql (getf cl-occt.impl:*params* :test-a) 1)
-                    (eql (getf cl-occt.impl:*params* :test-b) 2))))
-
-;; --- DSL ---
-
-(deftest param-function-global
-  (set-param! :dsl-test 99)
-  (assert-true (eql (param :dsl-test) 99)))
-
-(deftest with-params-local
-  (with-params (:local-x 50)
-    (assert-true (eql (param :local-x) 50))))
-
-(deftest with-params-does-not-leak
-  (with-params (:leak-test "local")
-    (param :leak-test))
-  (assert-nil (getf cl-occt.impl:*params* :leak-test)))
-
-;; --- DSL Metadata ---
-
-(deftest defmodel-static-metadata
-  (defmodel meta-static-box ()
-    (:color (:generic 1.0 0.0 0.0 1.0))
-    (:name "Static Box")
-    (:layer "mechanical")
-    (make-box 10 20 30))
-  (assert-true (equalp (model-color 'meta-static-box) '(:generic 1.0 0.0 0.0 1.0)))
-  (assert-true (string= (model-display-name 'meta-static-box) "Static Box"))
-  (assert-true (string= (model-layer 'meta-static-box) "mechanical")))
-
-(deftest defmodel-metadata-from-params
-  (set-params! :meta-color '(:generic 0.0 1.0 0.0 1.0)
-               :meta-name "Param Box"
-               :meta-layer "electric")
-  (defmodel meta-param-box ()
-    (:color (param :meta-color))
-    (:name (param :meta-name))
-    (:layer (param :meta-layer))
-    (make-box 10 20 30))
-  (assert-true (equalp (model-color 'meta-param-box) '(:generic 0.0 1.0 0.0 1.0)))
-  (assert-true (string= (model-display-name 'meta-param-box) "Param Box"))
-  (assert-true (string= (model-layer 'meta-param-box) "electric")))
-
-(deftest defmodel-no-metadata
-  (defmodel meta-plain-box ()
-    (make-box 10 20 30))
-  (assert-nil (model-color 'meta-plain-box))
-  (assert-nil (model-display-name 'meta-plain-box))
-  (assert-nil (model-layer 'meta-plain-box)))
-
-(deftest defmodel-metadata-re-evaluation
-  (set-params! :re-color '(:generic 1.0 0.0 0.0 1.0) :re-w 10)
-  (defmodel meta-re-box ()
-    (:color (param :re-color))
-    (make-box (param :re-w) 20 30))
-  (assert-true (equalp (model-color 'meta-re-box) '(:generic 1.0 0.0 0.0 1.0)))
-  (set-param! :re-color '(:generic 0.0 0.0 1.0 1.0))
-  (assert-true (equalp (model-color 'meta-re-box) '(:generic 0.0 0.0 1.0 1.0))))
-
-(deftest write-dag-models-to-step-valid
-  (defmodel dag-export-box ()
-    (:name "DAG Box")
-    (:color (:generic 1.0 0.0 0.0 1.0))
-    (make-box 10 20 30))
-  (assert-true (write-dag-models-to-step "/tmp/clocct-test-dag-export.step")))
-
-(deftest read-step-into-dag-valid
-  (assert-true (read-step-into-dag "/tmp/clocct-test-dag-export.step")))
 
 ;; --- Viewer ---
 
@@ -2896,11 +2820,7 @@
                write-step-assembly-valid write-step-assembly-nil
                read-step-assembly-nonexistent read-step-assembly-roundtrip
                read-step-assembly-multi-part read-step-assembly-nested
-               dag-set-param dag-set-params-batch
-               param-function-global with-params-local with-params-does-not-leak
-               defmodel-static-metadata defmodel-metadata-from-params
-               defmodel-no-metadata defmodel-metadata-re-evaluation
-               write-dag-models-to-step-valid read-step-into-dag-valid
+
                ais-create-shape-from-box ais-create-shape-nil-shape
                ais-free-on-nil-safe ais-create-shape-nil-input
                make-trihedron-defaults make-trihedron-zero-normal

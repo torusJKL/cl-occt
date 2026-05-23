@@ -1,6 +1,6 @@
 (asdf:defsystem :cl-occt
   :description "Common Lisp bindings to OCCT CAD kernel"
-  :author "clocct"
+  :author "Gal Buki"
   :license "MIT"
   :depends-on (:cffi :trivial-garbage :alexandria)
   :serial t
@@ -58,19 +58,7 @@
             (:file "viewer-text-labels")
             (:file "viewer-defaults")
             (:file "viewer-drawer")
-            (:file "viewer-dimensions")))
-     (:module "dag"
-      :components
-      ((:file "params")
-       (:file "registry")
-       (:file "model")
-       (:file "propagation")))
-     (:module "dsl"
-       :components
-       ((:file "param")
-        (:file "defmodel")
-        (:file "api")))
-     (:file "core/api")))))
+             (:file "viewer-dimensions")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"
