@@ -1,12 +1,26 @@
 (in-package :cl-occt)
 
 (defun make-edge (x1 y1 x2 y2)
+  "Create a 2D line edge from (X1, Y1) to (X2, Y2).
+
+  Returns an edge shape representing a straight line segment in the XY
+  plane between the two given points.
+
+  Example:
+    (make-edge 0 0 10 10)"
   (make-shape (%make-edge-line-2d (coerce x1 'double-float)
                                    (coerce y1 'double-float)
                                    (coerce x2 'double-float)
                                    (coerce y2 'double-float))))
 
 (defun make-edge-3d (x1 y1 z1 x2 y2 z2)
+  "Create a 3D line edge from (X1, Y1, Z1) to (X2, Y2, Z2).
+
+  Returns an edge shape representing a straight line segment in 3D
+  space between the two given points.
+
+  Example:
+    (make-edge-3d 0 0 0 10 10 10)"
   (make-shape (%make-edge-line-3d (coerce x1 'double-float)
                                    (coerce y1 'double-float)
                                    (coerce z1 'double-float)
@@ -15,11 +29,23 @@
                                    (coerce z2 'double-float))))
 
 (defun make-circle-edge (x y radius)
+  "Create a 2D circle edge centered at (X, Y) with the given RADIUS.
+
+  Returns an edge shape representing a full circle in the XY plane.
+
+  Example:
+    (make-circle-edge 0 0 5)"
   (make-shape (%make-edge-circle-2d (coerce x 'double-float)
                                      (coerce y 'double-float)
                                      (coerce radius 'double-float))))
 
 (defun make-circular-arc (x1 y1 x2 y2 x3 y3)
+  "Create a 2D circular arc through three points.
+
+  The arc passes from (X1, Y1) through (X2, Y2) to (X3, Y3).
+
+  Example:
+    (make-circular-arc 0 0 5 5 10 0)"
   (make-shape (%make-edge-arc-2d (coerce x1 'double-float)
                                   (coerce y1 'double-float)
                                   (coerce x2 'double-float)
@@ -28,6 +54,15 @@
                                   (coerce y3 'double-float))))
 
 (defun make-wire (&rest edges)
+  "Join one or more EDGES into a wire (connected edge sequence).
+
+  Returns a wire shape, or NIL if no edges are provided.  All edges
+  should be connected end-to-end to form a valid wire.
+
+  Example:
+    (let ((e1 (make-edge 0 0 10 0))
+          (e2 (make-edge 10 0 10 10)))
+      (make-wire e1 e2))"
   (if (null edges)
       nil
       (let ((count (length edges)))
@@ -39,11 +74,36 @@
           (make-shape (%make-wire arr count))))))
 
 (defun make-face (wire)
+  "Create a planar face bounded by the given WIRE.
+
+  The wire must be closed and planar.  Returns a face shape, or NIL if
+  WIRE is null.
+
+  Example:
+    (def wire (make-wire (make-edge 0 0 10 0)
+                         (make-edge 10 0 10 10)
+                         (make-edge 10 10 0 10)
+                         (make-edge 0 10 0 0)))
+    (make-face wire)
+
+  See also: make-face-on-plane"
   (if (null wire)
       nil
       (make-shape (%make-face (%ptr wire)))))
 
 (defun make-face-on-plane (wire ox oy oz nx ny nz)
+  "Create a face from WIRE on a plane defined by origin and normal.
+
+  OX, OY, OZ -- origin of the plane
+  NX, NY, NZ -- normal vector of the plane
+
+  Returns a face shape, or NIL if WIRE is null.
+
+  Example:
+    (def wire (make-wire (make-circle-edge 0 0 5)))
+    (make-face-on-plane wire 0 0 0 0 0 1)
+
+  See also: make-face"
   (if (null wire)
       nil
       (make-shape (%make-face-on-plane (%ptr wire)
