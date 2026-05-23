@@ -353,10 +353,30 @@
          :%make-prism-feature
          :%make-revol-feature
          :%make-pipe-feature
-         :%local-extrude
-         :%make-groove
-         :%make-rib
-        :%shape-gprops-internal
+          :%local-extrude
+          :%make-groove
+          :%make-rib
+          :%fix-shape
+          :%fix-wire
+          :%fix-solid
+          :%fix-edge
+          :%fix-face
+          :%shape-analysis-free-edges
+          :%shape-analysis-check-intersections
+          :%shape-analysis-wire-contains
+          :%shape-analysis-contents
+          :%substitute-single
+          :%substitute-batch
+          :%shape-to-nurbs
+          :%shape-reduce-degree
+          :%shape-to-rational-bspline
+          :%shape-split-u
+          :%shape-upgrade-continuity
+          :%apply-shape-process
+          :%apply-operator-sequence
+          :%apply-healing-pipeline
+          :%heal-shape-default
+         :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
      :%curve-kind->keyword
@@ -775,6 +795,24 @@
               :make-prism-feature
               :make-revol-feature
               :make-pipe-feature
-              :local-extrude
-              :make-groove
-              :make-rib))
+               :local-extrude
+               :make-groove
+               :make-rib
+               :fix-shape
+               :fix-wire
+               :fix-solid
+               :fix-edge
+               :fix-face
+               :shape-analysis-free-edges
+               :shape-analysis-check-intersections
+               :shape-analysis-wire-contains-p
+               :shape-analysis-contents
+               :substitute-shape
+               :shape-to-nurbs
+               :shape-reduce-degree
+               :shape-to-rational-bspline
+               :shape-split-u
+               :shape-upgrade-continuity
+               :apply-shape-process
+               :apply-healing-pipeline
+               :heal-shape))

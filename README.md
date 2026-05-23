@@ -708,6 +708,116 @@ The `gprops` class has readers: `gprops-volume`, `gprops-area`, `gprops-center-o
 
 All functions accept nil and return nil.
 
+### Shape Healing
+
+OCCT's shape healing toolkit for repairing topological defects, replacing sub-shapes, converting NURBS, and applying healing pipelines.
+
+#### Shape Fix
+
+Repair common topological defects in shapes. All functions return a repaired shape or `nil` on error/nil input.
+
+| Function | Description |
+|----------|-------------|
+| `(fix-shape shape)` | General repair via `ShapeFix_Shape`. Fixes wires, solids, edges, and faces internally. Returns a repaired shape or nil. |
+| `(fix-wire wire face &key tolerance)` | Fix wire issues (gaps, self-intersections, orientation). `face` is the supporting face (can be nil). `:tolerance` defaults to 0.1. |
+| `(fix-solid shape)` | Fix solid validity issues. |
+| `(fix-edge edge)` | Fix edge problems (missing 3D curve, vertex tolerances). |
+| `(fix-face face)` | Fix face problems (wire orientation, missing geometry). |
+
+```lisp
+(fix-shape (make-box 10 20 30))          ; → shape (no-op on valid shape)
+(fix-wire wire face :tolerance 0.1)      ; → fixed wire
+(fix-solid (make-box 10 20 30))          ; → solid or nil
+(fix-edge edge)                          ; → edge or nil
+(fix-face face)                          ; → face or nil
+```
+
+#### Shape Analysis Diagnostics
+
+Diagnose geometry and topology issues.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-analysis-free-edges shape)` | Return a compound of free (unconnected) edges, or nil if none. |
+| `(shape-analysis-check-intersections shape)` | Count pairs of faces that incorrectly intersect. Returns integer or nil. |
+| `(shape-analysis-wire-contains-p wire point)` | Check if a 2D point `(x y)` is inside the wire boundary. Returns t or nil. |
+| `(shape-analysis-contents shape)` | Return a plist of sub-shape counts: `(:solids N :shells N :faces N :wires N :edges N :vertices N)`. |
+
+```lisp
+(shape-analysis-free-edges shape)              ; → compound of free edges or nil
+(shape-analysis-check-intersections shape)     ; → 0 (no intersections)
+(shape-analysis-wire-contains-p wire '(5 5))   ; → t
+(shape-analysis-contents (make-box 10 20 30))  ; → (:FACES 6 :EDGES 24 ...)
+```
+
+#### Sub-shape Substitution
+
+Replace individual sub-shapes (faces, edges) within a shape using `ShapeBuild_ReShape`.
+
+| Function | Description |
+|----------|-------------|
+| `(substitute-shape orig old new)` | Single replacement: replace `old` sub-shape with `new` in `orig`. Returns a shape or nil. |
+| `(substitute-shape orig pairs)` | Batch replacement: `pairs` is a list of `(old new)` lists. All replacements applied before returning. |
+
+```lisp
+;; Single face replacement
+(substitute-shape box old-face new-face)
+
+;; Batch replacement of multiple faces
+(substitute-shape box '((face1 new-face1) (face2 new-face2)))
+```
+
+#### NURBS Conversion
+
+Convert elementary curves and surfaces to BSpline (NURBS) representation.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-to-nurbs shape)` | Convert all elementary curves/surfaces to BSpline. |
+| `(shape-reduce-degree shape max-degree)` | Reduce BSpline degree to at most `max-degree`. |
+| `(shape-to-rational-bspline shape)` | Convert to rational BSpline form. |
+
+```lisp
+(shape-to-nurbs (make-box 10 20 30))            ; → NURBS shape
+(shape-reduce-degree nurbs-shape 2)             ; → reduced degree
+(shape-to-rational-bspline (make-box 10 20 30)) ; → rational BSpline
+```
+
+#### Surface Splitting and Continuity
+
+Split faces and upgrade surface continuity using `ShapeUpgrade`.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-split-u shape num-splits)` | Split faces along U iso-lines. `num-splits` is a hint for the number of segments. |
+| `(shape-upgrade-continuity shape &key continuity)` | Upgrade surface continuity. `:continuity` is `:c0`, `:c1`, `:c2`, or `:c3` (default `:c1`). |
+
+```lisp
+(shape-split-u shape 2)                             ; → split shape
+(shape-upgrade-continuity shape :continuity :c2)    ; → C2 continuous
+```
+
+#### Healing Pipeline
+
+Scriptable healing via `ShapeProcess` operators and convenience pipeline.
+
+| Function | Description |
+|----------|-------------|
+| `(apply-shape-process shape operator)` | Apply a single `ShapeProcess` operator by name (string). Pass a list of strings to apply multiple operators in sequence. |
+| `(apply-healing-pipeline shape pipeline &key resource)` | Apply a named healing pipeline from a resource file. `:resource` is the resource file name. |
+| `(heal-shape shape)` | Default healing pipeline: `ShapeFix_Shape` + `SameParameter` + `ShapeFix_Solid`. Convenience for common STEP/STL import defects. |
+
+```lisp
+;; Single operator
+(apply-shape-process (make-box 10 20 30) "FixShape")
+
+;; Operator sequence
+(apply-shape-process shape '("FixShape" "SameParameter" "FixWire" "FixSolid"))
+
+;; Default convenience
+(heal-shape shape)  ; one-call healing
+```
+
 ### Shape Analysis Queries
 
 Minimum distance, point-in-solid classification, validity checking, and curve-surface intersection.
@@ -1159,6 +1269,9 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── compounds.lisp make-compound, add-to-compound, compound-shape-p
 │   │   ├── transforms.lisp translate, rotate
 │   │   ├── assembly.lisp assembly, make-part, make-assembly, predicates
+│   │   ├── shape-fix.lisp      ShapeFix wrappers and ShapeAnalysis queries
+│   │   ├── shape-rebuild.lisp  ShapeBuild_ReShape, ShapeCustom, ShapeUpgrade
+│   │   ├── shape-process.lisp  ShapeProcess pipeline and heal-shape convenience
 │   │   ├── io.lisp       write-step, read-step, write-stl, read-stl, read-step-assembly, write-step-assembly
 │   │   ├── mass-properties.lisp  gprops, shape-volume, shape-area, shape-center-of-mass, shape-gprops
 │   │   ├── shape-analysis.lisp   shape-distance, point-in-solid-p, shape-valid-p, shape-check, intersect-curve-shape
