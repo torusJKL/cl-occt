@@ -108,3 +108,50 @@ The system SHALL provide `model-color`, `model-name`, and `model-layer` function
 #### Scenario: Accessor for nonexistent model
 - **WHEN** `(model-color 'nonexistent)` is called
 - **THEN** the system SHALL signal an error (consistent with `find-model` behavior)
+
+## REMOVED Requirements
+
+### Requirement: Define a parametric model
+**Reason**: Entire reactive DAG system removed. No OCCT counterpart.
+**Migration**: Use core constructors directly.
+
+### Requirement: Access parameters inside a model body
+**Reason**: `param` function and `*params*` store have no OCCT counterpart.
+**Migration**: Pass values as function arguments.
+
+### Requirement: Reference another model
+**Reason**: `model-ref` and DAG dependency tracking have no OCCT counterpart.
+**Migration**: Compose shapes with Lisp variables.
+
+### Requirement: Set a parameter and propagate
+**Reason**: `set-param!` and dirty propagation have no OCCT counterpart.
+**Migration**: Rebuild shapes with new values explicitly.
+
+### Requirement: Batch set multiple parameters
+**Reason**: `set-params!` has no OCCT counterpart.
+
+### Requirement: Topological evaluation order
+**Reason**: DAG dependency evaluation has no OCCT counterpart.
+
+### Requirement: Dual-mode parameter resolution
+**Reason**: `defmodel` macro and local/global modes have no OCCT counterpart.
+
+### Requirement: Model redefinition
+**Reason**: `defmodel` and model registry have no OCCT counterpart.
+
+### Requirement: Nil propagation
+**Reason**: DAG nil propagation has no OCCT counterpart.
+
+### Requirement: Model struct carries metadata slots
+**Reason**: `model` struct and metadata system have no OCCT counterpart.
+**Migration**: Use `make-part`, `write-step-assembly` with names/colors.
+
+### Requirement: Metadata is preserved through re-evaluation
+**Reason**: DAG re-evaluation has no OCCT counterpart.
+
+### Requirement: Metadata hash included in dirty-check
+**Reason**: DAG dirty-checking has no OCCT counterpart.
+
+### Requirement: Metadata accessor functions
+**Reason**: `model-color`, `model-display-name`, `model-layer` have no OCCT counterpart.
+**Migration**: Use `make-part` with `:name`/`:color` keywords, then `part-name`/`part-color` accessors.

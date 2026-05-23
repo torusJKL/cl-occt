@@ -643,7 +643,6 @@
         :text-font-set-composite-curve-mode
          :make-multi-line-text
          :make-formatted-text
-         :text
          :viewer-color
          :viewer-color-p
          :make-color

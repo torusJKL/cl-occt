@@ -112,3 +112,13 @@ The existing `read-step` function SHALL continue to return a bare shape without 
 #### Scenario: read-step returns bare shape
 - **WHEN** user calls `(read-step "bare.step")`
 - **THEN** the result is a `shape` object (not registered in the DAG)
+
+## REMOVED Requirements
+
+### Requirement: Export DAG models to STEP with metadata
+**Reason**: DAG model system removed. Use `write-step-assembly` for colored export.
+**Migration**: Replace `write-dag-models-to-step` with `write-step-assembly` or `write-step`.
+
+### Requirement: Import STEP assembly into DAG model registry
+**Reason**: DAG model system removed.
+**Migration**: Replace `read-step-into-dag` with `read-step-assembly` or `read-step`.

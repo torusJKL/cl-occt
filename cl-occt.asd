@@ -1,6 +1,6 @@
 (asdf:defsystem :cl-occt
   :description "Common Lisp bindings to OCCT CAD kernel"
-  :author "clocct"
+  :author "Gal Buki"
   :license "MIT"
   :depends-on (:cffi :trivial-garbage :alexandria)
   :serial t
