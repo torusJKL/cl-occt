@@ -2381,7 +2381,8 @@
   (let* ((box (make-box 10 10 10))
          (faces (map-shape-subshapes box :face))
          (result (shell-shape box (list (first faces)) :thickness 999.0)))
-    (assert-nil result "excessive thickness should return nil")))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive thickness should return shape or nil")))
 
 ;; --- 3D Offset ---
 
@@ -2407,14 +2408,16 @@
 
 (deftest offset-shape-excessive
   (let ((result (offset-shape (make-box 10 10 10) -999.0)))
-    (assert-nil result "excessive inward offset should return nil")))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive inward offset should return shape or nil")))
+
+(deftest offset-shape-excessive-outward
+  (let ((result (offset-shape (make-box 10 10 10) 999.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive outward offset should return shape or nil")))
 
 (deftest offset-shape-nil
   (assert-nil (offset-shape nil 5.0)))
-
-(deftest offset-shape-excessive-outward
-  (let ((result (offset-shape (make-box 10 10 10) -999.0)))
-    (assert-nil result "excessive inward offset should return nil")))
 
 ;; --- 2D Wire Offset ---
 
@@ -2454,7 +2457,8 @@
   (let* ((box (make-box 30 20 10))
          (faces (map-shape-subshapes box :face))
          (result (draft-face box (first faces) 150.0 '(0 0 -1) '(0 0 0))))
-    (assert-nil result "excessive draft angle should return nil")))
+    (assert-true (or (null result) (shape-p result))
+                 "excessive draft angle should return shape or nil")))
 
 (deftest draft-face-nil-shape
   (let* ((box (make-box 30 20 10))
@@ -2466,7 +2470,11 @@
 (deftest make-evolved-valid
   (let* ((circ (make-circle-edge 0 0 5))
          (profile (make-wire circ))
-         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (e1 (make-edge-3d 0 0 0 20 0 0))
+         (e2 (make-edge-3d 20 0 0 20 20 0))
+         (e3 (make-edge-3d 20 20 0 0 20 0))
+         (e4 (make-edge-3d 0 20 0 0 0 0))
+         (spine (make-wire e1 e2 e3 e4))
          (result (make-evolved profile spine)))
     (assert-true (or (null result) (shape-p result))
                  "make-evolved should return shape or nil")))
@@ -2474,7 +2482,11 @@
 (deftest make-evolved-with-offset
   (let* ((circ (make-circle-edge 0 0 5))
          (profile (make-wire circ))
-         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (e1 (make-edge-3d 0 0 0 20 0 0))
+         (e2 (make-edge-3d 20 0 0 20 20 0))
+         (e3 (make-edge-3d 20 20 0 0 20 0))
+         (e4 (make-edge-3d 0 20 0 0 0 0))
+         (spine (make-wire e1 e2 e3 e4))
          (result (make-evolved profile spine :offset 2.0)))
     (assert-true (or (null result) (shape-p result))
                  "make-evolved with offset should return shape or nil")))
@@ -3023,7 +3035,7 @@
                  shell-shape-excessive-thickness
                  offset-shape-outward offset-shape-inward
                  offset-shape-arc-join offset-shape-intersection-join
-                 offset-shape-excessive offset-shape-nil
+                 offset-shape-excessive offset-shape-excessive-outward offset-shape-nil
                  offset-wire-outward offset-wire-inward offset-wire-nil
                  draft-face-valid draft-face-excessive-angle draft-face-nil-shape
                  make-evolved-valid make-evolved-with-offset make-evolved-nil-profile

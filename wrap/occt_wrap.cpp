@@ -4483,15 +4483,25 @@ occt_shape draft_face(occt_shape shape, occt_shape face, double angle,
     }
 }
 
-occt_shape make_evolved(occt_shape profile, occt_shape spine, double offset, int join) {
+occt_shape make_evolved(occt_shape profile, occt_shape spine, double /*offset*/, int join) {
     clear_error();
     if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    TopoDS_Shape* spineShape = to_shape(spine);
+    TopoDS_Shape* profShape  = to_shape(profile);
+    if (spineShape->IsNull() || profShape->IsNull()) {
+        set_error("null shape argument", 2);
+        return nullptr;
+    }
+    if (spineShape->ShapeType() != TopAbs_WIRE && spineShape->ShapeType() != TopAbs_FACE) {
+        set_error("spine must be a wire or face", 2);
+        return nullptr;
+    }
     try {
         GeomAbs_JoinType joinType = GeomAbs_Arc;
         if (join == 1) joinType = GeomAbs_Tangent;
         else if (join == 2) joinType = GeomAbs_Intersection;
-        BRepOffsetAPI_MakeEvolved maker(*to_shape(spine),
-                                         TopoDS::Wire(*to_shape(profile)),
+        BRepOffsetAPI_MakeEvolved maker(*spineShape,
+                                         TopoDS::Wire(*profShape),
                                          joinType, true, false, false,
                                          0.0000001, false, false);
         if (!maker.IsDone()) { set_error("MakeEvolved failed"); return nullptr; }
