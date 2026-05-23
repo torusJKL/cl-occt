@@ -381,31 +381,10 @@
        :%shape-type-to-int
      :%curve-kind->keyword
      :%surface-kind->keyword
-    :*params*
-   :model
-   :make-model
-   :model-name
-   :model-fn
-   :model-param-keys
-   :model-model-deps
-   :model-dependents
-   :model-dirty
-    :model-cached-shape
-    :model-last-param-hash
-    :model-color
-    :model-display-name
-    :model-layer
-   :register-model
-   :find-model
-   :unregister-model
-   :dirty-model!
-   :propagate-changes
-   :topological-sort
-   :*model-registry*))
+))
 
 (defpackage :cl-occt
   (:use :cl :cl-occt.impl)
-  (:shadow :model-color :model-display-name :model-layer)
   (:export
    :shape
    :shape-p
@@ -445,9 +424,7 @@
     :compound-shape-p
     :read-step-assembly
    :write-step-assembly
-   :write-dag-models-to-step
-   :read-step-into-dag
-   :assembly
+    :assembly
    :make-part
    :make-assembly
    :assembly-shape
@@ -457,23 +434,7 @@
    :assembly-children
    :assembly-leaf-p
    :assembly-branch-p
-   :model-color
-   :model-display-name
-   :model-layer
-   :defmodel
-   :param
-   :model-ref
-   :set-param!
-   :set-params!
-   :with-params
-   :*local-params*
-   :help
-   :*params*
-    :*model-registry*
-    :find-model
-    :register-model
-    :unregister-model
-    :viewer
+   :viewer
     :viewer-p
     :make-viewer
     :free-viewer

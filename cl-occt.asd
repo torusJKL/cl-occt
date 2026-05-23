@@ -58,19 +58,7 @@
             (:file "viewer-text-labels")
             (:file "viewer-defaults")
             (:file "viewer-drawer")
-            (:file "viewer-dimensions")))
-     (:module "dag"
-      :components
-      ((:file "params")
-       (:file "registry")
-       (:file "model")
-       (:file "propagation")))
-     (:module "dsl"
-       :components
-       ((:file "param")
-        (:file "defmodel")
-        (:file "api")))
-     (:file "core/api")))))
+             (:file "viewer-dimensions")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"
