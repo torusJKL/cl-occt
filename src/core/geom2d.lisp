@@ -9,7 +9,7 @@
 (in-package :cl-occt.impl)
 
 (defun make-geom2d (ptr)
-  (if (cffi:null-pointer-p ptr)
+  (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((g (make-instance 'cl-occt:geom2d :ptr ptr)))
         (tg:finalize g (lambda () (%free-geom2d ptr)))

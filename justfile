@@ -52,7 +52,7 @@ wrap:
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
         -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
-        -lTKV3d -lTKOpenGl -lTKService \
+        -lTKV3d -lTKOpenGl -lTKService -lTKHelix \
         -Wl,-rpath,{{occt-install}}/lib
 
 start:

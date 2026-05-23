@@ -259,9 +259,50 @@
         :%font-aspect-value
         :%h-align-value
         :%v-align-value
-        :make-shape
-     :make-geom2d
-     :make-brep-font
+         :make-shape
+      :make-geom2d
+      :make-brep-font
+      :make-curve
+      :make-surface
+      :%make-line-3d
+      :%make-circle-3d
+      :%make-ellipse-3d
+      :%make-hyperbola
+      :%make-parabola
+      :%make-bezier-curve
+      :%make-bspline-curve
+      :%free-curve
+      :%curve-type
+      :%make-gc-line
+      :%make-gc-arc-of-circle
+      :%convert-curve-to-bspline
+      :%curve-bounding-box
+      :%make-plane
+      :%make-cylindrical-surface
+      :%make-conical-surface
+      :%make-spherical-surface
+      :%make-toroidal-surface
+      :%make-bezier-surface
+      :%make-bspline-surface
+      :%free-surface
+      :%surface-type
+      :%convert-surface-to-bspline
+      :%surface-bounding-box
+      :%project-point-on-curve
+      :%project-point-on-surface
+      :%intersect-curves
+      :%intersect-curve-surface
+      :%intersect-surfaces
+      :%extrema-curve-curve
+      :%extrema-curve-surface
+      :%intersect-curves-2d
+      :%project-point-on-curve-2d
+      :%points-to-bspline
+      :%interpolate-points
+      :%make-helix-curve
+      :%make-helix-edge
+      :%curve-kind->keyword
+      :%surface-kind->keyword
     :*params*
    :model
    :make-model
@@ -578,4 +619,43 @@
          :color-delta
          :list-named-colors
          :named-color-exists-p
-         :hls-to-rgb))
+         :hls-to-rgb
+         :curve
+         :curve-p
+         :curve-type
+         :make-line-3d
+         :make-circle-3d
+         :make-ellipse
+         :make-hyperbola
+         :make-parabola
+         :make-bezier-curve
+         :make-bspline-curve
+         :make-gc-line
+         :make-gc-arc-of-circle
+         :convert-curve-to-bspline
+         :curve-bounding-box
+         :surface
+         :surface-p
+         :surface-type
+         :make-plane
+         :make-cylindrical-surface
+         :make-conical-surface
+         :make-spherical-surface
+         :make-toroidal-surface
+         :make-bezier-surface
+         :make-bspline-surface
+         :convert-surface-to-bspline
+         :surface-bounding-box
+         :project-point-on-curve
+         :project-point-on-surface
+         :intersect-curves
+         :intersect-curve-surface
+         :intersect-surfaces
+         :extrema-curve-curve
+         :extrema-curve-surface
+         :intersect-curves-2d
+         :project-point-on-curve-2d
+         :points-to-bspline
+         :interpolate-points
+         :make-helix-curve
+         :make-helix-edge))

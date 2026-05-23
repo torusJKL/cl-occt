@@ -347,6 +347,69 @@ Colors are plists: `(:generic r g b a)`, `(:surf r g b a)`, `(:curv r g b a)` wi
 
 Returns `geom2d` objects (distinct from `shape`), GC-managed via `tg:finalize`.
 
+### 3D Curves
+
+| Function | Description |
+|----------|-------------|
+| `(make-line-3d x y z dx dy dz)` | Infinite 3D line through point with direction (nil on zero direction) |
+| `(make-circle-3d x y z radius)` | 3D circle centered at point in XY plane |
+| `(make-ellipse x y z major-r minor-r)` | 3D ellipse in XY plane |
+| `(make-hyperbola x y z major-r minor-r)` | 3D hyperbola in XY plane |
+| `(make-parabola x y z focal)` | 3D parabola in XY plane |
+| `(make-bezier-curve points)` | Bezier curve through list of `(x y z)` points |
+| `(make-bspline-curve poles knots mults degree)` | BSpline curve from poles, knot vector, multiplicities, and degree |
+| `(make-gc-line x1 y1 z1 x2 y2 z2)` | Trimmed line segment between two points |
+| `(make-gc-arc-of-circle x1 y1 z1 x2 y2 z2 x3 y3 z3)` | Circular arc through three points |
+| `(curve-type curve)` | Return keyword type (`:line`, `:circle`, `:ellipse`, `:hyperbola`, `:parabola`, `:bezier-curve`, `:bspline-curve`, `:gc-line`, `:gc-arc-of-circle`, `:helix`) or nil |
+| `(convert-curve-to-bspline curve)` | Convert elementary curve to BSpline representation |
+| `(curve-bounding-box curve)` | Returns `(values xmin ymin zmin xmax ymax zmax)` or nil |
+
+Returns `curve` objects (distinct from `shape` and `geom2d`), GC-managed via `tg:finalize`.
+
+### 3D Surfaces
+
+| Function | Description |
+|----------|-------------|
+| `(make-plane x y z nx ny nz)` | Infinite plane through point with normal |
+| `(make-cylindrical-surface x y z dx dy dz radius)` | Cylindrical surface along axis |
+| `(make-conical-surface x y z dx dy dz radius semi-angle)` | Conical surface (semi-angle in degrees) |
+| `(make-spherical-surface x y z radius)` | Spherical surface |
+| `(make-toroidal-surface x y z major-r minor-r)` | Toroidal surface |
+| `(make-bezier-surface poles num-u num-v)` | Bezier surface from grid of poles |
+| `(make-bspline-surface poles num-u-poles num-v-poles uknots umults vknots vmults udeg vdeg)` | BSpline surface |
+| `(surface-type surface)` | Return keyword type (`:plane`, `:cylindrical-surface`, `:conical-surface`, `:spherical-surface`, `:toroidal-surface`, `:bezier-surface`, `:bspline-surface`) or nil |
+| `(convert-surface-to-bspline surface)` | Convert elementary surface to BSpline representation |
+| `(surface-bounding-box surface)` | Returns `(values xmin ymin zmax ymax zmax)` or nil |
+
+Returns `surface` objects, GC-managed via `tg:finalize`.
+
+### Geometric Algorithms
+
+| Function | Description |
+|----------|-------------|
+| `(project-point-on-curve curve x y z)` | Project point onto 3D curve. Returns `(values x y z dist param)` or nil |
+| `(project-point-on-surface surface x y z)` | Project point onto surface. Returns `(values x y z u v dist)` or nil |
+| `(intersect-curves curve1 curve2)` | Intersect two 3D curves. Returns list of `(x y z)` points or nil |
+| `(intersect-curve-surface curve surface)` | Intersect curve with surface. Returns list of `(x y z)` points or nil |
+| `(intersect-surfaces surface1 surface2)` | Intersect two surfaces. Returns list of `curve` objects or nil |
+| `(extrema-curve-curve curve1 curve2)` | Min distance between two curves. Returns `(values dist point1 point2)` or nil |
+| `(extrema-curve-surface curve surface)` | Min distance from curve to surface. Returns `(values dist point u v)` or nil |
+| `(intersect-curves-2d curve1 curve2)` | Intersect two 2D curves. Returns list of `(x y)` points or nil |
+| `(project-point-on-curve-2d curve x y)` | Project 2D point onto 2D curve. Returns `(values x y dist param)` or nil |
+| `(points-to-bspline points &key degree)` | Approximate points with BSpline curve. Returns `curve` or nil |
+| `(interpolate-points points &key initial-tangent final-tangent)` | Interpolate points exactly. Returns `curve` or nil |
+
+All functions accept nil inputs and return nil, propagating errors gracefully.
+
+### Helix
+
+| Function | Description |
+|----------|-------------|
+| `(make-helix-curve &key radius pitch height left-handed angle)` | Create helical parametric curve. Returns `curve` or nil |
+| `(make-helix-edge &key radius pitch height left-handed angle on-surface)` | Create helical BRep edge. Returns `shape` or nil |
+
+Keyword arguments: `:radius` (mandatory), `:pitch` (mandatory), `:height` (mandatory), `:left-handed` (default nil), `:angle` (taper angle in degrees, default 0.0), `:on-surface` (for edge, optional surface constraint).
+
 ### Face Construction
 
 | Function | Description |
