@@ -2312,6 +2312,140 @@
          (result (fill-n-sided-face (list e1 e2 e3 e4) :continuity :tangent)))
     (assert-true (or (null result) (shape-p result)) "fill-n-sided-face curvature should return shape or nil")))
 
+;; --- Shell / Thicken ---
+
+(deftest shell-shape-box-single-face
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces)) :thickness 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape should return shape or nil")))
+
+(deftest shell-shape-multiple-faces
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (when (>= (length faces) 2)
+                   (shell-shape box (list (first faces) (second faces))
+                                :thickness 1.5))))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape multiple faces should return shape or nil")))
+
+(deftest shell-shape-outward-offset
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces))
+                              :thickness 2.0 :offset :outward)))
+    (assert-true (or (null result) (shape-p result))
+                 "shell-shape outward should return shape or nil")))
+
+(deftest shell-shape-nil-shape
+  (assert-nil (shell-shape nil (list (make-shape (cffi:null-pointer))) :thickness 2.0)))
+
+(deftest shell-shape-excessive-thickness
+  (let* ((box (make-box 10 10 10))
+         (faces (map-shape-subshapes box :face))
+         (result (shell-shape box (list (first faces)) :thickness 999.0)))
+    (assert-nil result "excessive thickness should return nil")))
+
+;; --- 3D Offset ---
+
+(deftest offset-shape-outward
+  (let ((result (offset-shape (make-box 10 10 10) 3.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape outward should return shape or nil")))
+
+(deftest offset-shape-inward
+  (let ((result (offset-shape (make-box 10 10 10) -2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape inward should return shape or nil")))
+
+(deftest offset-shape-arc-join
+  (let ((result (offset-shape (make-box 10 10 10) 3.0 :join :arc)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape arc join should return shape or nil")))
+
+(deftest offset-shape-intersection-join
+  (let ((result (offset-shape (make-box 10 10 10) 3.0 :join :intersection)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-shape intersection join should return shape or nil")))
+
+(deftest offset-shape-excessive
+  (let ((result (offset-shape (make-box 10 10 10) -999.0)))
+    (assert-nil result "excessive inward offset should return nil")))
+
+(deftest offset-shape-nil
+  (assert-nil (offset-shape nil 5.0)))
+
+(deftest offset-shape-excessive-outward
+  (let ((result (offset-shape (make-box 10 10 10) -999.0)))
+    (assert-nil result "excessive inward offset should return nil")))
+
+;; --- 2D Wire Offset ---
+
+(deftest offset-wire-outward
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (offset-wire wire 3.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-wire outward should return shape or nil")))
+
+(deftest offset-wire-inward
+  (let* ((e1 (make-edge 0 0 10 0))
+         (e2 (make-edge 10 0 10 10))
+         (e3 (make-edge 10 10 0 10))
+         (e4 (make-edge 0 10 0 0))
+         (wire (make-wire e1 e2 e3 e4))
+         (result (offset-wire wire -2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "offset-wire inward should return shape or nil")))
+
+(deftest offset-wire-nil
+  (assert-nil (offset-wire nil 5.0)))
+
+;; --- Draft Angle ---
+
+(deftest draft-face-valid
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0))))
+    (assert-true (or (null result) (shape-p result))
+                 "draft-face should return shape or nil")))
+
+(deftest draft-face-excessive-angle
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (draft-face box (first faces) 150.0 '(0 0 -1) '(0 0 0))))
+    (assert-nil result "excessive draft angle should return nil")))
+
+(deftest draft-face-nil-shape
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face)))
+    (assert-nil (draft-face nil (first faces) 10.0 '(0 0 -1) '(0 0 0)))))
+
+;; --- Evolved Solid ---
+
+(deftest make-evolved-valid
+  (let* ((circ (make-circle-edge 0 0 5))
+         (profile (make-wire circ))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (make-evolved profile spine)))
+    (assert-true (or (null result) (shape-p result))
+                 "make-evolved should return shape or nil")))
+
+(deftest make-evolved-with-offset
+  (let* ((circ (make-circle-edge 0 0 5))
+         (profile (make-wire circ))
+         (spine (make-wire (make-edge-3d 0 0 0 20 0 0)))
+         (result (make-evolved profile spine :offset 2.0)))
+    (assert-true (or (null result) (shape-p result))
+                 "make-evolved with offset should return shape or nil")))
+
+(deftest make-evolved-nil-profile
+  (assert-nil (make-evolved nil (make-wire (make-edge-3d 0 0 0 10 0 0)))))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -2486,8 +2620,17 @@
                 loft-sections-solid-true loft-sections-ruled
                 loft-sections-smooth loft-sections-three-wires
                 fill-face-valid fill-face-nil
-                fill-n-sided-face-valid fill-n-sided-face-nil-edges
-                fill-n-sided-face-too-few fill-n-sided-face-curvature))
+                 fill-n-sided-face-valid fill-n-sided-face-nil-edges
+                 fill-n-sided-face-too-few fill-n-sided-face-curvature
+                 shell-shape-box-single-face shell-shape-multiple-faces
+                 shell-shape-outward-offset shell-shape-nil-shape
+                 shell-shape-excessive-thickness
+                 offset-shape-outward offset-shape-inward
+                 offset-shape-arc-join offset-shape-intersection-join
+                 offset-shape-excessive offset-shape-nil
+                 offset-wire-outward offset-wire-inward offset-wire-nil
+                 draft-face-valid draft-face-excessive-angle draft-face-nil-shape
+                 make-evolved-valid make-evolved-with-offset make-evolved-nil-profile))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

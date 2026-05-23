@@ -1330,3 +1330,38 @@
   (edges :pointer)
   (count :int)
   (continuity :int))
+
+;; --- Shell / Thicken ---
+
+(defcfun (%shell-shape "shell_shape") :pointer
+  (shape :pointer)
+  (faces :pointer)
+  (num-faces :int)
+  (thickness :double))
+
+;; --- Offset ---
+
+(defcfun (%offset-shape-3d "offset_shape_3d") :pointer
+  (shape :pointer)
+  (offset :double)
+  (join :int))
+
+(defcfun (%offset-wire-2d "offset_wire_2d") :pointer
+  (wire :pointer)
+  (offset :double))
+
+;; --- Draft ---
+
+(defcfun (%draft-face "draft_face") :pointer
+  (shape :pointer)
+  (face :pointer)
+  (angle :double)
+  (dx :double) (dy :double) (dz :double)
+  (px :double) (py :double) (pz :double)
+  (nx :double) (ny :double) (nz :double))
+
+(defcfun (%make-evolved "make_evolved") :pointer
+  (profile :pointer)
+  (spine :pointer)
+  (offset :double)
+  (join :int))

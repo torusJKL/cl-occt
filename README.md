@@ -376,6 +376,92 @@ Returns `nil` on invalid inputs (nil wire, fewer than 3 edges).
   (fill-n-sided-face (list e1 e2 e3 e4)))
 ```
 
+### Shell / Thicken (Hollow)
+
+Create thin-walled shells by removing faces from a solid.
+
+| Function | Description |
+|----------|-------------|
+| `(shell-shape shape faces &key thickness offset)` | Hollow a solid by removing specified faces. `:thickness` (default 1.0) is wall thickness. `:offset` is `:inward` (default, material removed inward) or `:outward` (material added outward). |
+
+Faces are obtained via `(map-shape-subshapes shape :face)`. Returns `nil` on nil shape, nil faces, or excessive thickness.
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  ;; Remove the top face, 2mm wall thickness
+  (shell-shape box (list (first faces)) :thickness 2.0)
+  ;; Outward offset
+  (shell-shape box (list (first faces)) :thickness 2.0 :offset :outward))
+```
+
+### 3D Shape Offset
+
+Offset a solid or shell outward (enlarged) or inward (reduced).
+
+| Function | Description |
+|----------|-------------|
+| `(offset-shape shape distance &key join)` | Offset a 3D shape by distance (positive = outward, negative = inward). `:join` is `:arc` (default), `:tangent`, or `:intersection`. |
+
+Returns `nil` on nil shape.
+
+```lisp
+(offset-shape (make-box 10 10 10) 3.0)                   ; outward
+(offset-shape (make-box 10 10 10) -2.0)                  ; inward
+(offset-shape (make-box 10 10 10) 3.0 :join :arc)        ; rounded corners
+(offset-shape (make-box 10 10 10) 3.0 :join :intersection) ; sharp corners
+```
+
+### 2D Wire Offset
+
+Offset a planar wire in its plane.
+
+| Function | Description |
+|----------|-------------|
+| `(offset-wire wire distance)` | Offset a planar wire by distance (positive = outward, negative = inward). Returns a shape or nil. |
+
+```lisp
+(let* ((w (make-wire (make-edge 0 0 10 0)
+                      (make-edge 10 0 10 10)
+                      (make-edge 10 10 0 10)
+                      (make-edge 0 10 0 0))))
+  (offset-wire w 3.0)   ; outward
+  (offset-wire w -2.0)) ; inward
+```
+
+### Draft Angle
+
+Apply a taper (draft) angle to faces of a solid.
+
+| Function | Description |
+|----------|-------------|
+| `(draft-face shape face angle pull-direction neutral-plane)` | Apply draft angle (in degrees) to a face. `pull-direction` is a 3D vector `(dx dy dz)`. `neutral-plane` is a point `(x y z)` on the neutral plane. The neutral plane normal is set to the pull direction. |
+
+Returns `nil` on nil inputs or excessive draft angle.
+
+```lisp
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0)))
+```
+
+### Evolved Solid
+
+Construct an evolved solid by sweeping a profile along a spine.
+
+| Function | Description |
+|----------|-------------|
+| `(make-evolved profile spine &key offset join)` | Sweep profile (wire) along spine (wire). `:offset` (default 0.0) applies further offset. `:join` is `:arc` (default), `:tangent`, or `:intersection`. |
+
+Returns `nil` on nil inputs.
+
+```lisp
+(let* ((profile (make-wire (make-circle-edge 0 0 5)))
+       (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+  (make-evolved profile spine)
+  (make-evolved profile spine :offset 2.0))
+```
+
 ### Transforms
 
 | Function | Description |
@@ -1034,7 +1120,10 @@ Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque
 │   │   ├── blend.lisp            blend-faces, make-blend
 │   │   ├── sweep.lisp            sweep-profile, sweep-sections, sweep-with-aux-spine
 │   │   ├── loft.lisp             loft-sections
-│   │   └── face-filling.lisp     fill-face, fill-n-sided-face
+│   │   ├── face-filling.lisp     fill-face, fill-n-sided-face
+│   │   ├── shell.lisp            shell-shape (BRepOffsetAPI_MakeThickSolid)
+│   │   ├── offset.lisp           offset-shape, offset-wire
+│   │   └── draft.lisp            draft-face, make-evolved
 │   │   ├── viewer.lisp   viewer class, ais-context/object, trihedron, projection, grid, MSAA/AA
 │   │   ├── viewer-colors.lisp     named colors, hex/HLS parsing, color-delta
 │   │   ├── viewer-camera.lisp     camera control (eye/target/up, FOV, clip planes, perspective)

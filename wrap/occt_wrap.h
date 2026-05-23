@@ -500,6 +500,20 @@ occt_shape fill_face(occt_shape wire);
 occt_shape fill_face_constrained(occt_shape wire, occt_shape* support_faces, int* continuities, int count);
 occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity);
 
+// --- Shell / Thicken ---
+occt_shape shell_shape(occt_shape shape, occt_shape* faces, int num_faces, double thickness);
+
+// --- Offset ---
+occt_shape offset_shape_3d(occt_shape shape, double offset, int join);
+occt_shape offset_wire_2d(occt_shape wire, double offset);
+
+// --- Draft ---
+occt_shape draft_face(occt_shape shape, occt_shape face, double angle,
+                      double dx, double dy, double dz,
+                      double px, double py, double pz,
+                      double nx, double ny, double nz);
+occt_shape make_evolved(occt_shape profile, occt_shape spine, double offset, int join);
+
 #ifdef __cplusplus
 }
 #endif

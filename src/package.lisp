@@ -344,6 +344,11 @@
          :%fill-face
          :%fill-face-constrained
          :%fill-n-sided-face
+         :%shell-shape
+         :%offset-shape-3d
+         :%offset-wire-2d
+         :%draft-face
+         :%make-evolved
         :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
@@ -752,5 +757,10 @@
             :sweep-sections
             :sweep-with-aux-spine
             :loft-sections
-            :fill-face
-            :fill-n-sided-face))
+             :fill-face
+             :fill-n-sided-face
+             :shell-shape
+             :offset-shape
+             :offset-wire
+             :draft-face
+             :make-evolved))

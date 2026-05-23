@@ -143,6 +143,12 @@
 #include <BRepOffsetAPI_MakePipe.hxx>
 #include <BRepOffsetAPI_MakePipeShell.hxx>
 #include <BRepOffsetAPI_ThruSections.hxx>
+#include <BRepOffsetAPI_MakeThickSolid.hxx>
+#include <BRepOffsetAPI_MakeOffsetShape.hxx>
+#include <BRepOffsetAPI_MakeOffset.hxx>
+#include <BRepOffsetAPI_DraftAngle.hxx>
+#include <BRepOffsetAPI_MakeEvolved.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <BRepFill_Filling.hxx>
 
 #include <BRepMesh_IncrementalMesh.hxx>
@@ -4367,6 +4373,105 @@ occt_shape fill_n_sided_face(occt_shape* edges, int count, int continuity) {
         filler.Build();
         if (!filler.IsDone()) { set_error("BRepFill_Filling N-sided failed"); return nullptr; }
         return from_shape(filler.Face());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shell / Thicken ---
+
+occt_shape shell_shape(occt_shape shape, occt_shape* faces, int num_faces, double thickness) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        NCollection_List<TopoDS_Shape> facesToRemove;
+        for (int i = 0; i < num_faces; i++) {
+            if (faces[i]) {
+                facesToRemove.Append(*to_shape(faces[i]));
+            }
+        }
+        BRepOffsetAPI_MakeThickSolid maker;
+        maker.MakeThickSolidByJoin(*to_shape(shape), facesToRemove, thickness,
+                                   Precision::Confusion(), BRepOffset_Skin);
+        if (!maker.IsDone()) { set_error("MakeThickSolid failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Offset ---
+
+occt_shape offset_shape_3d(occt_shape shape, double offset, int join) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        GeomAbs_JoinType joinType = GeomAbs_Arc;
+        if (join == 1) joinType = GeomAbs_Tangent;
+        else if (join == 2) joinType = GeomAbs_Intersection;
+        BRepOffsetAPI_MakeOffsetShape maker;
+        maker.PerformByJoin(*to_shape(shape), offset, Precision::Confusion(),
+                            BRepOffset_Skin, false, false, joinType);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakeOffsetShape failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape offset_wire_2d(occt_shape wire, double offset) {
+    clear_error();
+    if (!wire) { set_error("null wire argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_MakeOffset maker(TopoDS::Wire(*to_shape(wire)), GeomAbs_Arc);
+        maker.Perform(offset);
+        maker.Build();
+        if (!maker.IsDone()) { set_error("MakeOffset failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Draft ---
+
+occt_shape draft_face(occt_shape shape, occt_shape face, double angle,
+                      double dx, double dy, double dz,
+                      double px, double py, double pz,
+                      double nx, double ny, double nz) {
+    clear_error();
+    if (!shape || !face) { set_error("null argument", 2); return nullptr; }
+    try {
+        BRepOffsetAPI_DraftAngle maker(*to_shape(shape));
+        maker.Add(TopoDS::Face(*to_shape(face)), gp_Dir(dx, dy, dz),
+                  angle, gp_Pln(gp_Pnt(px, py, pz), gp_Dir(nx, ny, nz)));
+        maker.Build();
+        if (!maker.IsDone()) { set_error("DraftAngle failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape make_evolved(occt_shape profile, occt_shape spine, double offset, int join) {
+    clear_error();
+    if (!profile || !spine) { set_error("null argument", 2); return nullptr; }
+    try {
+        GeomAbs_JoinType joinType = GeomAbs_Arc;
+        if (join == 1) joinType = GeomAbs_Tangent;
+        else if (join == 2) joinType = GeomAbs_Intersection;
+        BRepOffsetAPI_MakeEvolved maker(*to_shape(spine),
+                                         TopoDS::Wire(*to_shape(profile)),
+                                         joinType, true, false, false,
+                                         0.0000001, false, false);
+        if (!maker.IsDone()) { set_error("MakeEvolved failed"); return nullptr; }
+        return from_shape(maker.Shape());
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return nullptr;
