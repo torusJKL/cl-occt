@@ -88,7 +88,7 @@
 
 - [x] 11.1 Write tests for curve construction: each type, type query, invalid params -> nil
 - [x] 11.2 Write tests for surface construction: each type, type query, invalid params -> nil
-- [ ] 11.3 Write tests for GC finalization (curve and surface instances freed correctly)
+- [x] 11.3 Write tests for GC finalization (curve and surface instances freed correctly)
 - [x] 11.4 Write tests for geometric algorithms: projection, intersection, extrema, fitting
 - [x] 11.5 Write tests for helix curve and edge construction
 - [x] 11.6 Write tests for NURBS conversion (curve-to-bspline, surface-to-bspline)
