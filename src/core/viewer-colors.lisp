@@ -7,9 +7,19 @@
    (%name :initarg :name :initform nil :reader color-name)))
 
 (defun viewer-color-p (obj)
+  "Returns `t` if **obj** is a `viewer-color` instance."
   (typep obj 'viewer-color))
 
 (defun make-color (&key keyword rgb hls)
+  "Creates a `viewer-color` from a keyword name, RGB triple, or HLS triple.
+
+  Exactly one of `:keyword`, `:rgb`, or `:hls` must be supplied.
+
+  **Example:**
+
+      (make-color :keyword :red)
+      (make-color :rgb '(0.5 0.5 0.5))
+      (make-color :hls '(0.0 0.5 1.0))"
   (cond (keyword
          (let ((triple (named-color keyword)))
            (when triple
@@ -25,6 +35,16 @@
         (t nil)))
 
 (defun color-rgb (color)
+  "Extracts an (R G B) triple from any color representation.
+
+  Accepts a keyword name, (R G B) cons list, `viewer-color`, or hex string.
+
+  **Example:**
+
+      (color-rgb :red)
+      => (1.0 0.0 0.0)
+      (color-rgb \"#FF0000\")
+      => (1.0 0.0 0.0)"
   (typecase color
     (keyword (named-color color))
     (cons (and (= (length color) 3) color))
@@ -33,6 +53,12 @@
     (t nil)))
 
 (defun normalize-color (color)
+  "Alias for `color-rgb` — returns (R G B) from any color representation.
+
+  **Example:**
+
+      (normalize-color :red)
+      => (1.0 0.0 0.0)"
   (color-rgb color))
 
 ;; --- Named color map (OCCT Quantity_NameOfColor equivalents) ---
@@ -249,17 +275,47 @@
     (:yellow-green . (0.604 0.804 0.196))))
 
 (defun named-color (name)
+  "Looks up the (R G B) triple for a named color keyword.
+
+  **Example:**
+
+      (named-color :red)
+      => (1.0 0.0 0.0)"
   (cdr (assoc name *named-colors* :test #'eq)))
 
 (defun list-named-colors ()
+  "Returns a list of all available named color keywords.
+
+  **Example:**
+
+      (member :red (list-named-colors))
+      => (:RED ...)"
   (mapcar #'car *named-colors*))
 
 (defun named-color-exists-p (name)
+  "Returns `t` if **name** is a known named color keyword.
+
+  **Example:**
+
+      (named-color-exists-p :red)
+      => T
+      (named-color-exists-p :nonexistent)
+      => NIL"
   (not (null (named-color name))))
 
 ;; --- Hex color parsing ---
 
 (defun hex-to-rgb (hex)
+  "Parses a hex color string (#RRGGBB or #RGB) into an (R G B) triple.
+
+  The leading # is optional. Returns `nil` for invalid input.
+
+  **Example:**
+
+      (hex-to-rgb \"#FF0000\")
+      => (1.0 0.0 0.0)
+      (hex-to-rgb \"F00\")
+      => (1.0 0.0 0.0)"
   (when (and (stringp hex) (plusp (length hex)))
     (let* ((str (string-left-trim "#" (string-trim '(#\space #\tab #\newline) hex)))
            (len (length str)))
@@ -270,11 +326,25 @@
             (t nil)))))
 
 (defun hex-digit-char-p (c)
+  "Returns `t` if **c** is a valid hexadecimal character (0-9, a-f, A-F).
+
+  **Example:**
+
+      (hex-digit-char-p #\\F)
+      => T
+      (hex-digit-char-p #\\g)
+      => NIL"
   (or (char<= #\0 c #\9)
       (char<= #\a c #\f)
       (char<= #\A c #\F)))
 
 (defun parse-hex-value (str start end)
+  "Parses the hex substring **str**[**start**..**end**) into an integer value.
+
+  **Example:**
+
+      (parse-hex-value \"FF\" 0 2)
+      => 255"
   (let ((val 0))
     (loop for i from start below end
           for c = (char str i)
@@ -285,12 +355,26 @@
     val))
 
 (defun parse-hex-6 (str)
+  "Parses a 6-digit hex string (RRGGBB) into an (R G B) triple.
+
+  **Example:**
+
+      (parse-hex-6 \"FF0000\")
+      => (1.0 0.0 0.0)"
   (when (and (= (length str) 6) (every #'hex-digit-char-p str))
     (list (/ (parse-hex-value str 0 2) 255.0d0)
           (/ (parse-hex-value str 2 4) 255.0d0)
           (/ (parse-hex-value str 4 6) 255.0d0))))
 
 (defun parse-hex-3 (str)
+  "Parses a 3-digit hex string (RGB) into an (R G B) triple with doubling.
+
+  Each hex digit is doubled to produce the full 8-bit value (e.g. F → FF).
+
+  **Example:**
+
+      (parse-hex-3 \"F00\")
+      => (1.0 0.0 0.0)"
   (when (and (= (length str) 3) (every #'hex-digit-char-p str))
     (let ((r (parse-hex-value str 0 1))
           (g (parse-hex-value str 1 2))
@@ -302,6 +386,16 @@
 ;; --- HLS to RGB conversion ---
 
 (defun hls-to-rgb (h l s)
+  "Converts HLS (hue, lightness, saturation) to (R G B) values.
+
+  All values are in the [0, 1] range. Returns three values: R G B.
+
+  **Example:**
+
+      (hls-to-rgb 0.0 0.5 1.0)
+      => 1.0
+      => 0.0
+      => 0.0"
   (labels ((hue-to-rgb (v1 v2 h)
              (when (minusp h) (incf h))
              (when (> h 1) (decf h))
@@ -320,6 +414,14 @@
 ;; --- Color difference (CIE76, Euclidean in RGB) ---
 
 (defun color-delta (c1 c2)
+  "Computes the Euclidean distance between two colors in RGB space (CIE76).
+
+  Each argument can be any color representation accepted by `color-rgb`.
+
+  **Example:**
+
+      (color-delta :red :blue)
+      => 1.4142135623730951"
   (let* ((rgb1 (color-rgb c1))
          (rgb2 (color-rgb c2)))
     (when (and rgb1 rgb2)

@@ -4,6 +4,15 @@
   '((:x-pos . 0) (:x-neg . 1) (:y-pos . 2) (:y-neg . 3) (:z-pos . 4) (:z-neg . 5)))
 
 (defun set-gradient-background (view &key color1 color2 (style :y-pos))
+  "Sets a gradient background from **color1** to **color2**.
+
+  **style** is one of `:x-pos`, `:x-neg`, `:y-pos`, `:y-neg`, `:z-pos`, `:z-neg`.
+
+  **Example:**
+    (with-viewer (v)
+      (set-gradient-background v
+        :color1 '(0.1 0.1 0.3)
+        :color2 '(0.8 0.8 0.9)))"
   (when (viewer-p view)
     (let* ((rgb1 (normalize-color (or color1 '(0.1 0.1 0.3))))
            (rgb2 (normalize-color (or color2 '(0.8 0.8 0.9))))
@@ -19,6 +28,16 @@
         view))))
 
 (defun set-background-cubemap (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
+  "Sets a cubemap background from six image file paths.
+
+  Each keyword argument is a path to an image file for that face.
+
+  **Example:**
+    (with-viewer (v)
+      (set-background-cubemap v
+        :pos-x \"/path/to/pos-x.jpg\" :neg-x \"/path/to/neg-x.jpg\"
+        :pos-y \"/path/to/pos-y.jpg\" :neg-y \"/path/to/neg-y.jpg\"
+        :pos-z \"/path/to/pos-z.jpg\" :neg-z \"/path/to/neg-z.jpg\"))"
   (when (viewer-p view)
     (let* ((strings (list pos-x neg-x pos-y neg-y pos-z neg-z))
            (cffi-vec (cffi:foreign-alloc :pointer :initial-contents
@@ -39,6 +58,13 @@
 ;; (defun set-background-cubemap () already returns view)
 
 (defun set-image-background (view path)
+  "Sets a single image as the view background.
+
+  **path** is a string path to an image file.
+
+  **Example:**
+    (with-viewer (v)
+      (set-image-background v \"/path/to/background.jpg\"))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -46,6 +72,12 @@
         view))))
 
 (defun reset-background (view)
+  "Resets the background to the default solid color.
+
+  **Example:**
+    (with-viewer (v)
+      (set-gradient-background v)
+      (reset-background v))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -53,6 +85,11 @@
         view))))
 
 (defun set-cube-map (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
+  "Alias for `set-background-cubemap`.
+
+  **Example:**
+    (with-viewer (v)
+      (set-cube-map v :pos-x \"/path/to/pos-x.jpg\" :neg-x \"/path/to/neg-x.jpg\"))"
   (set-background-cubemap view
     :pos-x pos-x :neg-x neg-x
     :pos-y pos-y :neg-y neg-y

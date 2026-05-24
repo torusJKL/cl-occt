@@ -1,6 +1,21 @@
 (in-package :cl-occt)
 
 (defun make-dimension (type &key from to vertex point1 point2 shape edge edge1 edge2)
+  "Creates a dimension AIS object of the given **type**.
+
+  **type** is `:length`, `:angle`, `:diameter`, or `:radius`.
+  For `:length` provide **from**/**to** or **edge**.
+  For `:angle` provide **vertex**/**point1**/**point2** or **edge1**/**edge2**.
+  For `:diameter` or `:radius` provide **shape**.
+
+  Returns the dimension object on success, `nil` otherwise.
+
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+        (ais-display ctx dim))"
   (flet ((co (v) (coerce v 'double-float)))
     (let ((ptr (ecase type
                  (:length
@@ -42,6 +57,17 @@
           obj)))))
 
 (defun set-dimension-text-position (dim position)
+  "Sets the text label position for dimension **dim** to (X Y Z).
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (dim (make-dimension :length :from '(0 0 0) :to '(10 0 0))))
+        (ais-display ctx dim)
+        (set-dimension-text-position dim '(5 5 0)))"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -53,6 +79,13 @@
         dim))))
 
 (defun set-dimension-units (dim units)
+  "Sets the display units string for dimension **dim** (e.g. `\"mm\"`).
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-units dim \"mm\")"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -60,6 +93,13 @@
         dim))))
 
 (defun set-dimension-flyout (dim v)
+  "Sets the flyout (extension line offset) for dimension **dim**.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-flyout dim 5.0)"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -67,6 +107,13 @@
         dim))))
 
 (defun set-dimension-arrow-length (dim v)
+  "Sets the arrow length for dimension **dim**.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-arrow-length dim 3.0)"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -74,6 +121,13 @@
         dim))))
 
 (defun set-dimension-custom-value (dim value)
+  "Sets a custom text value for dimension **dim** (overrides measured value).
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-custom-value dim \"Custom\")"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -81,6 +135,19 @@
         dim))))
 
 (defun set-dimension-angle-edges (dim edge1 edge2)
+  "Sets the two edges measured by an angle dimension **dim**.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (make-box 10 20 30))
+             (edge1 ( ... ))
+             (edge2 ( ... ))
+             (dim (make-dimension :angle :edge1 edge1 :edge2 edge2)))
+        (ais-display ctx dim))"
   (when (and (ais-object-p dim) (shape-p edge1) (shape-p edge2))
     (let ((ptr (%ptr dim))
           (e1-ptr (%ptr edge1))
@@ -93,6 +160,13 @@
         dim))))
 
 (defun set-dimension-extension-size (dim v)
+  "Sets the extension line length beyond the dimension line for **dim**.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-extension-size dim 2.0)"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -100,6 +174,18 @@
         dim))))
 
 (defun set-dimension-measured-edge (dim edge &key (plane-origin '(0 0 0)) (plane-normal '(0 0 1)))
+  "Sets the edge measured by a length dimension **dim** with projection plane.
+
+  **plane-origin** and **plane-normal** define the projection plane for the dimension.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (let ((dim (make-dimension :length :edge some-edge)))
+        (set-dimension-measured-edge dim some-edge
+          :plane-origin '(0 0 0) :plane-normal '(0 0 1))
+        (ais-display ctx dim))"
   (when (and (ais-object-p dim) (shape-p edge))
     (let ((ptr (%ptr dim))
           (shape-ptr (%ptr edge)))
@@ -113,9 +199,25 @@
         dim))))
 
 (defun set-dimension-text (dim value)
+  "Alias for `set-dimension-custom-value`.
+
+  Sets custom text for dimension **dim**.
+
+  **Example:**
+
+      (set-dimension-text dim \"Custom\")"
   (set-dimension-custom-value dim value))
 
 (defun set-dimension-arrows (dim &key style size)
+  "Configures arrow appearance for dimension **dim**.
+
+  **style** is `:filled`, `:open`, or `:none`. **size** is the arrow length.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-arrows dim :style :filled :size 3.0)"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -130,6 +232,16 @@
         dim))))
 
 (defun set-dimension-extension (dim &key offset length)
+  "Configures extension line appearance for dimension **dim**.
+
+  **offset** controls the gap from the measured point.
+  **length** controls how far the extension line extends past the dimension line.
+
+  Returns **dim** on success, `nil` otherwise.
+
+  **Example:**
+
+      (set-dimension-extension dim :offset 2.0 :length 5.0)"
   (when (ais-object-p dim)
     (let ((ptr (%ptr dim)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))

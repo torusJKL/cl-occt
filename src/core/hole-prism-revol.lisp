@@ -1,6 +1,21 @@
 (in-package :cl-occt)
 
 (defun make-cylindrical-hole (shape face radius depth &key through)
+  "Create a cylindrical hole in `shape` on a given `face`.
+
+  - **radius** and **depth** define the hole geometry.
+  - **:through** when `t`, the hole passes completely through the shape.
+
+  **Returns:** a new shape, or `nil` if `shape` or `face` is null.
+
+  **Example:**
+
+      (let* ((box (make-box 30 20 10))
+             (faces (map-shape-subshapes box :face)))
+        (when faces
+          (make-cylindrical-hole box (first faces) 5 0 :through t)))
+
+  **See also:** `make-prism-feature`, `make-revol-feature`, `make-groove`"
   (if (or (null shape) (null face))
       nil
       (make-shape (%make-cylindrical-hole (%ptr shape) (%ptr face)
@@ -10,6 +25,25 @@
 
 (defun make-prism-feature (shape base-face profile height
                            &key (operation :cut) (direction nil))
+  "Create a prismatic feature (depression or protrusion) on a shape.
+
+  - **operation** is `:cut` (default, depression) or `:add` (protrusion).
+  - **direction** is an optional 3-element vector (default `(0 0 1)`).
+
+  **Returns:** a new shape, or `nil` if `shape`, `base-face`, or `profile` is null.
+
+  **Example:**
+
+      (let* ((box (make-box 30 20 10))
+             (faces (map-shape-subshapes box :face))
+             (profile (make-wire (make-edge -5 -5 5 -5)
+                                 (make-edge 5 -5 5 5)
+                                 (make-edge 5 5 -5 5)
+                                 (make-edge -5 5 -5 -5))))
+        (when faces
+          (make-prism-feature box (first faces) profile 10 :operation :cut)))
+
+  **See also:** `make-revol-feature`, `make-pipe-feature`"
   (if (or (null shape) (null base-face) (null profile))
       nil
       (let ((op-flag (if (eq operation :cut) 0 1))
@@ -24,6 +58,27 @@
 
 (defun make-revol-feature (shape base-face profile axis angle
                            &key (operation :cut))
+  "Create a revolved feature (depression or protrusion) on a shape.
+
+  - **axis** is a 3-element vector (dx dy dz).
+  - **angle** is in degrees.
+  - **operation** is `:cut` (default, depression) or `:add` (protrusion).
+
+  **Returns:** a new shape, or `nil` if any required argument is null.
+
+  **Example:**
+
+      (let* ((box (make-box 30 20 10))
+             (faces (map-shape-subshapes box :face))
+             (profile (make-wire (make-edge -5 0 5 0)
+                                 (make-edge 5 0 5 5)
+                                 (make-edge 5 5 -5 5)
+                                 (make-edge -5 5 -5 0))))
+        (when faces
+          (make-revol-feature box (first faces) profile
+                              '(0 0 1) 90 :operation :cut)))
+
+  **See also:** `make-prism-feature`, `make-pipe-feature`"
   (if (or (null shape) (null base-face) (null profile) (null axis))
       nil
       (let ((op-flag (if (eq operation :cut) 0 1)))

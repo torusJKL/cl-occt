@@ -17,6 +17,7 @@ default:
     @echo "  wrap        Compile C wrapper → lib/libocctwrap.so"
     @echo "  start       Launch SBCL REPL with cl-occt loaded (via Quicklisp)"
     @echo "  repl        Launch SBCL REPL with cl-occt loaded (standalone)"
+    @echo "  docs        Generate Staple HTML documentation into docs/"
     @echo "  test-core   Run ~200 core tests (geometry, I/O, DAG) — no X display needed"
     @echo "  test-viewer Run ~80 viewer tests (rendering, AIS, camera) — needs xvfb-run"
     @echo "  test-all    Run all 288 tests under xvfb-run"
@@ -71,6 +72,18 @@ repl:
 
 clean:
     rm -rf {{occt-build}} {{occt-src}} {{occt-tarball}}
+
+docs:
+    # Generate Staple HTML documentation
+    mkdir -p {{root-dir}}/docs
+    LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib \
+    {{sbcl}} --load ~/quicklisp/setup.lisp \
+            --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" \
+            --eval "(ql:quickload :staple)" \
+            --eval "(ql:quickload :staple-markdown)" \
+            --eval "(ql:quickload :cl-occt)" \
+            --eval "(staple:generate :cl-occt :if-exists :supersede :output-directory #p\"{{root-dir}}/docs/\")" \
+            --quit
 
 test-core:
     # Run core tests (geometry, I/O, DAG, colors, text shapes) — no X display needed
