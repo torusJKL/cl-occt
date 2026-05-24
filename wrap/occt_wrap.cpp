@@ -111,11 +111,8 @@
 #include <Geom2dAPI_ProjectPointOnCurve.hxx>
 #include <GeomAPI_PointsToBSpline.hxx>
 #include <GeomAPI_Interpolate.hxx>
-#include <TColgp_Array1OfPnt.hxx>
-#include <TColStd_Array1OfReal.hxx>
-#include <TColStd_Array1OfInteger.hxx>
-#include <TColgp_Array2OfPnt.hxx>
-#include <TColStd_Array2OfReal.hxx>
+#include <NCollection_Array1.hxx>
+#include <NCollection_Array2.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
@@ -154,8 +151,7 @@
 #include <BRepFeat_MakePipe.hxx>
 #include <LocOpe_DPrism.hxx>
 #include <LocOpe_Revol.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_HSequenceOfShape.hxx>
+#include <NCollection_List.hxx>
 #include <BRepFill_Filling.hxx>
 #include <ShapeFix_Shape.hxx>
 #include <ShapeFix_Wire.hxx>
@@ -1068,7 +1064,7 @@ occt_curve make_bezier_curve(double* points, int num_points) {
     clear_error();
     if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
     try {
-        TColgp_Array1OfPnt arr(1, num_points);
+        NCollection_Array1<gp_Pnt> arr(1, num_points);
         for (int i = 0; i < num_points; i++)
             arr.SetValue(i + 1, gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
         Handle(Geom_BezierCurve)* h = new Handle(Geom_BezierCurve)(new Geom_BezierCurve(arr));
@@ -1080,11 +1076,11 @@ occt_curve make_bspline_curve(double* poles, int num_poles, double* knots, int* 
     clear_error();
     if (!poles || num_poles < 2 || !knots || !mults || num_knots < 2 || degree < 1) { set_error("invalid bspline parameters", 2); return nullptr; }
     try {
-        TColgp_Array1OfPnt poleArr(1, num_poles);
+        NCollection_Array1<gp_Pnt> poleArr(1, num_poles);
         for (int i = 0; i < num_poles; i++)
             poleArr.SetValue(i + 1, gp_Pnt(poles[i * 3], poles[i * 3 + 1], poles[i * 3 + 2]));
-        TColStd_Array1OfReal knotArr(1, num_knots);
-        TColStd_Array1OfInteger multArr(1, num_knots);
+        NCollection_Array1<double> knotArr(1, num_knots);
+        NCollection_Array1<int> multArr(1, num_knots);
         for (int i = 0; i < num_knots; i++) {
             knotArr.SetValue(i + 1, knots[i]);
             multArr.SetValue(i + 1, mults[i]);
@@ -1252,7 +1248,7 @@ occt_surface make_bezier_surface(double* poles, int num_u, int num_v) {
     clear_error();
     if (!poles || num_u < 2 || num_v < 2) { set_error("need at least 2x2 poles", 2); return nullptr; }
     try {
-        TColgp_Array2OfPnt arr(1, num_u, 1, num_v);
+        NCollection_Array2<gp_Pnt> arr(1, num_u, 1, num_v);
         for (int u = 0; u < num_u; u++)
             for (int v = 0; v < num_v; v++) {
                 int idx = (u * num_v + v) * 3;
@@ -1272,17 +1268,17 @@ occt_surface make_bspline_surface(double* poles, int num_u_poles, int num_v_pole
     if (!uknots || !umults || num_uknots < 2 || !vknots || !vmults || num_vknots < 2) { set_error("invalid knot data", 2); return nullptr; }
     if (udeg < 1 || vdeg < 1) { set_error("degree must be >= 1", 2); return nullptr; }
     try {
-        TColgp_Array2OfPnt poleArr(1, num_u_poles, 1, num_v_poles);
+        NCollection_Array2<gp_Pnt> poleArr(1, num_u_poles, 1, num_v_poles);
         for (int u = 0; u < num_u_poles; u++)
             for (int v = 0; v < num_v_poles; v++) {
                 int idx = (u * num_v_poles + v) * 3;
                 poleArr.SetValue(u + 1, v + 1, gp_Pnt(poles[idx], poles[idx + 1], poles[idx + 2]));
             }
-        TColStd_Array1OfReal uKnotArr(1, num_uknots);
-        TColStd_Array1OfInteger uMultArr(1, num_uknots);
+        NCollection_Array1<double> uKnotArr(1, num_uknots);
+        NCollection_Array1<int> uMultArr(1, num_uknots);
         for (int i = 0; i < num_uknots; i++) { uKnotArr.SetValue(i + 1, uknots[i]); uMultArr.SetValue(i + 1, umults[i]); }
-        TColStd_Array1OfReal vKnotArr(1, num_vknots);
-        TColStd_Array1OfInteger vMultArr(1, num_vknots);
+        NCollection_Array1<double> vKnotArr(1, num_vknots);
+        NCollection_Array1<int> vMultArr(1, num_vknots);
         for (int i = 0; i < num_vknots; i++) { vKnotArr.SetValue(i + 1, vknots[i]); vMultArr.SetValue(i + 1, vmults[i]); }
         Handle(Geom_BSplineSurface)* h = new Handle(Geom_BSplineSurface)(new Geom_BSplineSurface(poleArr, uKnotArr, vKnotArr, uMultArr, vMultArr, udeg, vdeg));
         return alloc_surface(SURFACE_BSPLINE, h);
@@ -1551,7 +1547,7 @@ occt_curve points_to_bspline(double* points, int num_points, int degree) {
     clear_error();
     if (!points || num_points < 2) { set_error("need at least 2 points", 2); return nullptr; }
     try {
-        TColgp_Array1OfPnt arr(1, num_points);
+        NCollection_Array1<gp_Pnt> arr(1, num_points);
         for (int i = 0; i < num_points; i++)
             arr.SetValue(i + 1, gp_Pnt(points[i * 3], points[i * 3 + 1], points[i * 3 + 2]));
         int deg = (degree > 0) ? degree : 3;
@@ -5278,7 +5274,7 @@ occt_surface face_to_surface(occt_shape face) {
     try {
         TopoDS_Face f = TopoDS::Face(*to_shape(face));
         BRepAdaptor_Surface adaptor(f);
-        Handle(Geom_Surface) surface = adaptor.Surface().Surface();
+        Handle(Geom_Surface) surface = adaptor.AdaptorSurfaceOriginal().Surface();
         if (surface.IsNull()) { set_error("face has no surface"); return nullptr; }
         GeomSurfaceKind kind;
         if (surface->DynamicType() == STANDARD_TYPE(Geom_Plane))
@@ -5582,7 +5578,7 @@ occt_shape blend_make_constant(occt_shape face1, occt_shape face2, double radius
 static gp_Ax1 face_to_axis(const TopoDS_Face& face) {
     BRepAdaptor_Surface adaptor(face);
     double u1, u2, v1, v2;
-    adaptor.Surface().Bounds(u1, u2, v1, v2);
+    adaptor.AdaptorSurfaceOriginal().Bounds(u1, u2, v1, v2);
     double u = (u1 + u2) / 2.0;
     double v = (v1 + v2) / 2.0;
     gp_Pnt pt = adaptor.Value(u, v);
@@ -5898,15 +5894,15 @@ int shape_analysis_check_intersections(occt_shape shape) {
     clear_error();
     if (!shape) { set_error("null shape argument", 2); return 0; }
     try {
-        TopTools_ListOfShape faces;
+        NCollection_List<TopoDS_Shape> faces;
         TopExp_Explorer exp(*to_shape(shape), TopAbs_FACE);
         for (; exp.More(); exp.Next())
             faces.Append(exp.Current());
 
         int count = 0;
-        TopTools_ListIteratorOfListOfShape it1(faces);
+        NCollection_List<TopoDS_Shape>::Iterator it1(faces);
         for (; it1.More(); it1.Next()) {
-            TopTools_ListIteratorOfListOfShape it2(faces);
+            NCollection_List<TopoDS_Shape>::Iterator it2(faces);
             for (; it2.More(); it2.Next()) {
                 if (it1.Value().IsSame(it2.Value())) continue;
                 BRepAlgoAPI_Section section(it1.Value(), it2.Value());
