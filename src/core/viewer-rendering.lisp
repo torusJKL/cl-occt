@@ -7,6 +7,13 @@
   '((:auto . 0) (:force . 1) (:disable . 2)))
 
 (defun set-computed-mode (view on)
+  "Enables or disables computed mode for VIEW.
+
+  When ON is T, OCCT recalculates the display each frame.
+
+  Example:
+    (with-viewer (v)
+      (set-computed-mode v t))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -14,12 +21,26 @@
         view))))
 
 (defun computed-mode-p (view)
+  "Returns T if computed mode is enabled for VIEW.
+
+  Example:
+    (with-viewer (v)
+      (set-computed-mode v t)
+      (computed-mode-p v))
+    => T"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
         (not (zerop (%v3d-view-computed-mode view-ptr)))))))
 
 (defun set-back-face-model (view model)
+  "Sets the back-face rendering model.
+
+  MODEL is one of :AUTO, :FORCE, or :DISABLE.
+
+  Example:
+    (with-viewer (v)
+      (set-back-face-model v :force))"
   (when (viewer-p view)
     (let ((mode-int (cdr (assoc model *back-face-model-map*)))
           (view-ptr (%view view)))
@@ -28,6 +49,14 @@
         view))))
 
 (defun set-transparency-method (view method)
+  "Sets the transparency rendering method.
+
+  METHOD is one of :BLEND-UNORDERED, :BLEND-OIT, or
+  :DEPTH-PEELING-OIT.
+
+  Example:
+    (with-viewer (v)
+      (set-transparency-method v :blend-oit))"
   (when (viewer-p view)
     (let ((method-int (cdr (assoc method *transparency-method-map*)))
           (view-ptr (%view view)))
@@ -36,6 +65,13 @@
         view))))
 
 (defun set-frustum-culling (view on)
+  "Enables or disables frustum culling for VIEW.
+
+  When ON is T, objects outside the view frustum are not drawn.
+
+  Example:
+    (with-viewer (v)
+      (set-frustum-culling v t))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -43,6 +79,11 @@
         view))))
 
 (defun redraw-view (view)
+  "Immediately redraws the view.
+
+  Example:
+    (with-viewer (v)
+      (redraw-view v))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -50,6 +91,13 @@
         view))))
 
 (defun set-immediate-update (view on)
+  "Enables or disables immediate update mode.
+
+  When ON is T, the view is updated immediately after changes.
+
+  Example:
+    (with-viewer (v)
+      (set-immediate-update v t))"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -57,4 +105,9 @@
         view))))
 
 (defun set-transparent-shading (view method)
+  "Alias for set-transparency-method.
+
+  Example:
+    (with-viewer (v)
+      (set-transparent-shading v :depth-peeling-oit))"
   (set-transparency-method view method))
