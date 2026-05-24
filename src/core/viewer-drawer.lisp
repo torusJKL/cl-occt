@@ -9,6 +9,17 @@
 ;; --- Line aspect convenience ---
 
 (defun ais-set-drawer-line-color (obj color)
+  "Sets the line color of AIS object OBJ.
+
+  COLOR can be any color representation accepted by NORMALIZE-COLOR.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-line-color box :red))"
   (when (ais-object-p obj)
     (let ((rgb (normalize-color color))
           (ptr (%ptr obj)))
@@ -21,6 +32,15 @@
         obj))))
 
 (defun ais-set-drawer-line-width (obj width)
+  "Sets the line width of AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-line-width box 2.0))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -28,6 +48,17 @@
         obj))))
 
 (defun ais-set-drawer-line-type (obj type)
+  "Sets the line type of AIS object OBJ.
+
+  TYPE is :SOLID, :DASH, :DOT, or :DOT-DASH.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-line-type box :dash))"
   (when (ais-object-p obj)
     (let ((type-int (cdr (assoc type *line-type-map*)))
           (ptr (%ptr obj)))
@@ -38,6 +69,15 @@
 ;; --- Shading aspect convenience ---
 
 (defun ais-set-drawer-shading-color (obj color)
+  "Sets the shading (fill) color of AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-shading-color box :blue))"
   (when (ais-object-p obj)
     (let ((rgb (normalize-color color))
           (ptr (%ptr obj)))
@@ -52,6 +92,15 @@
 ;; --- Point aspect convenience ---
 
 (defun ais-set-drawer-point-color (obj color)
+  "Sets the point color of AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-point-color box :yellow))"
   (when (ais-object-p obj)
     (let ((rgb (normalize-color color))
           (ptr (%ptr obj)))
@@ -64,6 +113,17 @@
         obj))))
 
 (defun ais-set-drawer-point-type (obj type)
+  "Sets the point marker type of AIS object OBJ.
+
+  TYPE is :POINT, :PLUS, :STAR, :O, :X, :BALL, or :RING.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-point-type box :star))"
   (when (ais-object-p obj)
     (let ((type-int (cdr (assoc type *marker-type-map*)))
           (ptr (%ptr obj)))
@@ -72,6 +132,15 @@
         obj))))
 
 (defun ais-set-drawer-point-scale (obj scale)
+  "Sets the point marker scale for AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-point-scale box 2.0))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -81,6 +150,15 @@
 ;; --- Text aspect convenience ---
 
 (defun ais-set-drawer-text-color (obj color)
+  "Sets the text color of AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-text-color box :white))"
   (when (ais-object-p obj)
     (let ((rgb (normalize-color color))
           (ptr (%ptr obj)))
@@ -93,6 +171,17 @@
         obj))))
 
 (defun ais-set-drawer-text-font (obj font)
+  "Sets the text font of AIS object OBJ.
+
+  FONT is a string naming a font (e.g. \"Arial\").
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-text-font box \"Arial\"))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -100,6 +189,15 @@
         obj))))
 
 (defun ais-set-drawer-text-height (obj height)
+  "Sets the text height for AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-text-height box 12.0))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -109,6 +207,17 @@
 ;; --- Iso-line display ---
 
 (defun ais-set-drawer-iso-display (obj &key (u-on t) (v-on t))
+  "Enables or disables iso-line display for AIS object OBJ.
+
+  U-ON controls U-direction lines, V-ON controls V-direction lines.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-iso-display box :u-on t :v-on nil))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -118,6 +227,15 @@
 ;; --- Wire aspect convenience ---
 
 (defun ais-set-drawer-wire-color (obj color)
+  "Sets the wireframe color of AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-wire-color box :green))"
   (when (ais-object-p obj)
     (let ((rgb (normalize-color color))
           (ptr (%ptr obj)))
@@ -132,6 +250,15 @@
 ;; --- Boundary toggle convenience ---
 
 (defun ais-set-drawer-face-boundaries (obj on)
+  "Shows or hides face boundary edges for AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-face-boundaries box t))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -139,6 +266,15 @@
         obj))))
 
 (defun ais-set-drawer-free-boundaries (obj on)
+  "Shows or hides free boundary edges for AIS object OBJ.
+
+  Returns OBJ on success, NIL otherwise.
+
+  Example:
+    (let* ((v (make-viewer))
+           (ctx (ais-create-context v))
+           (box (ais-create-shape ctx (make-box 10 20 30))))
+      (ais-set-drawer-free-boundaries box t))"
   (when (ais-object-p obj)
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
