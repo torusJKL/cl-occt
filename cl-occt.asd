@@ -2,6 +2,7 @@
   :description "Common Lisp bindings to OCCT CAD kernel"
   :author "Gal Buki"
   :license "MIT"
+  :homepage "https://github.com/torusJKL/cl-occt"
   :depends-on (:cffi :trivial-garbage :alexandria)
   :serial t
   :components
