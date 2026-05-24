@@ -18,18 +18,19 @@
 (in-package :cl-occt)
 
 (defun map-shape-subshapes (shape type &key stop-at)
-  "Collect all subshapes of SHAPE matching the given TYPE keyword.
+  "Collect all subshapes of `shape` matching the given `type` keyword.
 
-  TYPE     -- keyword in (:compound :compsolid :solid :shell :face
-               :wire :edge :vertex :shape)
-  STOP-AT  -- optional type keyword at which to stop recursion
-               (default :shape, meaning recurse to leaves)
+  - **type** keyword in (`:compound`, `:compsolid`, `:solid`, `:shell`, `:face`,
+    `:wire`, `:edge`, `:vertex`, `:shape`)
+  - **stop-at** optional type keyword at which to stop recursion
+    (default `:shape`, meaning recurse to leaves)
 
-  Example:
-    (let ((box (make-box 10 20 30)))
-      (map-shape-subshapes box :face))
+  **Example:**
 
-  See also: count-shape-subshapes, dump-shape"
+      (let ((box (make-box 10 20 30)))
+        (map-shape-subshapes box :face))
+
+  **See also:** `count-shape-subshapes`, `dump-shape`"
   (unless (shape-p shape)
     (return-from map-shape-subshapes nil))
   (let ((ptr (%ptr shape)))
@@ -47,17 +48,18 @@
         (cffi:foreign-free shapes)))))
 
 (defun count-shape-subshapes (shape type &key stop-at)
-  "Count subshapes of SHAPE matching the given TYPE keyword.
+  "Count subshapes of `shape` matching the given `type` keyword.
 
-  TYPE     -- keyword in (:compound :compsolid :solid :shell :face
-               :wire :edge :vertex :shape)
-  STOP-AT  -- optional type keyword at which to stop recursion
+  - **type** keyword in (`:compound`, `:compsolid`, `:solid`, `:shell`, `:face`,
+    `:wire`, `:edge`, `:vertex`, `:shape`)
+  - **stop-at** optional type keyword at which to stop recursion
 
-  Example:
-    (let ((box (make-box 10 20 30)))
-      (count-shape-subshapes box :face))
+  **Example:**
 
-  See also: map-shape-subshapes, dump-shape"
+      (let ((box (make-box 10 20 30)))
+        (count-shape-subshapes box :face))
+
+  **See also:** `map-shape-subshapes`, `dump-shape`"
   (unless (shape-p shape)
     (return-from count-shape-subshapes nil))
   (let ((ptr (%ptr shape)))
@@ -68,13 +70,14 @@
       (if stop-at (%shape-type-to-int stop-at) 8))))
 
 (defun dump-shape (shape)
-  "Print the topological hierarchy of SHAPE to standard output.
+  "Print the topological hierarchy of `shape` to standard output.
 
-  Example:
-    (let ((box (make-box 10 20 30)))
-      (dump-shape box))
+  **Example:**
 
-  See also: map-shape-subshapes, count-shape-subshapes"
+      (let ((box (make-box 10 20 30)))
+        (dump-shape box))
+
+  **See also:** `map-shape-subshapes`, `count-shape-subshapes`"
   (unless (shape-p shape)
     (return-from dump-shape nil))
   (let ((ptr (%ptr shape)))
@@ -83,10 +86,11 @@
     (%dump-shape ptr)))
 
 (defun shape-triangle-count (shape)
-  "Return the number of triangles in SHAPE's mesh triangulation.
+  "Return the number of triangles in `shape`'s mesh triangulation.
 
-  Example:
-    (shape-triangle-count (make-box 10 20 30))"
+  **Example:**
+
+      (shape-triangle-count (make-box 10 20 30))"
   (unless (shape-p shape)
     (return-from shape-triangle-count nil))
   (let ((ptr (%ptr shape)))
@@ -95,17 +99,19 @@
     (%shape-triangle-count ptr)))
 
 (defun wire-order-check-p (wire &optional face)
-  "Check if WIRE has its edges in consistent order (non-optional FACE).
+  "Check if `wire` has its edges in consistent order (non-optional `face`).
 
-  When FACE is provided, check edge ordering relative to that face.
-  Returns T if the wire order is correct, NIL otherwise.
+  When `face` is provided, check edge ordering relative to that face.
 
-  Example:
-    (let ((w (make-wire (make-edge 0 0 10 0)
-                        (make-edge 10 0 10 10)
-                        (make-edge 10 10 0 10)
-                        (make-edge 0 10 0 0))))
-      (wire-order-check-p w (make-face w)))"
+  **Returns:** `t` if the wire order is correct, `nil` otherwise.
+
+  **Example:**
+
+      (let ((w (make-wire (make-edge 0 0 10 0)
+                          (make-edge 10 0 10 10)
+                          (make-edge 10 10 0 10)
+                          (make-edge 0 10 0 0))))
+        (wire-order-check-p w (make-face w)))"
   (unless (shape-p wire)
     (return-from wire-order-check-p nil))
   (let ((wire-ptr (%ptr wire)))
@@ -115,16 +121,17 @@
       (not (zerop (%wire-order-check wire-ptr face-ptr))))))
 
 (defun edge->curve (edge)
-  "Extract the geometric curve underlying an EDGE.
+  "Extract the geometric curve underlying an `edge`.
 
-  Returns a curve object, or NIL if the edge has no curve.
+  **Returns:** a curve object, or `nil` if the edge has no curve.
 
-  Example:
-    (let* ((e (make-circle-edge 0 0 5))
-           (c (edge->curve e)))
-      (curve-type c))
+  **Example:**
 
-  See also: face->surface, curve-type"
+      (let* ((e (make-circle-edge 0 0 5))
+             (c (edge->curve e)))
+        (curve-type c))
+
+  **See also:** `face->surface`, `curve-type`"
   (unless (shape-p edge)
     (return-from edge->curve nil))
   (let ((ptr (%ptr edge)))
@@ -136,18 +143,19 @@
           nil))))
 
 (defun face->surface (face)
-  "Extract the geometric surface underlying a FACE.
+  "Extract the geometric surface underlying a `face`.
 
-  Returns a surface object, or NIL if the face has no surface.
+  **Returns:** a surface object, or `nil` if the face has no surface.
 
-  Example:
-    (let* ((f (make-face-on-plane
-                (make-wire (make-circle-edge 0 0 5))
-                0 0 0 0 0 1))
-           (s (face->surface f)))
-      (surface-type s))
+  **Example:**
 
-  See also: edge->curve, surface-type"
+      (let* ((f (make-face-on-plane
+                  (make-wire (make-circle-edge 0 0 5))
+                  0 0 0 0 0 1))
+             (s (face->surface f)))
+        (surface-type s))
+
+  **See also:** `edge->curve`, `surface-type`"
   (unless (shape-p face)
     (return-from face->surface nil))
   (let ((ptr (%ptr face)))
@@ -159,26 +167,28 @@
           nil))))
 
 (defun make-vertex (x y z)
-  "Create a vertex at the 3D point (X, Y, Z).
+  "Create a vertex at the 3D point (`x`, `y`, `z`).
 
-  Example:
-    (make-vertex 1 2 3)"
+  **Example:**
+
+      (make-vertex 1 2 3)"
   (make-shape (%make-vertex
                 (coerce x 'double-float)
                 (coerce y 'double-float)
                 (coerce z 'double-float))))
 
 (defun make-polygon (points &key (closed t))
-  "Create a polygonal wire from a list of 3D POINTS.
+  "Create a polygonal wire from a list of 3D `points`.
 
-  POINTS -- list of (x y z) coordinate triples (at least 2)
-  CLOSED -- if T (default), the polygon is closed back to the first point
+  - **points** list of (`x`, `y`, `z`) coordinate triples (at least 2)
+  - **closed** if `t` (default), the polygon is closed back to the first point
 
-  Returns a wire shape, or NIL if less than 2 points are provided.
+  **Returns:** a wire shape, or `nil` if less than 2 points are provided.
 
-  Example:
-    (make-polygon '((0 0 0) (10 0 0) (10 10 0) (0 10 0)))
-    (make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)"
+  **Example:**
+
+      (make-polygon '((0 0 0) (10 0 0) (10 10 0) (0 10 0)))
+      (make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)"
   (unless (and (listp points) (>= (length points) 2))
     (return-from make-polygon nil))
   (let* ((n (length points))

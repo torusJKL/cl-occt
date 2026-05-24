@@ -8,18 +8,19 @@
    (%transparency :initarg :transparency :initform 0.0 :reader material-transparency)))
 
 (defun material-p (obj)
-  "Returns T if OBJ is a MATERIAL instance."
+  "Returns `t` if **obj** is a `material` instance."
   (typep obj 'material))
 
 (defun make-material (&key (ambient '(0.2 0.2 0.2)) (diffuse '(0.8 0.8 0.8))
                         (specular '(1.0 1.0 1.0)) (shininess 0.5) (transparency 0.0))
-  "Creates a MATERIAL with the given component colors and properties.
+  "Creates a `material` with the given component colors and properties.
 
-  AMBIENT, DIFFUSE, and SPECULAR are (R G B) triples.
-  SHININESS and TRANSPARENCY are in [0, 1].
+  **ambient**, **diffuse**, and **specular** are (R G B) triples.
+  **shininess** and **transparency** are in [0, 1].
 
-  Example:
-    (make-material :ambient '(0.1 0.1 0.1) :diffuse '(0.9 0.5 0.2) :shininess 0.8)"
+  **Example:**
+
+      (make-material :ambient '(0.1 0.1 0.1) :diffuse '(0.9 0.5 0.2) :shininess 0.8)"
   (make-instance 'material
     :ambient ambient :diffuse diffuse :specular specular
     :shininess shininess :transparency transparency))
@@ -32,23 +33,25 @@
 (defun material-preset-list ()
   "Returns the list of available material preset keyword names.
 
-  Example:
-    (material-preset-list)
-    => (:BRASS :BRONZE :COPPER ...)"
+  **Example:**
+
+      (material-preset-list)
+      => (:BRASS :BRONZE :COPPER ...)"
   *material-presets*)
 
 (defun ais-set-transparency (context obj value)
-  "Sets the transparency of AIS object OBJ in CONTEXT.
+  "Sets the transparency of AIS object **obj** in **context**.
 
-  VALUE ranges from 0.0 (opaque) to 1.0 (fully transparent).
+  **value** ranges from 0.0 (opaque) to 1.0 (fully transparent).
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-transparency ctx box 0.5))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-transparency ctx box 0.5))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -59,16 +62,17 @@
         obj))))
 
 (defun ais-set-custom-material (context obj mat)
-  "Applies a custom MATERIAL to AIS object OBJ in CONTEXT.
+  "Applies a custom `material` **mat** to AIS object **obj** in **context**.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30)))
-           (mat (make-material :diffuse '(0.9 0.5 0.2) :shininess 0.8)))
-      (ais-set-custom-material ctx box mat))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30)))
+             (mat (make-material :diffuse '(0.9 0.5 0.2) :shininess 0.8)))
+        (ais-set-custom-material ctx box mat))"
   (when (and (ais-context-p context) (ais-object-p obj) (material-p mat))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -92,17 +96,18 @@
             obj))))))
 
 (defun ais-set-material (context obj material)
-  "Applies a named preset MATERIAL to AIS object OBJ in CONTEXT.
+  "Applies a named preset material to AIS object **obj** in **context**.
 
-  MATERIAL is a keyword from MATERIAL-PRESET-LIST.
+  **material** is a keyword from `material-preset-list`.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-material ctx box :brass))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-material ctx box :brass))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -116,15 +121,16 @@
             obj))))))
 
 (defun ais-set-line-width (context obj width)
-  "Sets the line width for AIS object OBJ in CONTEXT.
+  "Sets the line width for AIS object **obj** in **context**.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-line-width ctx box 2.0))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-line-width ctx box 2.0))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -135,15 +141,16 @@
         obj))))
 
 (defun ais-show-edges (context obj on)
-  "Shows or hides edges of AIS object OBJ.
+  "Shows or hides edges of AIS object **obj**.
 
-  When ON is T, edges are displayed. Returns OBJ on success, NIL otherwise.
+  When **on** is `t`, edges are displayed. Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-show-edges ctx box t))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-show-edges ctx box t))"
   (declare (ignore context))
   (when (ais-object-p obj)
     (let ((obj-ptr (%ptr obj)))
@@ -152,18 +159,19 @@
         obj))))
 
 (defun ais-set-edge-styling (context obj &key color width)
-  "Configures edge appearance for AIS object OBJ.
+  "Configures edge appearance for AIS object **obj**.
 
-  COLOR can be any color representation. WIDTH is a numeric line width.
+  **color** can be any color representation. **width** is a numeric line width.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-show-edges ctx box t)
-      (ais-set-edge-styling ctx box :color :red :width 2.0))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-show-edges ctx box t)
+        (ais-set-edge-styling ctx box :color :red :width 2.0))"
   (declare (ignore context))
   (when (ais-object-p obj)
     (let ((obj-ptr (%ptr obj)))
@@ -182,17 +190,18 @@
   '((:shape . 0) (:face . 1) (:edge . 2) (:vertex . 3)))
 
 (defun ais-set-selection-mode (context obj mode)
-  "Sets the selection mode for AIS object OBJ in CONTEXT.
+  "Sets the selection mode for AIS object **obj** in **context**.
 
-  MODE is :SHAPE, :FACE, :EDGE, :VERTEX, or an integer. Pass NIL to deactivate.
+  **mode** is `:shape`, `:face`, `:edge`, `:vertex`, or an integer. Pass `nil` to deactivate.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selection-mode ctx box :edge))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selection-mode ctx box :edge))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj))
@@ -208,17 +217,18 @@
         obj))))
 
 (defun ais-set-tessellation (obj &key quality (deviation 0.001))
-  "Sets the tessellation quality for AIS object OBJ.
+  "Sets the tessellation quality for AIS object **obj**.
 
-  QUALITY controls mesh resolution (higher = finer). DEVIATION is max chord error.
+  **quality** controls mesh resolution (higher = finer). **deviation** is max chord error.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-tessellation box :quality 0.5))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-tessellation box :quality 0.5))"
   (when (ais-object-p obj)
     (let ((obj-ptr (%ptr obj)))
       (when (and obj-ptr (not (cffi:null-pointer-p obj-ptr)))
@@ -230,17 +240,18 @@
 ;; --- Selection Management ---
 
 (defun ais-set-selected (context obj &key (update t))
-  "Selects OBJ in CONTEXT (replaces current selection).
+  "Selects **obj** in **context** (replaces current selection).
 
-  When UPDATE is NIL, the display is not refreshed immediately.
+  When **update** is `nil`, the display is not refreshed immediately.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selected ctx box))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selected ctx box))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -251,17 +262,18 @@
         obj))))
 
 (defun ais-add-or-remove-selected (context obj &key (update t))
-  "Toggles selection state of OBJ in CONTEXT.
+  "Toggles selection state of **obj** in **context**.
 
-  If OBJ is selected it becomes unselected, and vice versa.
+  If **obj** is selected it becomes unselected, and vice versa.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-add-or-remove-selected ctx box))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-add-or-remove-selected ctx box))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -272,27 +284,29 @@
         obj))))
 
 (defun ais-clear-selected (context &key (update t))
-  "Clears all selected objects in CONTEXT.
+  "Clears all selected objects in **context**.
 
-  When UPDATE is NIL, the display is not refreshed immediately.
+  When **update** is `nil`, the display is not refreshed immediately.
 
-  Example:
-    (ais-clear-selected ctx)"
+  **Example:**
+
+      (ais-clear-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-clear-selected ctx-ptr (if update 1 0))))))
 
 (defun ais-is-selected (context obj)
-  "Returns T if OBJ is currently selected in CONTEXT.
+  "Returns `t` if **obj** is currently selected in **context**.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selected ctx box)
-      (ais-is-selected ctx box))
-    => T"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selected ctx box)
+        (ais-is-selected ctx box))
+      => T"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -304,34 +318,37 @@
 ;; --- Selection Iteration ---
 
 (defun ais-nb-selected (context)
-  "Returns the number of selected objects in CONTEXT.
+  "Returns the number of selected objects in **context**.
 
-  Example:
-    (ais-nb-selected ctx)"
+  **Example:**
+
+      (ais-nb-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-nb-selected ctx-ptr)))))
 
 (defun ais-init-selected (context)
-  "Initializes the selection iterator in CONTEXT.
+  "Initializes the selection iterator in **context**.
 
-  See also: AIS-MORE-SELECTED, AIS-NEXT-SELECTED
+  **See also:** `ais-more-selected`, `ais-next-selected`
 
-  Example:
-    (ais-init-selected ctx)"
+  **Example:**
+
+      (ais-init-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-init-selected ctx-ptr)))))
 
 (defun ais-more-selected (context)
-  "Returns T if there are more selected objects in the iteration.
+  "Returns `t` if there are more selected objects in the iteration.
 
-  See also: AIS-INIT-SELECTED, AIS-NEXT-SELECTED
+  **See also:** `ais-init-selected`, `ais-next-selected`
 
-  Example:
-    (ais-more-selected ctx)"
+  **Example:**
+
+      (ais-more-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -340,20 +357,22 @@
 (defun ais-next-selected (context)
   "Advances the selection iterator and returns the next AIS object.
 
-  See also: AIS-INIT-SELECTED, AIS-MORE-SELECTED
+  **See also:** `ais-init-selected`, `ais-more-selected`
 
-  Example:
-    (ais-next-selected ctx)"
+  **Example:**
+
+      (ais-next-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-next-selected ctx-ptr)))))
 
 (defun ais-selected-interactive (context)
-  "Returns the current selected interactive object, or NIL.
+  "Returns the current selected interactive object, or `nil`.
 
-  Example:
-    (ais-selected-interactive ctx)"
+  **Example:**
+
+      (ais-selected-interactive ctx)"
   (when (ais-context-p context)
     (let* ((ctx-ptr (%ptr context))
            (ptr (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -364,10 +383,11 @@
           obj)))))
 
 (defun ais-selected-shape (context)
-  "Returns the current selected shape, or NIL.
+  "Returns the current selected shape, or `nil`.
 
-  Example:
-    (ais-selected-shape ctx)"
+  **Example:**
+
+      (ais-selected-shape ctx)"
   (when (ais-context-p context)
     (let* ((ctx-ptr (%ptr context))
            (ptr (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -375,10 +395,11 @@
       (make-shape ptr))))
 
 (defun ais-has-selected-shape (context)
-  "Returns T if there is a selected shape in CONTEXT.
+  "Returns `t` if there is a selected shape in **context**.
 
-  Example:
-    (ais-has-selected-shape ctx)"
+  **Example:**
+
+      (ais-has-selected-shape ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -387,14 +408,15 @@
 (defun ais-selected-objects (context)
   "Return a list of all selected AIS objects.
 
-  Iterates using INIT-SELECTED/MORE-SELECTED/NEXT-SELECTED internally.
+  Iterates using `init-selected`/`more-selected`/`next-selected` internally.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selected ctx box)
-      (ais-selected-objects ctx))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selected ctx box)
+        (ais-selected-objects ctx))"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -413,14 +435,15 @@
 (defun ais-selected-shapes (context)
   "Return a list of all selected shapes.
 
-  Iterates using INIT-SELECTED/MORE-SELECTED/NEXT-SELECTED internally.
+  Iterates using `init-selected`/`more-selected`/`next-selected` internally.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selected ctx box)
-      (ais-selected-shapes ctx))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selected ctx box)
+        (ais-selected-shapes ctx))"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -436,12 +459,13 @@
 ;; --- Mouse Detection ---
 
 (defun ais-move-to (context view x y)
-  "Moves the mouse cursor to pixel coordinates (X Y) on VIEW for detection.
+  "Moves the mouse cursor to pixel coordinates (X Y) on **view** for detection.
 
-  Used before AIS-SELECT-DETECTED to select objects under the cursor.
+  Used before `ais-select-detected` to select objects under the cursor.
 
-  Example:
-    (ais-move-to ctx view 100 200)"
+  **Example:**
+
+      (ais-move-to ctx view 100 200)"
   (when (and (ais-context-p context) (viewer-p view))
     (let ((ctx-ptr (%ptr context))
           (view-ptr (%view view)))
@@ -451,13 +475,14 @@
         (%ais-context-move-to ctx-ptr view-ptr x y)))))
 
 (defun ais-select-detected (context &optional (scheme :replace))
-  "Selects the object detected by the last AIS-MOVE-TO call.
+  "Selects the object detected by the last `ais-move-to` call.
 
-  SCHEME is :REPLACE, :ADD, :TOGGLE, :REMOVE, or an integer.
+  **scheme** is `:replace`, `:add`, `:toggle`, `:remove`, or an integer.
 
-  Example:
-    (ais-move-to ctx view 100 200)
-    (ais-select-detected ctx :add)"
+  **Example:**
+
+      (ais-move-to ctx view 100 200)
+      (ais-select-detected ctx :add)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context))
           (scheme-int (if (keywordp scheme)
@@ -467,12 +492,13 @@
         (%ais-context-select-detected ctx-ptr scheme-int)))))
 
 (defun ais-select-point (context view x y &optional (scheme :replace))
-  "Selects objects at pixel (X Y) by combining AIS-MOVE-TO and AIS-SELECT-DETECTED.
+  "Selects objects at pixel (X Y) by combining `ais-move-to` and `ais-select-detected`.
 
-  SCHEME is :REPLACE, :ADD, :TOGGLE, :REMOVE, or an integer.
+  **scheme** is `:replace`, `:add`, `:toggle`, `:remove`, or an integer.
 
-  Example:
-    (ais-select-point ctx view 100 200 :add)"
+  **Example:**
+
+      (ais-select-point ctx view 100 200 :add)"
   (when (and (ais-context-p context) (viewer-p view))
     (let ((ctx-ptr (%ptr context))
           (view-ptr (%view view))
@@ -487,34 +513,37 @@
 ;; --- Highlight & Configuration ---
 
 (defun ais-hilight-selected (context &key (update t))
-  "Highlights all selected objects in CONTEXT.
+  "Highlights all selected objects in **context**.
 
-  When UPDATE is NIL, the display is not refreshed immediately.
+  When **update** is `nil`, the display is not refreshed immediately.
 
-  Example:
-    (ais-hilight-selected ctx)"
+  **Example:**
+
+      (ais-hilight-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-hilight-selected ctx-ptr (if update 1 0))))))
 
 (defun ais-unhilight-selected (context &key (update t))
-  "Unhighlights all selected objects in CONTEXT.
+  "Unhighlights all selected objects in **context**.
 
-  When UPDATE is NIL, the display is not refreshed immediately.
+  When **update** is `nil`, the display is not refreshed immediately.
 
-  Example:
-    (ais-unhilight-selected ctx)"
+  **Example:**
+
+      (ais-unhilight-selected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-unhilight-selected ctx-ptr (if update 1 0))))))
 
 (defun ais-fit-selected (context view &optional (margin 0.01))
-  "Fits VIEW to show all selected objects with MARGIN around them.
+  "Fits **view** to show all selected objects with **margin** around them.
 
-  Example:
-    (ais-fit-selected ctx view 0.05)"
+  **Example:**
+
+      (ais-fit-selected ctx view 0.05)"
   (when (and (ais-context-p context) (viewer-p view))
     (let ((ctx-ptr (%ptr context))
           (view-ptr (%view view)))
@@ -524,10 +553,11 @@
         (%ais-context-fit-selected ctx-ptr view-ptr (coerce margin 'double-float))))))
 
 (defun ais-detected-interactive (context)
-  "Returns the interactive object detected by the last AIS-MOVE-TO, or NIL.
+  "Returns the interactive object detected by the last `ais-move-to`, or `nil`.
 
-  Example:
-    (ais-detected-interactive ctx)"
+  **Example:**
+
+      (ais-detected-interactive ctx)"
   (when (ais-context-p context)
     (let* ((ctx-ptr (%ptr context))
            (ptr (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -538,37 +568,40 @@
           obj)))))
 
 (defun ais-has-detected (context)
-  "Returns T if an object was detected by the last AIS-MOVE-TO call.
+  "Returns `t` if an object was detected by the last `ais-move-to` call.
 
-  Example:
-    (ais-has-detected ctx)"
+  **Example:**
+
+      (ais-has-detected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (not (zerop (%ais-context-has-detected ctx-ptr)))))))
 
 (defun ais-clear-detected (context)
-  "Clears the detected object state in CONTEXT.
+  "Clears the detected object state in **context**.
 
-  Example:
-    (ais-clear-detected ctx)"
+  **Example:**
+
+      (ais-clear-detected ctx)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
         (%ais-context-clear-detected ctx-ptr)))))
 
 (defun ais-set-selection-sensitivity (context obj mode sensitivity)
-  "Sets selection sensitivity for a given selection MODE on OBJ.
+  "Sets selection sensitivity for a given selection **mode** on **obj**.
 
-  SENSITIVITY controls how close the cursor must be for selection.
+  **sensitivity** controls how close the cursor must be for selection.
 
-  Returns OBJ on success, NIL otherwise.
+  Returns **obj** on success, `nil` otherwise.
 
-  Example:
-    (let* ((v (make-viewer))
-           (ctx (ais-create-context v))
-           (box (ais-create-shape ctx (make-box 10 20 30))))
-      (ais-set-selection-sensitivity ctx box 2 5))"
+  **Example:**
+
+      (let* ((v (make-viewer))
+             (ctx (ais-create-context v))
+             (box (ais-create-shape ctx (make-box 10 20 30))))
+        (ais-set-selection-sensitivity ctx box 2 5))"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((ctx-ptr (%ptr context))
           (obj-ptr (%ptr obj)))
@@ -579,10 +612,11 @@
         obj))))
 
 (defun ais-set-pixel-tolerance (context pixels)
-  "Sets the pixel tolerance for selection in CONTEXT.
+  "Sets the pixel tolerance for selection in **context**.
 
-  Example:
-    (ais-set-pixel-tolerance ctx 5)"
+  **Example:**
+
+      (ais-set-pixel-tolerance ctx 5)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -591,8 +625,9 @@
 (defun ais-set-automatic-hilight (context on)
   "Enables or disables automatic highlighting of detected objects.
 
-  Example:
-    (ais-set-automatic-hilight ctx nil)"
+  **Example:**
+
+      (ais-set-automatic-hilight ctx nil)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))
@@ -601,8 +636,9 @@
 (defun ais-set-to-hilight-selected (context on)
   "Enables or disables highlighting of selected objects.
 
-  Example:
-    (ais-set-to-hilight-selected ctx t)"
+  **Example:**
+
+      (ais-set-to-hilight-selected ctx t)"
   (when (ais-context-p context)
     (let ((ctx-ptr (%ptr context)))
       (when (and ctx-ptr (not (cffi:null-pointer-p ctx-ptr)))

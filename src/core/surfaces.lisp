@@ -4,7 +4,7 @@
   ((%ptr :initarg :ptr :reader %ptr)))
 
 (defun surface-p (obj)
-  "Return T if OBJ is a surface object, NIL otherwise."
+  "**Returns:** `t` if `obj` is a `surface` object, `nil` otherwise."
   (typep obj 'surface))
 
 (in-package :cl-occt.impl)
@@ -29,15 +29,16 @@
 (in-package :cl-occt)
 
 (defun surface-type (surface)
-  "Return the type keyword of SURFACE.
+  "Return the type keyword of `surface`.
 
-  Returns one of :PLANE, :CYLINDRICAL-SURFACE, :CONICAL-SURFACE,
-  :SPHERICAL-SURFACE, :TOROIDAL-SURFACE, :BEZIER-SURFACE,
-  :BSPLINE-SURFACE, or NIL.
+  **Returns:** one of `:plane`, `:cylindrical-surface`, `:conical-surface`,
+  `:spherical-surface`, `:toroidal-surface`, `:bezier-surface`,
+  `:bspline-surface`, or `nil`.
 
-  Example:
-    (surface-type (make-plane 0 0 0 0 0 1))
-    => :PLANE"
+  **Example:**
+
+      (surface-type (make-plane 0 0 0 0 0 1))
+      ;; => :PLANE"
   (unless (typep surface 'surface)
     (return-from surface-type nil))
   (let ((ptr (%ptr surface)))
@@ -46,12 +47,13 @@
     (%surface-kind->keyword (%surface-type ptr))))
 
 (defun make-plane (x y z nx ny nz)
-  "Create a plane through point (X, Y, Z) with normal (NX, NY, NZ).
+  "Create a plane through point (`x`, `y`, `z`) with normal (`nx`, `ny`, `nz`).
 
-  Example:
-    (make-plane 0 0 0 0 0 1)
+  **Example:**
 
-  See also: make-cylindrical-surface, make-spherical-surface"
+      (make-plane 0 0 0 0 0 1)
+
+  **See also:** `make-cylindrical-surface`, `make-spherical-surface`"
   (make-surface (%make-plane (coerce x 'double-float)
                               (coerce y 'double-float)
                               (coerce z 'double-float)
@@ -60,52 +62,56 @@
                               (coerce nz 'double-float))))
 
 (defun make-cylindrical-surface (x y z dx dy dz radius)
-  "Create a cylindrical surface through (X, Y, Z) with axis (DX, DY, DZ) and RADIUS.
+  "Create a cylindrical surface through (`x`, `y`, `z`) with axis (`dx`, `dy`, `dz`) and `radius`.
 
-  Example:
-    (make-cylindrical-surface 0 0 0 0 0 1 5)
+  **Example:**
 
-  See also: make-conical-surface, make-spherical-surface"
+      (make-cylindrical-surface 0 0 0 0 0 1 5)
+
+  **See also:** `make-conical-surface`, `make-spherical-surface`"
   (make-surface (%make-cylindrical-surface
                   (coerce x 'double-float) (coerce y 'double-float) (coerce z 'double-float)
                   (coerce dx 'double-float) (coerce dy 'double-float) (coerce dz 'double-float)
                   (coerce radius 'double-float))))
 
 (defun make-conical-surface (x y z dx dy dz radius semi-angle)
-  "Create a conical surface through (X, Y, Z) with axis (DX, DY, DZ),
-  base RADIUS and SEMI-ANGLE (in degrees).
+  "Create a conical surface through (`x`, `y`, `z`) with axis (`dx`, `dy`, `dz`),
+  base `radius` and `semi-angle` (in degrees).
 
-  Example:
-    (make-conical-surface 0 0 0 0 0 1 5 30)
+  **Example:**
 
-  See also: make-cylindrical-surface, make-spherical-surface"
+      (make-conical-surface 0 0 0 0 0 1 5 30)
+
+  **See also:** `make-cylindrical-surface`, `make-spherical-surface`"
   (make-surface (%make-conical-surface
                   (coerce x 'double-float) (coerce y 'double-float) (coerce z 'double-float)
                   (coerce dx 'double-float) (coerce dy 'double-float) (coerce dz 'double-float)
                   (coerce radius 'double-float) (coerce semi-angle 'double-float))))
 
 (defun make-spherical-surface (x y z radius)
-  "Create a sphere centered at (X, Y, Z) with the given RADIUS.
+  "Create a sphere centered at (`x`, `y`, `z`) with the given `radius`.
 
-  Example:
-    (make-spherical-surface 0 0 0 10)
+  **Example:**
 
-  See also: make-toroidal-surface, make-cylindrical-surface"
+      (make-spherical-surface 0 0 0 10)
+
+  **See also:** `make-toroidal-surface`, `make-cylindrical-surface`"
   (make-surface (%make-spherical-surface (coerce x 'double-float)
                                           (coerce y 'double-float)
                                           (coerce z 'double-float)
                                           (coerce radius 'double-float))))
 
 (defun make-toroidal-surface (x y z major-r minor-r)
-  "Create a torus centered at (X, Y, Z) with the given radii.
+  "Create a torus centered at (`x`, `y`, `z`) with the given radii.
 
-  MAJOR-R -- distance from center to tube center
-  MINOR-R -- radius of the tube
+  - **major-r** distance from center to tube center
+  - **minor-r** radius of the tube
 
-  Example:
-    (make-toroidal-surface 0 0 0 20 5)
+  **Example:**
 
-  See also: make-spherical-surface"
+      (make-toroidal-surface 0 0 0 20 5)
+
+  **See also:** `make-spherical-surface`"
   (make-surface (%make-toroidal-surface (coerce x 'double-float)
                                         (coerce y 'double-float)
                                         (coerce z 'double-float)
@@ -113,18 +119,19 @@
                                         (coerce minor-r 'double-float))))
 
 (defun make-bezier-surface (poles num-u num-v)
-  "Create a Bezier surface with NUM-U x NUM-V control POLES.
+  "Create a Bezier surface with `num-u` x `num-v` control `poles`.
 
-  POLES is a flat list of (x y z) control points, ordered by U then V.
-  Each point is a list of three doubles.  The total must equal NUM-U * NUM-V.
+  `poles` is a flat list of (x y z) control points, ordered by U then V.
+  Each point is a list of three doubles.  The total must equal `num-u` * `num-v`.
 
-  Example:
-    (make-bezier-surface
-      '((0 0 0) (10 0 0)
-        (0 10 0) (10 10 0))
-      2 2)
+  **Example:**
 
-  See also: make-bspline-surface"
+      (make-bezier-surface
+        '((0 0 0) (10 0 0)
+          (0 10 0) (10 10 0))
+        2 2)
+
+  **See also:** `make-bspline-surface`"
   (let* ((count (* num-u num-v))
          (arr (cffi:foreign-alloc :double :count (* 3 count))))
     (unwind-protect
@@ -139,24 +146,25 @@
 
 (defun make-bspline-surface (poles num-u-poles num-v-poles
                               uknots umults vknots vmults udeg vdeg)
-  "Create a B-spline surface with control POLES, knots, and degrees.
+  "Create a B-spline surface with control `poles`, knots, and degrees.
 
-  NUM-U-POLES, NUM-V-POLES -- number of control poles in each direction
-  POLES  -- flat list of (x y z) poles ordered by U then V
-  UKNOTS, VKNOTS -- knot value lists for U and V directions
-  UMULTS, VMULTS -- knot multiplicity lists for U and V directions
-  UDEG, VDEG      -- polynomial degree in U and V directions
+  - **num-u-poles**, **num-v-poles** number of control poles in each direction
+  - **poles** flat list of (x y z) poles ordered by U then V
+  - **uknots**, **vknots** knot value lists for U and V directions
+  - **umults**, **vmults** knot multiplicity lists for U and V directions
+  - **udeg**, **vdeg** polynomial degree in U and V directions
 
-  Example:
-    (make-bspline-surface
-      '((0 0 0) (10 0 5) (20 0 0)
-        (0 10 0) (10 10 5) (20 10 0))
-      3 2
-      '(0 1) '(2 2)
-      '(0 1) '(2 2)
-      1 1)
+  **Example:**
 
-  See also: make-bezier-surface, convert-surface-to-bspline"
+      (make-bspline-surface
+        '((0 0 0) (10 0 5) (20 0 0)
+          (0 10 0) (10 10 5) (20 10 0))
+        3 2
+        '(0 1) '(2 2)
+        '(0 1) '(2 2)
+        1 1)
+
+  **See also:** `make-bezier-surface`, `convert-surface-to-bspline`"
   (let* ((num-poles (* num-u-poles num-v-poles))
          (num-uknots (length uknots))
          (num-vknots (length vknots))
@@ -189,35 +197,37 @@
       (cffi:foreign-free vmult-arr))))
 
 (defun convert-surface-to-bspline (surface)
-  "Convert SURFACE to a B-spline representation.
+  "Convert `surface` to a B-spline representation.
 
-  Any surface type (plane, sphere, bezier, etc.) can be converted to
-  an equivalent B-spline.  Returns the B-spline surface, or NIL on error.
+  Any surface type (`plane`, `sphere`, `bezier`, etc.) can be converted to
+  an equivalent B-spline.  **Returns:** the B-spline surface, or `nil` on error.
 
-  Example:
-    (let* ((s (make-spherical-surface 0 0 0 10))
-           (bs (convert-surface-to-bspline s)))
-      (surface-type bs))
-    => :BSPLINE-SURFACE
+  **Example:**
 
-  See also: make-bspline-surface, convert-curve-to-bspline"
+      (let* ((s (make-spherical-surface 0 0 0 10))
+             (bs (convert-surface-to-bspline s)))
+        (surface-type bs))
+      ;; => :BSPLINE-SURFACE
+
+  **See also:** `make-bspline-surface`, `convert-curve-to-bspline`"
   (let ((ptr (%ptr surface)))
     (when (cffi:null-pointer-p ptr)
       (return-from convert-surface-to-bspline nil))
     (make-surface (%convert-surface-to-bspline ptr))))
 
 (defun surface-bounding-box (surface)
-  "Return the bounding box of SURFACE as six values (XMIN YMIN ZMIN XMAX YMAX ZMAX).
+  "Return the bounding box of `surface` as six values (`xmin` `ymin` `zmin` `xmax` `ymax` `zmax`).
 
-  Returns NIL if the surface has no geometry or on error.
+  **Returns:** `nil` if the surface has no geometry or on error.
 
-  Example:
-    (let* ((s (make-plane 0 0 0 0 0 1))
-           (bx (surface-bounding-box s)))
-      (format t \"~A~%\" bx))
-    => multiple values: 0.0d0 0.0d0 0.0d0 ... (infinite plane has large bounds)
+  **Example:**
 
-  See also: curve-bounding-box"
+      (let* ((s (make-plane 0 0 0 0 0 1))
+             (bx (surface-bounding-box s)))
+        (format t \"~A~%\" bx))
+      ;; => multiple values: 0.0d0 0.0d0 0.0d0 ... (infinite plane has large bounds)
+
+  **See also:** `curve-bounding-box`"
   (let ((ptr (%ptr surface)))
     (when (cffi:null-pointer-p ptr)
       (return-from surface-bounding-box nil))

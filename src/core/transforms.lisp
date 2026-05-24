@@ -1,12 +1,13 @@
 (in-package :cl-occt)
 
 (defun translate (shape dx dy dz)
-  "Translate (move) SHAPE by the vector (DX DY DZ).
+  "Translate (move) `shape` by the vector (`dx` `dy` `dz`).
 
-  Returns a new translated copy of SHAPE. The original is not modified.
+  **Returns:** a new translated copy of `shape`. The original is not modified.
 
-  Example:
-    (translate (make-box 10 10 10) 20 0 0)"
+  **Example:**
+
+      (translate (make-box 10 10 10) 20 0 0)"
   (if (null shape)
       nil
       (make-shape (%translate (%ptr shape)
@@ -15,13 +16,14 @@
                               (coerce dz 'double-float)))))
 
 (defun rotate (shape ax ay az angle-deg)
-  "Rotate SHAPE by ANGLE-DEG around the axis (AX AY AZ).
+  "Rotate `shape` by `angle-deg` around the axis (`ax` `ay` `az`).
 
-  The axis passes through the origin. Returns a new rotated copy of
-  SHAPE. The original is not modified.
+  The axis passes through the origin. **Returns:** a new rotated copy of
+  `shape`. The original is not modified.
 
-  Example:
-    (rotate (make-box 10 20 30) 0 0 1 45)"
+  **Example:**
+
+      (rotate (make-box 10 20 30) 0 0 1 45)"
   (if (null shape)
       nil
       (make-shape (%rotate (%ptr shape)

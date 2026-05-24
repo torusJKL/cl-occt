@@ -3,22 +3,23 @@
 (defun substitute-shape (shape old-or-pairs &optional new)
   "Replace sub-shapes within a shape (single or batch).
 
-  SHAPE -- the original shape
-  OLD-OR-PAIRS -- a sub-shape to replace, or a list of (OLD NEW) pairs
-  NEW -- new sub-shape (required when OLD-OR-PAIRS is a single shape)
+  **shape** -- the original shape
+  **old-or-pairs** -- a sub-shape to replace, or a list of (OLD NEW) pairs
+  **new** -- new sub-shape (required when OLD-OR-PAIRS is a single shape)
 
   For single replacement: (substitute-shape orig old new)
   For batch replacement: (substitute-shape orig '((old1 new1) (old2 new2)))
 
   Returns a new shape with the specified sub-shapes replaced.
 
-  Example:
+  **Example:**
+
     (let* ((b (make-box 10 20 30))
            (faces (shape-subshapes b :face))
            (new-face (make-plane)))
       (substitute-shape b (first faces) new-face))
 
-  See also: shape-to-nurbs, shape-reduce-degree"
+  **See also:** `shape-to-nurbs`, `shape-reduce-degree`"
   (unless (shape-p shape)
     (return-from substitute-shape nil))
   (let ((shape-ptr (%ptr shape)))
@@ -56,12 +57,13 @@
 
   All faces and curves in the shape are converted to NURBS form.
 
-  Returns a new shape, or NIL on error.
+  Returns a new shape, or `nil` on error.
 
-  Example:
+  **Example:**
+
     (shape-to-nurbs (make-box 10 20 30))
 
-  See also: shape-to-rational-bspline, shape-reduce-degree, shape-upgrade-continuity"
+  **See also:** `shape-to-rational-bspline`, `shape-reduce-degree`, `shape-upgrade-continuity`"
   (unless (shape-p shape)
     (return-from shape-to-nurbs nil))
   (let ((ptr (%ptr shape)))
@@ -72,19 +74,20 @@
 (defun shape-reduce-degree (shape max-degree)
   "Reduce the polynomial degree of a shape's curves and surfaces.
 
-  SHAPE -- a shape object
-  MAX-DEGREE -- maximum allowed degree (integer, >= 1)
+  **shape** -- a shape object
+  **max-degree** -- maximum allowed degree (integer, >= 1)
 
-  Lowers the degree of NURBS curves and surfaces to at most MAX-DEGREE
+  Lowers the degree of NURBS curves and surfaces to at most `max-degree`
   while preserving the geometry within tolerance.
 
-  Returns a new shape with reduced degree, or NIL on error.
+  Returns a new shape with reduced degree, or `nil` on error.
 
-  Example:
+  **Example:**
+
     (let ((reduced (shape-reduce-degree (shape-to-nurbs (make-box 10 20 30)) 2)))
       reduced)
 
-  See also: shape-to-nurbs, shape-upgrade-continuity"
+  **See also:** `shape-to-nurbs`, `shape-upgrade-continuity`"
   (unless (shape-p shape)
     (return-from shape-reduce-degree nil))
   (let ((ptr (%ptr shape)))
@@ -98,12 +101,13 @@
   All faces and curves are converted to rational B-spline form
   (NURBS with weights).
 
-  Returns a new shape, or NIL on error.
+  Returns a new shape, or `nil` on error.
 
-  Example:
+  **Example:**
+
     (shape-to-rational-bspline (make-box 10 20 30))
 
-  See also: shape-to-nurbs, shape-reduce-degree"
+  **See also:** `shape-to-nurbs`, `shape-reduce-degree`"
   (unless (shape-p shape)
     (return-from shape-to-rational-bspline nil))
   (let ((ptr (%ptr shape)))
@@ -114,18 +118,19 @@
 (defun shape-split-u (shape num-splits)
   "Split a shape's faces along the U direction.
 
-  SHAPE -- a shape object
-  NUM-SPLITS -- number of times to split each face along U
+  **shape** -- a shape object
+  **num-splits** -- number of times to split each face along U
 
-  Each face is divided into NUM-SPLITS+1 smaller faces. Useful for
+  Each face is divided into `num-splits`+1 smaller faces. Useful for
   refining the mesh or creating more detailed geometry.
 
-  Returns a new shape, or NIL on error.
+  Returns a new shape, or `nil` on error.
 
-  Example:
+  **Example:**
+
     (shape-split-u (make-box 10 20 30) 2)
 
-  See also: shape-upgrade-continuity"
+  **See also:** `shape-upgrade-continuity`"
   (unless (shape-p shape)
     (return-from shape-split-u nil))
   (let ((ptr (%ptr shape)))
@@ -136,18 +141,19 @@
 (defun shape-upgrade-continuity (shape &key (continuity :c1))
   "Upgrade the continuity of a shape's curves and surfaces.
 
-  SHAPE -- a shape object
-  CONTINUITY -- desired continuity level, one of :C0, :C1, :C2, :C3 (default :C1)
+  **shape** -- a shape object
+  **continuity** -- desired continuity level, one of `:c0`, `:c1`, `:c2`, `:c3` (default `:c1`)
 
   Raises the parametric continuity of edges and faces to the specified
   level. Higher continuity produces smoother junctions.
 
-  Returns a new shape, or NIL on error.
+  Returns a new shape, or `nil` on error.
 
-  Example:
+  **Example:**
+
     (shape-upgrade-continuity (shape-to-nurbs (make-box 10 20 30)) :continuity :c2)
 
-  See also: shape-reduce-degree, shape-split-u"
+  **See also:** `shape-reduce-degree`, `shape-split-u`"
   (unless (shape-p shape)
     (return-from shape-upgrade-continuity nil))
   (let ((ptr (%ptr shape)))

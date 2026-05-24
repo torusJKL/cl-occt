@@ -1,19 +1,23 @@
 (in-package :cl-occt)
 
 (defun sweep-profile (profile spine &key (mode :sliding))
-  "Sweep a PROFILE shape along a SPINE wire.
+  "Sweep a `profile` shape along a `spine` wire.
 
-  MODE is either :SLIDING (default, the profile slides along
-  the spine) or :FIXED (the profile maintains a fixed orientation).
-  Returns a new shape, or NIL if PROFILE or SPINE is null.
+  - **profile** shape to sweep
+  - **spine** wire path to sweep along
+  - **mode** either `:sliding` (default, the profile slides along
+    the spine) or `:fixed` (the profile maintains a fixed orientation)
 
-  Example:
-    (let* ((circ (make-circle-edge 0 0 5))
-           (face (make-face (make-wire circ)))
-           (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
-      (sweep-profile face spine))
+  **Returns:** a new shape, or `nil` if `profile` or `spine` is null.
 
-  See also: sweep-sections, sweep-with-aux-spine"
+  **Example:**
+
+      (let* ((circ (make-circle-edge 0 0 5))
+             (face (make-face (make-wire circ)))
+             (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+        (sweep-profile face spine))
+
+  **See also:** `sweep-sections`, `sweep-with-aux-spine`"
   (when (or (null profile) (null spine))
     (return-from sweep-profile nil))
   (let ((profile-ptr (%ptr profile))
@@ -23,21 +27,26 @@
         (make-shape (%sweep-pipe profile-ptr spine-ptr)))))
 
 (defun sweep-sections (spine sections params &key (mode :sliding) initial-tangent final-tangent)
-  "Sweep a surface through multiple cross-section wires along a SPINE.
+  "Sweep a surface through multiple cross-section wires along a `spine`.
 
-  SECTIONS is a list of wire shapes, PARAMS is a list of parameter
-  values (matching the number of sections) along the spine.  MODE is
-  :SLIDING (default) or :FIXED.  Optional INITIAL-TANGENT and
-  FINAL-TANGENT are vectors to constrain the tangency at ends.
-  Returns a new shape, or NIL on invalid input.
+  - **spine** wire path to sweep along
+  - **sections** list of wire shapes
+  - **params** list of parameter values along the spine (matching the
+    number of sections)
+  - **mode** either `:sliding` (default) or `:fixed`
+  - **initial-tangent** optional vector to constrain tangency at start
+  - **final-tangent** optional vector to constrain tangency at end
 
-  Example:
-    (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
-           (w2 (make-wire (make-circle-edge 20 0 10)))
-           (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
-      (sweep-sections spine (list w1 w2) '(0.0 1.0)))
+  **Returns:** a new shape, or `nil` on invalid input.
 
-  See also: sweep-profile, sweep-with-aux-spine"
+  **Example:**
+
+      (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+             (w2 (make-wire (make-circle-edge 20 0 10)))
+             (spine (make-wire (make-edge-3d 0 0 0 20 0 0))))
+        (sweep-sections spine (list w1 w2) '(0.0 1.0)))
+
+  **See also:** `sweep-profile`, `sweep-with-aux-spine`"
   (when (or (null spine) (null sections) (null params)
             (/= (length sections) (length params))
             (< (length sections) 1))
@@ -62,20 +71,26 @@
     result))
 
 (defun sweep-with-aux-spine (profile main-spine aux-spine)
-  "Sweep a PROFILE along a MAIN-SPINE guided by an AUX-SPINE.
+  "Sweep a `profile` along a `main-spine` guided by an `aux-spine`.
+
+  - **profile** shape to sweep
+  - **main-spine** primary wire path
+  - **aux-spine** auxiliary wire for orientation control
 
   The auxiliary spine provides additional orientation control
-  during the sweep.  Returns a new shape, or NIL if any argument
-  is null.
+  during the sweep.
 
-  Example:
-    (let* ((circ (make-circle-edge 0 0 5))
-           (face (make-face (make-wire circ)))
-           (main (make-wire (make-edge-3d 0 0 0 20 0 0)))
-           (aux (make-wire (make-edge-3d 0 0 0 20 5 0))))
-      (sweep-with-aux-spine face main aux))
+  **Returns:** a new shape, or `nil` if any argument is null.
 
-  See also: sweep-profile, sweep-sections"
+  **Example:**
+
+      (let* ((circ (make-circle-edge 0 0 5))
+             (face (make-face (make-wire circ)))
+             (main (make-wire (make-edge-3d 0 0 0 20 0 0)))
+             (aux (make-wire (make-edge-3d 0 0 0 20 5 0))))
+        (sweep-with-aux-spine face main aux))
+
+  **See also:** `sweep-profile`, `sweep-sections`"
   (when (or (null profile) (null main-spine) (null aux-spine))
     (return-from sweep-with-aux-spine nil))
   (make-shape (%sweep-pipe-shell-aux (%ptr profile) (%ptr main-spine) (%ptr aux-spine))))

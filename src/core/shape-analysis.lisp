@@ -28,17 +28,18 @@
 (defun shape-distance (shape1 shape2)
   "Compute the minimum distance between two shapes.
 
-  SHAPE1 SHAPE2 -- shape objects
+  **shape1** **shape2** -- shape objects
 
-  Returns the minimum distance as a double-float, or NIL on error.
+  **Returns:** the minimum distance as a `double-float`, or `nil` on error.
 
-  Example:
-    (let ((a (make-box 10 10 10))
-          (b (translate (make-box 10 10 10) 20 0 0)))
-      (shape-distance a b))
-    => 10.0d0
+  **Example:**
 
-  See also: shape-distance-extrema"
+      (let ((a (make-box 10 10 10))
+            (b (translate (make-box 10 10 10) 20 0 0)))
+        (shape-distance a b))
+      => 10.0d0
+
+  **See also:** `shape-distance-extrema`"
   (unless (and (shape-p shape1) (shape-p shape2))
     (return-from shape-distance nil))
   (let ((p1 (%ptr shape1))
@@ -53,21 +54,22 @@
 (defun shape-distance-extrema (shape1 shape2)
   "Compute the minimum distance and closest points between two shapes.
 
-  Returns a SHAPE-EXTREMA object with readers:
-    (extrema-distance SHAPE-EXTREMA)             -- minimum distance
-    (extrema-point-on-shape1 SHAPE-EXTREMA)      -- closest point on SHAPE1 as (X Y Z)
-    (extrema-point-on-shape2 SHAPE-EXTREMA)      -- closest point on SHAPE2 as (X Y Z)
+  **Returns:** a `shape-extrema` object with readers:
+  - (`extrema-distance` `shape-extrema`) -- minimum distance
+  - (`extrema-point-on-shape1` `shape-extrema`) -- closest point on `shape1` as (`x` `y` `z`)
+  - (`extrema-point-on-shape2` `shape-extrema`) -- closest point on `shape2` as (`x` `y` `z`)
 
-  Returns NIL on error.
+  Returns `nil` on error.
 
-  Example:
-    (let ((r (shape-distance-extrema (make-box 10 10 10)
-                                     (make-sphere 5))))
-      (list (extrema-distance r)
-            (extrema-point-on-shape1 r)
-            (extrema-point-on-shape2 r)))
+  **Example:**
 
-  See also: shape-distance"
+      (let ((r (shape-distance-extrema (make-box 10 10 10)
+                                       (make-sphere 5))))
+        (list (extrema-distance r)
+              (extrema-point-on-shape1 r)
+              (extrema-point-on-shape2 r)))
+
+  **See also:** `shape-distance`"
   (unless (and (shape-p shape1) (shape-p shape2))
     (return-from shape-distance-extrema nil))
   (let ((p1 (%ptr shape1))
@@ -80,17 +82,18 @@
 (defun point-in-solid-p (point shape)
   "Test whether a point is inside, outside, or on a solid shape.
 
-  POINT -- 3D point as (X Y Z)
-  SHAPE -- a solid shape
+  **point** -- 3D point as (`x` `y` `z`)
+  **shape** -- a solid shape
 
-  Returns :INSIDE, :OUTSIDE, :ON, or NIL if classification fails.
+  **Returns:** `:inside`, `:outside`, `:on`, or `nil` if classification fails.
 
-  Example:
-    (let ((b (make-box 10 10 10)))
-      (point-in-solid-p '(5 5 5) b))
-    => :INSIDE
+  **Example:**
 
-  See also: classify-point-in-solid"
+      (let ((b (make-box 10 10 10)))
+        (point-in-solid-p '(5 5 5) b))
+      => :inside
+
+  **See also:** `classify-point-in-solid`"
   (unless (and (shape-p shape) (listp point) (= (length point) 3))
     (return-from point-in-solid-p nil))
   (let ((ptr (%ptr shape)))
@@ -112,17 +115,19 @@
 (defun classify-point-in-solid (point shape)
   "Classify a 3D point relative to a solid, returning the face if on the surface.
 
-  POINT -- 3D point as (X Y Z)
-  SHAPE -- a solid shape
+  **point** -- 3D point as (`x` `y` `z`)
+  **shape** -- a solid shape
 
-  Returns two values: the classification (:INSIDE :OUTSIDE :ON or NIL)
-  and the face shape (when :ON, otherwise NIL).
+  **Returns:** two values:
+  - classification (`:inside`, `:outside`, `:on`, or `nil`)
+  - face shape (when `:on`, otherwise `nil`)
 
-  Example:
-    (classify-point-in-solid '(5 5 5) (make-box 10 10 10))
-    => :INSIDE, NIL
+  **Example:**
 
-  See also: point-in-solid-p"
+      (classify-point-in-solid '(5 5 5) (make-box 10 10 10))
+      => :inside, `nil`
+
+  **See also:** `point-in-solid-p`"
   (unless (and (shape-p shape) (listp point) (= (length point) 3))
     (return-from classify-point-in-solid (values nil nil)))
   (let ((ptr (%ptr shape)))
@@ -149,15 +154,16 @@
 (defun shape-valid-p (shape)
   "Check whether a shape is valid (no geometric errors).
 
-  SHAPE -- a shape object
+  **shape** -- a shape object
 
-  Returns T if the shape is valid, NIL if invalid or on error.
+  **Returns:** `t` if the shape is valid, `nil` if invalid or on error.
 
-  Example:
-    (shape-valid-p (make-box 10 20 30))
-    => T
+  **Example:**
 
-  See also: shape-check"
+      (shape-valid-p (make-box 10 20 30))
+      => `t`
+
+  **See also:** `shape-check`"
   (unless (shape-p shape)
     (return-from shape-valid-p nil))
   (let ((ptr (%ptr shape)))
@@ -168,16 +174,17 @@
 (defun shape-check (shape)
   "Run the OCCT shape analysis validity checker on a shape.
 
-  SHAPE -- a shape object
+  **shape** -- a shape object
 
-  Returns NIL if the shape is valid, or a list of diagnostic strings
+  **Returns:** `nil` if the shape is valid, or a list of diagnostic strings
   describing issues found.
 
-  Example:
-    (shape-check (make-box 10 20 30))
-    => NIL
+  **Example:**
 
-  See also: shape-valid-p"
+      (shape-check (make-box 10 20 30))
+      => `nil`
+
+  **See also:** `shape-valid-p`"
   (unless (shape-p shape)
     (return-from shape-check nil))
   (let ((ptr (%ptr shape)))
@@ -191,23 +198,24 @@
 (defun intersect-curve-shape (curve shape)
   "Compute intersection points between a curve and a shape (faces of a solid).
 
-  CURVE -- a curve object
-  SHAPE -- a shape object
+  **curve** -- a curve object
+  **shape** -- a shape object
 
-  Returns a list of intersection records, each containing:
-    (POINT PARAM-ON-CURVE PARAM-ON-FACE FACE)
+  **Returns:** a list of intersection records, each containing:
+  - (`point` `param-on-curve` `param-on-face` `face`)
 
-  POINT is (X Y Z), the two params are curve and face parameters,
-  and FACE is the intersected face shape (or NIL).
+    `point` is (`x` `y` `z`), the two params are curve and face parameters,
+    and `face` is the intersected face shape (or `nil`).
 
-  Returns NIL if no intersections exist or on error.
+  Returns `nil` if no intersections exist or on error.
 
-  Example:
-    (let ((b (make-box 10 20 30))
-          (c (make-edge (make-line 0 0 -5 0 0 10))))
-      (intersect-curve-shape c b))
+  **Example:**
 
-  See also: intersect-curves, intersect-curve-surface"
+      (let ((b (make-box 10 20 30))
+            (c (make-edge (make-line 0 0 -5 0 0 10))))
+        (intersect-curve-shape c b))
+
+  **See also:** `intersect-curves`, `intersect-curve-surface`"
   (unless (and (typep curve 'curve) (shape-p shape))
     (return-from intersect-curve-shape nil))
   (let ((curve-ptr (%ptr curve))

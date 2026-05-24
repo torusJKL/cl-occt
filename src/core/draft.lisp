@@ -3,18 +3,19 @@
 (defun draft-face (shape face angle pull-direction neutral-plane)
   "Apply a draft angle to a face of a solid.
 
-  ANGLE is the draft angle in degrees.  PULL-DIRECTION is a 3-element
-  vector (dx dy dz) indicating the pull direction.  NEUTRAL-PLANE is
-  a 3-element vector (px py pz) defining a point on the neutral plane
-  (the plane uses PULL-DIRECTION as its normal).  Returns a new shape,
-  or NIL if any argument is null.
+  - **angle** the draft angle in degrees.
+  - **pull-direction** a 3-element vector (dx dy dz) indicating the pull direction.
+  - **neutral-plane** a 3-element vector (px py pz) defining a point on the neutral plane (the plane uses `pull-direction` as its normal).
 
-  Example:
-    (let* ((box (make-box 30 20 10))
-           (faces (map-shape-subshapes box :face)))
-      (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0)))
+  **Returns:** a new shape, or `nil` if any argument is null.
 
-  See also: make-evolved"
+  **Example:**
+
+      (let* ((box (make-box 30 20 10))
+             (faces (map-shape-subshapes box :face)))
+        (draft-face box (first faces) 10.0 '(0 0 -1) '(0 0 0)))
+
+  **See also:** `make-evolved`"
   (if (or (null shape) (null face) (null pull-direction) (null neutral-plane))
       nil
       (let* ((pd (mapcar (lambda (v) (coerce v 'double-float)) pull-direction))
@@ -31,22 +32,24 @@
                                   dx dy dz)))))
 
 (defun make-evolved (profile spine &key (offset 0.0) (join :arc))
-  "Create an evolved solid by sweeping a PROFILE along a closed SPINE.
+  "Create an evolved solid by sweeping a `profile` along a closed `spine`.
 
-  OFFSET is an optional offset from the spine.  JOIN is one of :ARC,
-  :TANGENT, or :INTERSECTION — it controls how pipe sections are joined.
-  Returns a new shape, or NIL if PROFILE or SPINE is null.
+  - **offset** an optional offset from the spine.
+  - **join** one of `:arc`, `:tangent`, or `:intersection` — it controls how pipe sections are joined.
 
-  Example:
-    (let* ((circ (make-circle-edge 0 0 5))
-           (profile (make-wire circ))
-           (spine (make-wire (make-edge-3d 0 0 0 20 0 0)
-                             (make-edge-3d 20 0 0 20 20 0)
-                             (make-edge-3d 20 20 0 0 20 0)
-                             (make-edge-3d 0 20 0 0 0 0))))
-      (make-evolved profile spine :offset 2.0))
+  **Returns:** a new shape, or `nil` if `profile` or `spine` is null.
 
-  See also: draft-face, sweep-profile"
+  **Example:**
+
+      (let* ((circ (make-circle-edge 0 0 5))
+             (profile (make-wire circ))
+             (spine (make-wire (make-edge-3d 0 0 0 20 0 0)
+                                (make-edge-3d 20 0 0 20 20 0)
+                                (make-edge-3d 20 20 0 0 20 0)
+                                (make-edge-3d 0 20 0 0 0 0))))
+        (make-evolved profile spine :offset 2.0))
+
+  **See also:** `draft-face`, `sweep-profile`"
   (if (or (null profile) (null spine))
       nil
       (let ((join-val (ecase join

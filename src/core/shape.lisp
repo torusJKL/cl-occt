@@ -4,5 +4,5 @@
   ((%ptr :initarg :ptr :reader %ptr)))
 
 (defun shape-p (obj)
-  "Return T if OBJ is a shape object, NIL otherwise."
+  "**Returns:** `t` if `obj` is a `shape` object, `nil` otherwise."
   (typep obj 'shape))

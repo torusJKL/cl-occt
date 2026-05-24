@@ -15,11 +15,12 @@
   them together.  Use after any operation that may signal an OCCT
   error to understand what went wrong.
 
-  Example:
-    (handler-case
-        (write-step nil \"/tmp/bad.step\")
-      (occt-error (e)
-        (format t \"~A\" (get-error-message))))
+  **Example:**
 
-  See also: occt-error condition"
+      (handler-case
+          (write-step nil \"/tmp/bad.step\")
+        (occt-error (e)
+          (format t \"~A\" (get-error-message))))
+
+  **See also:** `` `occt-error` `` condition"
   (format nil "~D: ~A" (%get-error-code) (%get-error-message)))

@@ -10,18 +10,18 @@
    (%fov :initarg :fov :reader %fov)))
 
 (defun viewer-camera-p (obj)
-  "Returns T if OBJ is a VIEWER-CAMERA object.
+  "Returns `t` if **obj** is a `viewer-camera` object.
 
-  See also: viewer-camera, set-viewer-camera"
+  **See also:** `viewer-camera`, `set-viewer-camera`"
   (typep obj 'viewer-camera))
 
 (defun viewer-camera (view)
-  "Returns a VIEWER-CAMERA snapshot from VIEW's current state.
+  "Returns a `viewer-camera` snapshot from **view**'s current state.
 
   The returned object contains eye, target, up, projection type,
   and field of view.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (viewer-camera v))"
   (when (viewer-p view)
@@ -43,11 +43,11 @@
           :fov (%v3d-view-get-fov view-ptr))))))
 
 (defun set-viewer-camera (view cam)
-  "Applies a VIEWER-CAMERA object to VIEW.
+  "Applies a `viewer-camera` object to **view**.
 
-  Restores eye, target, up, projection type, and FOV from CAM.
+  Restores eye, target, up, projection type, and FOV from **cam**.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (let ((cam (viewer-camera v)))
         (set-viewer-camera v cam)))"
@@ -76,7 +76,7 @@
 
   Each argument is a 3-element coordinate list (x y z).
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-camera v
         :eye '(0 0 100)
@@ -108,9 +108,9 @@
 (defun set-perspective (view on)
   "Enables or disables perspective projection.
 
-  When ON is NIL, uses orthographic projection.
+  When **on** is `nil`, uses orthographic projection.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-perspective v t))"
   (when (viewer-p view)
@@ -120,13 +120,13 @@
         view))))
 
 (defun perspective-p (view)
-  "Returns T if VIEW is using perspective projection.
+  "Returns `t` if **view** is using perspective projection.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-perspective v t)
       (perspective-p v))
-    => T"
+    => `t`"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -135,7 +135,7 @@
 (defun set-fov (view fov-degrees)
   "Sets the camera field of view in degrees.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-fov v 45.0))"
   (when (viewer-p view)
@@ -148,7 +148,7 @@
 (defun set-clip-planes (view &key near far)
   "Sets the near and far clipping plane distances.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-clip-planes v :near 0.1 :far 1000.0))"
   (when (viewer-p view)
@@ -160,9 +160,9 @@
         view))))
 
 (defun pan-camera (view dx dy)
-  "Pans the camera by DX and DY in screen coordinates.
+  "Pans the camera by **dx** and **dy** in screen coordinates.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (pan-camera v 10.0 -5.0))"
   (when (viewer-p view)
@@ -174,11 +174,11 @@
         view))))
 
 (defun zoom-camera (view factor)
-  "Zooms the camera by a scale FACTOR.
+  "Zooms the camera by a scale **factor**.
 
   Values greater than 1.0 zoom in, less than 1.0 zoom out.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (zoom-camera v 2.0))"
   (when (viewer-p view)
@@ -188,11 +188,11 @@
         view))))
 
 (defun rotate-camera (view ax ay az)
-  "Rotates the camera by the given Euler angles (AX, AY, AZ).
+  "Rotates the camera by the given Euler angles (**ax**, **ay**, **az**).
 
   Angles are in radians.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (rotate-camera v 0.5 0.0 0.0))"
   (when (viewer-p view)
@@ -207,7 +207,7 @@
 (defun reset-view (view)
   "Resets the camera to the default view position.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (pan-camera v 10.0 10.0)
       (reset-view v))"

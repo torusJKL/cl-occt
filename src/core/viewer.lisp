@@ -6,9 +6,9 @@
    (%view   :initarg :view   :reader %view)))
 
 (defun viewer-p (v)
-  "Returns T if V is a VIEWER object.
+  "Returns `t` if **v** is a `viewer` object.
 
-  See also: make-viewer, free-viewer"
+  **See also:** `make-viewer`, `free-viewer`"
   (typep v 'viewer))
 
 (defun make-viewer ()
@@ -17,7 +17,7 @@
   The viewer is automatically finalized for garbage collection.
   Uses `with-viewer` for guaranteed cleanup.
 
-  Example:
+  **Example:**
     (let ((v (make-viewer)))
       (fit-all v)
       (free-viewer v))"
@@ -35,7 +35,7 @@
   Cancels the finalizer so GC won't attempt double-free.
   Safe to call multiple times.
 
-  Example:
+  **Example:**
     (let ((v (make-viewer)))
       (free-viewer v))"
   (when (viewer-p v)
@@ -57,10 +57,10 @@
 (defun fit-all (v &optional shape)
   "Fits all displayed objects into the view.
 
-  If SHAPE is provided, fits the view to that specific shape.
-  Returns the viewer on success, NIL if V is not a valid viewer.
+  If **shape** is provided, fits the view to that specific shape.
+  Returns the viewer on success, `nil` if **v** is not a valid viewer.
 
-  Example:
+  **Example:**
     (let ((v (make-viewer))
           (ctx (ais-create-context v))
           (box (ais-create-shape (make-box 10 20 30))))
@@ -82,7 +82,7 @@
   Call this when the viewer's window is resized so the
   projection matrix is recalculated.
 
-  Example:
+  **Example:**
     (let ((v (make-viewer)))
       (must-be-resized v)
       (free-viewer v))"
@@ -97,18 +97,18 @@
   ((%ptr :initarg :ptr :reader %ptr)))
 
 (defun ais-context-p (v)
-  "Returns T if V is an AIS-CONTEXT object.
+  "Returns `t` if **v** is an `ais-context` object.
 
-  See also: ais-create-context, ais-free-context"
+  **See also:** `ais-create-context`, `ais-free-context`"
   (typep v 'ais-context))
 
 (defun ais-create-context (viewer)
-  "Creates an AIS context for the given VIEWER.
+  "Creates an AIS context for the given **viewer**.
 
   The context is automatically finalized for garbage collection.
-  Returns the context object, or NIL on failure.
+  Returns the context object, or `nil` on failure.
 
-  Example:
+  **Example:**
     (let ((v (make-viewer)))
       (ais-create-context v))"
   (when (viewer-p viewer)
@@ -124,7 +124,7 @@
 
   Safe to call multiple times.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v)))
       (ais-free-context ctx))"
@@ -140,18 +140,18 @@
   ((%ptr :initarg :ptr :reader %ptr)))
 
 (defun ais-object-p (v)
-  "Returns T if V is an AIS-OBJECT object.
+  "Returns `t` if **v** is an `ais-object` object.
 
-  See also: ais-create-shape, ais-free"
+  **See also:** `ais-create-shape`, `ais-free`"
   (typep v 'ais-object))
 
 (defun ais-create-shape (shape)
   "Wraps a shape into an AIS object for display.
 
   The AIS object is automatically finalized for garbage collection.
-  Returns the AIS object, or NIL if SHAPE is invalid.
+  Returns the AIS object, or `nil` if **shape** is invalid.
 
-  Example:
+  **Example:**
     (ais-create-shape (make-box 10 20 30))"
   (when (and shape (shape-p shape))
     (let* ((ptr (%ais-create-shape (%ptr shape)))
@@ -166,7 +166,7 @@
 
   Safe to call multiple times.
 
-  Example:
+  **Example:**
     (let ((ais (ais-create-shape (make-box 10 20 30))))
       (ais-free ais))"
   (when (ais-object-p obj)
@@ -178,10 +178,10 @@
 (defun ais-display (context shape-or-obj &key (update t))
   "Displays a shape or AIS object in the given context.
 
-  If SHAPE-OR-OBJ is a raw shape, it is automatically wrapped
+  If **shape-or-obj** is a raw shape, it is automatically wrapped
   in an AIS object first.  Returns the AIS object.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (make-box 10 20 30)))
@@ -200,12 +200,12 @@
       obj)))
 
 (defun ais-erase (context obj &key (update t))
-  "Erases OBJ from the view without removing it from the context.
+  "Erases **obj** from the view without removing it from the context.
 
-  The object can be redisplayed later.  When UPDATE is NIL,
+  The object can be redisplayed later.  When **update** is `nil`,
   the view is not redrawn immediately.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-create-shape (make-box 10 20 30))))
@@ -220,12 +220,12 @@
         (%ais-context-erase ctx-ptr obj-ptr (if update 1 0))))))
 
 (defun ais-remove (context obj &key (update t))
-  "Removes OBJ from the context entirely.
+  "Removes **obj** from the context entirely.
 
   Unlike erase, the object cannot be redisplayed without
   re-adding it to the context.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-create-shape (make-box 10 20 30))))
@@ -242,9 +242,9 @@
 (defun ais-remove-all (context &key (update t))
   "Removes all displayed objects from the context.
 
-  Equivalent to calling ais-remove on every displayed object.
+  Equivalent to calling `ais-remove` on every displayed object.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v)))
       (ais-display ctx (make-box 10 20 30))
@@ -255,15 +255,15 @@
         (%ais-context-remove-all ctx-ptr (if update 1 0))))))
 
 (defun ais-displayed-p (context obj)
-  "Returns T if OBJ is currently displayed in the given context.
+  "Returns `t` if **obj** is currently displayed in the given context.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-create-shape (make-box 10 20 30))))
       (ais-display ctx box)
       (ais-displayed-p ctx box))
-    => T"
+    => `t`"
   (when (and (ais-context-p context) (ais-object-p obj))
     (let ((obj-ptr (%ptr obj))
           (ctx-ptr (%ptr context)))
@@ -308,10 +308,10 @@
 (defun set-background (view r g b)
   "Sets the view background to a solid RGB color.
 
-  Each of R, G, B should be in the range 0.0 to 1.0.
+  Each of **r**, **g**, **b** should be in the range 0.0 to 1.0.
   Returns the color list.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-background v 0.9 0.9 1.0))"
   (when (viewer-p view)
@@ -326,9 +326,9 @@
 (defun ais-set-color (context obj color)
   "Sets the display color of an AIS object.
 
-  COLOR is an RGB list (r g b) with each component in 0.0-1.0.
+  **color** is an RGB list (r g b) with each component in 0.0-1.0.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-display ctx (make-box 10 20 30))))
@@ -348,7 +348,7 @@
 (defun ais-unset-color (context obj)
   "Removes a custom color from an AIS object, reverting to default.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-display ctx (make-box 10 20 30))))
@@ -367,9 +367,9 @@
 (defun ais-set-display-mode (context obj mode)
   "Sets the display mode for an AIS object.
 
-  MODE is one of :WIREFRAME or :SHADED.
+  **mode** is one of `:wireframe` or `:shaded`.
 
-  Example:
+  **Example:**
     (let* ((v (make-viewer))
            (ctx (ais-create-context v))
            (box (ais-display ctx (make-box 10 20 30))))
@@ -388,10 +388,10 @@
 (defun set-view-projection (view orientation)
   "Sets the view projection to a standard orientation.
 
-  ORIENTATION is one of :X-POS, :Y-POS, :Z-POS, :X-NEG, :Y-NEG,
-  :Z-NEG, or :ISO-PERS.
+  **orientation** is one of `:x-pos`, `:y-pos`, `:z-pos`, `:x-neg`, `:y-neg`,
+  `:z-neg`, or `:iso-pers`.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-view-projection v :z-pos)
       (set-view-projection v :iso-pers))"
@@ -406,9 +406,9 @@
 (defun set-msaa (view samples)
   "Sets the multisample anti-aliasing (MSAA) sample count.
 
-  SAMPLES is typically 0 (off), 2, 4, or 8.
+  **samples** is typically 0 (off), 2, 4, or 8.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-msaa v 4))"
   (when (viewer-p view)
@@ -417,9 +417,9 @@
         (%v3d-view-set-msaa view-ptr samples)))))
 
 (defun msaa (view)
-  "Returns the current MSAA sample count for VIEW.
+  "Returns the current MSAA sample count for **view**.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-msaa v 4)
       (msaa v))
@@ -432,9 +432,9 @@
 ;; --- Antialiasing ---
 
 (defun set-antialiasing (view on)
-  "Enables or disables anti-aliasing for VIEW.
+  "Enables or disables anti-aliasing for **view**.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-antialiasing v t))"
   (when (viewer-p view)
@@ -443,13 +443,13 @@
         (%v3d-view-set-antialiasing view-ptr (if on 1 0))))))
 
 (defun antialiasing-p (view)
-  "Returns T if anti-aliasing is enabled for VIEW.
+  "Returns `t` if anti-aliasing is enabled for **view**.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-antialiasing v t)
       (antialiasing-p v))
-    => T"
+    => `t`"
   (when (viewer-p view)
     (let ((view-ptr (%view view)))
       (when (and view-ptr (not (cffi:null-pointer-p view-ptr)))
@@ -458,12 +458,12 @@
 ;; --- Grid ---
 
 (defun activate-grid (viewer grid-type draw-mode)
-  "Activates the grid for VIEWER with the given type and draw mode.
+  "Activates the grid for **viewer** with the given type and draw mode.
 
-  Grid types: :RECTANGULAR, :CIRCULAR.
-  Draw modes: :LINES, :POINTS.
+  Grid types: `:rectangular`, `:circular`.
+  Draw modes: `:lines`, `:points`.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (activate-grid v :rectangular :lines))"
   (when (viewer-p viewer)
@@ -476,9 +476,9 @@
         (%v3d-viewer-activate-grid v3d-viewer gt-int dm-int)))))
 
 (defun deactivate-grid (viewer)
-  "Deactivates the grid for VIEWER.
+  "Deactivates the grid for **viewer**.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (activate-grid v :rectangular :lines)
       (deactivate-grid v))"
@@ -492,7 +492,7 @@
 (defun invalidate-view (view)
   "Invalidates the view, forcing a redraw on the next frame.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (invalidate-view v))"
   (when (viewer-p view)
@@ -501,12 +501,12 @@
         (%v3d-view-invalidate view-ptr)))))
 
 (defmacro with-viewer ((var) &body body)
-  "Creates a viewer, executes BODY, and frees the viewer on exit.
+  "Creates a viewer, executes **body**, and frees the viewer on exit.
 
-  Guarantees cleanup via unwind-protect even if BODY signals
+  Guarantees cleanup via `unwind-protect` even if **body** signals
   an error or non-local exit.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (let ((ctx (ais-create-context v)))
         (ais-display ctx (make-box 10 20 30))
@@ -531,11 +531,11 @@
 (defun make-trihedron (&key (origin '(0 0 0)) (normal '(0 0 1)) (x-direction '(1 0 0)))
   "Creates a trihedron AIS object.
 
-  ORIGIN is the position, NORMAL is the Z direction,
-  X-DIRECTION defines the X axis.  All are 3-element
+  **origin** is the position, **normal** is the Z direction,
+  **x-direction** defines the X axis.  All are 3-element
   coordinate lists.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (let ((ctx (ais-create-context v))
             (tri (make-trihedron)))
@@ -560,11 +560,11 @@
                 obj)))))))
 
 (defun set-trihedron-mode (tri mode)
-  "Sets the display mode of trihedron TRI.
+  "Sets the display mode of trihedron **tri**.
 
-  MODE is one of :WIREFRAME or :SHADED.
+  **mode** is one of `:wireframe` or `:shaded`.
 
-  Example:
+  **Example:**
     (set-trihedron-mode tri :shaded)"
   (when (ais-object-p tri)
     (let ((mode-int (%lookup mode *trihedron-datum-mode-map*))
@@ -575,7 +575,7 @@
 (defun set-trihedron-arrows (tri on)
   "Shows or hides arrow heads on the trihedron axes.
 
-  Example:
+  **Example:**
     (set-trihedron-arrows tri nil)"
   (when (ais-object-p tri)
     (let ((ptr (%ptr tri)))
@@ -585,7 +585,7 @@
 (defun set-trihedron-size (tri size)
   "Sets the size of the trihedron in pixels.
 
-  Example:
+  **Example:**
     (set-trihedron-size tri 100)"
   (when (ais-object-p tri)
     (let ((ptr (%ptr tri)))
@@ -595,10 +595,10 @@
 (defun set-trihedron-corner (tri corner &key (x-offset 50) (y-offset 50))
   "Positions the trihedron in a corner of the view.
 
-  CORNER is one of :LOWER-LEFT, :UPPER-LEFT, :LOWER-RIGHT,
-  :UPPER-RIGHT, or :CENTER.  Offsets are in pixels.
+  **corner** is one of `:lower-left`, `:upper-left`, `:lower-right`,
+  `:upper-right`, or `:center`.  Offsets are in pixels.
 
-  Example:
+  **Example:**
     (set-trihedron-corner tri :upper-right :x-offset 10 :y-offset 10)"
   (when (ais-object-p tri)
     (let ((corner-int (%lookup corner *trihedron-corner-map*))
@@ -612,7 +612,7 @@
 
   Each color is an RGB list (r g b) or a single float gray value.
 
-  Example:
+  **Example:**
     (set-trihedron-axis-colors tri :x '(1 0 0) :y '(0 1 0) :z '(0 0 1))"
   (when (ais-object-p tri)
     (let ((ptr (%ptr tri)))
@@ -632,9 +632,9 @@
 (defun set-trihedron-text-color (tri color)
   "Sets the text label color of the trihedron.
 
-  COLOR is an RGB list (r g b) or a single float gray value.
+  **color** is an RGB list (r g b) or a single float gray value.
 
-  Example:
+  **Example:**
     (set-trihedron-text-color tri '(1 1 0))"
   (when (ais-object-p tri)
     (let ((rgb (normalize-color color))
@@ -650,9 +650,9 @@
 (defun set-trihedron-wireframe-color (tri color)
   "Sets the wireframe color of the trihedron.
 
-  COLOR is an RGB list (r g b) or a single float gray value.
+  **color** is an RGB list (r g b) or a single float gray value.
 
-  Example:
+  **Example:**
     (set-trihedron-wireframe-color tri '(0.5 0.5 0.5))"
   (when (ais-object-p tri)
     (let ((rgb (normalize-color color))
@@ -668,9 +668,9 @@
 (defun show-trihedron (context viewer &key (corner :lower-left) (size 50))
   "Creates, configures, and displays a trihedron in one call.
 
-  CORNER positions the trihedron and SIZE controls its pixel size.
+  **corner** positions the trihedron and **size** controls its pixel size.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (let ((ctx (ais-create-context v)))
         (show-trihedron ctx v :corner :upper-right :size 80)))"

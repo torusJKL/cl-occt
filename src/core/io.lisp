@@ -3,15 +3,16 @@
 ;; --- Standard STEP I/O ---
 
 (defun write-step (shape filename)
-  "Write SHAPE to a STEP file at FILENAME.
+  "Write **shape** to a STEP file at **filename**.
 
-  Returns T on success, signals an OCCT error on failure, or
-  returns NIL if SHAPE is null or not a valid shape.
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
 
-  Example:
+  **Example:**
+
     (write-step (make-box 10 20 30) \"/tmp/clocct-test-box.step\")
 
-  See also: read-step, write-stl, write-step-assembly"
+  **See also:** `read-step`, `write-stl`, `write-step-assembly`"
   (cond
     ((null shape)
      (warn "write-step: nil shape, nothing written")
@@ -28,29 +29,31 @@
            t)))))
 
 (defun read-step (filename)
-  "Read a shape from a STEP file at FILENAME.
+  "Read a shape from a STEP file at **filename**.
 
-  Returns a shape object, or NIL if the file cannot be read.
+  Returns a shape object, or `nil` if the file cannot be read.
 
-  Example:
+  **Example:**
+
     (let ((shape (read-step \"/tmp/clocct-test-box.step\")))
       (when shape (shape-type shape)))
 
-  See also: write-step, read-stl, read-step-assembly"
+  **See also:** `write-step`, `read-stl`, `read-step-assembly`"
   (make-shape (%read-step filename)))
 
 (defun write-stl (shape filename &key (deflection 0.1d0))
-  "Write SHAPE to an STL file at FILENAME.
+  "Write **shape** to an STL file at **filename**.
 
-  DEFLECTION controls the tessellation quality (smaller = finer).
-  Returns T on success, signals an OCCT error on failure, or
-  returns NIL if SHAPE is null or not a valid shape.
+  **deflection** controls the tessellation quality (smaller = finer).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
 
-  Example:
+  **Example:**
+
     (write-stl (make-box 10 20 30) \"/tmp/clocct-test-box.stl\")
     (write-stl (make-sphere 10) \"/tmp/clocct-test-sphere.stl\" :deflection 0.05)
 
-  See also: read-stl, write-step"
+  **See also:** `read-stl`, `write-step`"
   (cond
     ((null shape)
      (warn "write-stl: nil shape, nothing written")
@@ -67,15 +70,16 @@
            t)))))
 
 (defun read-stl (filename)
-  "Read a shape from an STL file at FILENAME.
+  "Read a shape from an STL file at **filename**.
 
-  Returns a shape object, or NIL if the file cannot be read.
+  Returns a shape object, or `nil` if the file cannot be read.
 
-  Example:
+  **Example:**
+
     (let ((shape (read-stl \"/tmp/clocct-test-box.stl\")))
       (when shape (shape-type shape)))
 
-  See also: write-stl, read-step"
+  **See also:** `write-stl`, `read-step`"
   (make-shape (%read-stl filename)))
 
 ;; --- XDE Helper Functions ---
@@ -85,15 +89,16 @@
 (defun parse-color (color)
   "Parse a color specification into component values for XDE I/O.
 
-  COLOR is a list of the form (TYPE R G B A) where TYPE is one of
-  :GENERIC, :SURF, or :CURV (position in *COLOR-TYPES*), and the
+  **color** is a list of the form (`type` `r` `g` `b` `a`) where `type` is one of
+  `:generic`, `:surf`, or `:curv` (position in `*color-types*`), and the
   components are in [0,1] range.  Returns five values: type-index,
-  r, g, b, a.  When COLOR is NIL, returns -1 and 0.0 values.
+  r, g, b, a.  When **color** is `nil`, returns -1 and 0.0 values.
 
-  Example:
+  **Example:**
+
     (parse-color '(:generic 1.0 0.0 0.0 1.0))
 
-  See also: write-step-assembly, read-step-assembly"
+  **See also:** `write-step-assembly`, `read-step-assembly`"
   (if (null color)
       (values -1 0d0 0d0 0d0 0d0)
       (values (or (position (first color) *color-types*) -1)
@@ -173,14 +178,15 @@
 (defun read-step-assembly (filename)
   "Read an assembly tree from a STEP file using XDE.
 
-  Returns an assembly hierarchy, or NIL if the file cannot be
+  Returns an assembly hierarchy, or `nil` if the file cannot be
   read or has no root paths.
 
-  Example:
+  **Example:**
+
     (let ((assy (read-step-assembly \"/tmp/clocct-test-assy.step\")))
       (when assy (assembly-branch-p assy)))
 
-  See also: write-step-assembly, read-step, make-assembly"
+  **See also:** `write-step-assembly`, `read-step`, `make-assembly`"
   (let ((doc (%xde-read-step filename)))
     (if (cffi:null-pointer-p doc)
         nil
@@ -218,16 +224,17 @@
 (defun write-step-assembly (root filename)
   "Write an assembly tree to a STEP file using XDE.
 
-  ROOT is an assembly instance (from make-part or make-assembly).
-  Returns T on success, signals an OCCT error on failure, or
-  returns NIL if ROOT is null.
+  **root** is an assembly instance (from `make-part` or `make-assembly`).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **root** is null.
 
-  Example:
+  **Example:**
+
     (let ((part (make-part (make-box 10 20 30) :name \"box\"
                            :color '(:generic 1 0 0 1))))
       (write-step-assembly part \"/tmp/clocct-test-assy.step\"))
 
-  See also: read-step-assembly, write-step, make-part"
+  **See also:** `read-step-assembly`, `write-step`, `make-part`"
   (when (null root)
     (warn "write-step-assembly: nil assembly, nothing written")
     (return-from write-step-assembly nil))

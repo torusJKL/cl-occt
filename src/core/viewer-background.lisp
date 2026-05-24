@@ -4,11 +4,11 @@
   '((:x-pos . 0) (:x-neg . 1) (:y-pos . 2) (:y-neg . 3) (:z-pos . 4) (:z-neg . 5)))
 
 (defun set-gradient-background (view &key color1 color2 (style :y-pos))
-  "Sets a gradient background from COLOR1 to COLOR2.
+  "Sets a gradient background from **color1** to **color2**.
 
-  STYLE is one of :X-POS, :X-NEG, :Y-POS, :Y-NEG, :Z-POS, :Z-NEG.
+  **style** is one of `:x-pos`, `:x-neg`, `:y-pos`, `:y-neg`, `:z-pos`, `:z-neg`.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-gradient-background v
         :color1 '(0.1 0.1 0.3)
@@ -32,7 +32,7 @@
 
   Each keyword argument is a path to an image file for that face.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-background-cubemap v
         :pos-x \"/path/to/pos-x.jpg\" :neg-x \"/path/to/neg-x.jpg\"
@@ -60,9 +60,9 @@
 (defun set-image-background (view path)
   "Sets a single image as the view background.
 
-  PATH is a string path to an image file.
+  **path** is a string path to an image file.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-image-background v \"/path/to/background.jpg\"))"
   (when (viewer-p view)
@@ -74,7 +74,7 @@
 (defun reset-background (view)
   "Resets the background to the default solid color.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-gradient-background v)
       (reset-background v))"
@@ -85,9 +85,9 @@
         view))))
 
 (defun set-cube-map (view &key pos-x neg-x pos-y neg-y pos-z neg-z)
-  "Alias for set-background-cubemap.
+  "Alias for `set-background-cubemap`.
 
-  Example:
+  **Example:**
     (with-viewer (v)
       (set-cube-map v :pos-x \"/path/to/pos-x.jpg\" :neg-x \"/path/to/neg-x.jpg\"))"
   (set-background-cubemap view
