@@ -3641,6 +3641,7 @@ void prsdim_set_text_position(void* dim_ptr, double x, double y, double z) {
     if (!dim_ptr) { set_error("null dimension argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         (**dim).SetTextPosition(gp_Pnt(x, y, z));
     } catch (Standard_Failure& e) {
         set_error(e.what());
@@ -3652,6 +3653,7 @@ void prsdim_set_display_units(void* dim_ptr, const char* units) {
     if (!dim_ptr || !units) { set_error("null argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         (**dim).SetDisplayUnits(TCollection_AsciiString(units));
     } catch (Standard_Failure& e) {
         set_error(e.what());
@@ -3955,6 +3957,7 @@ void prsdim_set_flyout(void* dim_ptr, double v) {
     if (!dim_ptr) { set_error("null dimension argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         (**dim).SetFlyout(v);
     } catch (Standard_Failure& e) {
         set_error(e.what());
@@ -4101,6 +4104,7 @@ void prsdim_set_measured_edge(void* dim_ptr, void* shape_ptr, double px, double 
     if (!dim_ptr || !shape_ptr) { set_error("null argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_LengthDimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         auto* shape = static_cast<TopoDS_Shape*>(shape_ptr);
         (**dim).SetMeasuredGeometry(TopoDS::Edge(*shape), gp_Pln(gp_Pnt(px, py, pz), gp_Dir(nx, ny, nz)));
     } catch (Standard_Failure& e) {
@@ -4113,7 +4117,12 @@ void prsdim_set_arrow_length(void* dim_ptr, double v) {
     if (!dim_ptr) { set_error("null dimension argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
-        (**dim).DimensionAspect()->ArrowAspect()->SetLength(v);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
+        const Handle(Prs3d_DimensionAspect)& aspect = (**dim).DimensionAspect();
+        if (aspect.IsNull()) { set_error("null dimension aspect", 2); return; }
+        const Handle(Prs3d_ArrowAspect)& arrow = aspect->ArrowAspect();
+        if (arrow.IsNull()) { set_error("null arrow aspect", 2); return; }
+        arrow->SetLength(v);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
@@ -4139,6 +4148,7 @@ void prsdim_set_custom_value(void* dim_ptr, const char* value) {
     if (!dim_ptr || !value) { set_error("null argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         (**dim).SetCustomValue(TCollection_ExtendedString(value));
     } catch (Standard_Failure& e) {
         set_error(e.what());
@@ -4152,6 +4162,7 @@ void prsdim_set_angle_edges(void* dim_ptr, void* edge1_ptr, void* edge2_ptr) {
     if (!dim_ptr || !edge1_ptr || !edge2_ptr) { set_error("null argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_AngleDimension)*>(dim_ptr);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
         auto* edge1 = static_cast<TopoDS_Shape*>(edge1_ptr);
         auto* edge2 = static_cast<TopoDS_Shape*>(edge2_ptr);
         (**dim).SetMeasuredGeometry(TopoDS::Edge(*edge1), TopoDS::Edge(*edge2));
@@ -4519,7 +4530,10 @@ void prsdim_set_extension_size(void* dim_ptr, double v) {
     if (!dim_ptr) { set_error("null dimension argument", 2); return; }
     try {
         auto* dim = static_cast<Handle(PrsDim_Dimension)*>(dim_ptr);
-        (**dim).DimensionAspect()->SetExtensionSize(v);
+        if (dim->IsNull()) { set_error("null dimension", 2); return; }
+        const Handle(Prs3d_DimensionAspect)& aspect = (**dim).DimensionAspect();
+        if (aspect.IsNull()) { set_error("null dimension aspect", 2); return; }
+        aspect->SetExtensionSize(v);
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
