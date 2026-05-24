@@ -2,6 +2,20 @@
 
 (defun loft-sections (wires &key (solid t) (ruled nil) (smooth nil)
                                initial-tangent final-tangent)
+  "Create a surface or solid through a sequence of WIRE sections.
+
+  At least two wires are required.  When SOLID is T (default), the
+  result is a solid; otherwise it is a face/shell.  RULED forces a
+  ruled surface.  SMOOTH requests a smooth (approximated) surface.
+  INITIAL-TANGENT and FINAL-TANGENT are optional 3D direction vectors.
+  Returns a new shape, or NIL if fewer than 2 wires provided.
+
+  Example:
+    (let* ((w1 (make-wire (make-circle-edge 0 0 5)))
+           (w2 (make-wire (make-circle-edge 0 0 10))))
+      (loft-sections (list w1 w2) :solid t))
+
+  See also: sweep-sections, fill-face"
   (when (or (null wires) (< (length wires) 2))
     (return-from loft-sections nil))
   (let* ((count (length wires))

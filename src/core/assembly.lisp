@@ -8,6 +8,18 @@
    (%children :initarg :children :initform nil :accessor assembly-children)))
 
 (defun make-part (shape &key name color location)
+  "Create a leaf-level assembly part from a SHAPE.
+
+  NAME is an optional string identifier.  COLOR is a list of the
+  form (TYPE R G B A) where TYPE is :GENERIC, :SURF, or :CURV.
+  LOCATION is an optional 16-element transformation matrix.
+  Returns an assembly instance.
+
+  Example:
+    (make-part (make-box 10 20 30) :name \"box\"
+               :color '(:generic 1.0 0.0 0.0 1.0))
+
+  See also: make-assembly, assembly-leaf-p, assembly-branch-p"
   (make-instance 'assembly
     :shape shape
     :name name
@@ -15,12 +27,36 @@
     :location location))
 
 (defun make-assembly (&key name children)
+  "Create a branch-level assembly node with optional CHILDREN.
+
+  CHILDREN is a list of assembly instances (parts or sub-assemblies).
+  NAME is an optional string identifier.  The resulting node has no
+  shape of its own — it groups its children.
+
+  Example:
+    (let* ((part (make-part (make-box 10 20 30) :name \"leaf\"))
+           (sub (make-assembly :name \"group\" :children (list part))))
+      (make-assembly :name \"root\" :children (list sub)))
+
+  See also: make-part, assembly-leaf-p, assembly-branch-p"
   (make-instance 'assembly
     :name name
     :children children))
 
 (defun assembly-leaf-p (node)
+  "Return T if NODE is a leaf (has no children — i.e. is a part).
+
+  Example:
+    (assembly-leaf-p (make-part (make-box 1 2 3)))
+
+  See also: assembly-branch-p, make-part, make-assembly"
   (null (slot-value node '%children)))
 
 (defun assembly-branch-p (node)
+  "Return T if NODE is a branch (has children — i.e. is an assembly).
+
+  Example:
+    (assembly-branch-p (make-assembly :children (list (make-part (make-box 1 2 3)))))
+
+  See also: assembly-leaf-p, make-part, make-assembly"
   (not (null (slot-value node '%children))))
