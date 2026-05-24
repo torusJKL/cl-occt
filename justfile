@@ -79,13 +79,12 @@ test-core:
         --eval "(require :asdf)" \
         --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" \
         --eval "(asdf:load-system :cl-occt/tests)" \
-        --eval "(cl-occt::run-core-tests)" \
-        --eval "(sb-ext:quit)"
+        --eval "(multiple-value-bind (pass fail) (cl-occt::run-core-tests) (format t \"~&Test results: ~D passed, ~D failed~%\" pass fail) (sb-ext:quit :code (if (> fail 0) 1 0)))"
 
 test-viewer:
     # Run viewer tests (rendering, AIS, camera, grid, lighting) — needs X display
-    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(cl-occt::run-viewer-tests)" --eval "(sb-ext:quit)"'
+    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(multiple-value-bind (pass fail) (cl-occt::run-viewer-tests) (format t \"~&Test results: ~D passed, ~D failed~%\" pass fail) (sb-ext:quit :code (if (> fail 0) 1 0)))"'
 
 test-all:
     # Run all tests under xvfb-run
-    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(cl-occt::run-tests)" --eval "(sb-ext:quit)"'
+    xvfb-run -a sh -c 'cd {{root-dir}} && LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib {{sbcl}} --noinform --eval "(require :asdf)" --eval "(push \"{{root-dir}}/\" asdf:*central-registry*)" --eval "(asdf:load-system :cl-occt/tests)" --eval "(multiple-value-bind (pass fail) (cl-occt::run-tests) (format t \"~&Test results: ~D passed, ~D failed~%\" pass fail) (sb-ext:quit :code (if (> fail 0) 1 0)))"'

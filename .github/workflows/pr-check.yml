@@ -60,5 +60,6 @@ jobs:
              sbcl --load $HOME/quicklisp/setup.lisp \
                  --eval "(push \"$PWD/\" asdf:*central-registry*)" \
                  --eval "(ql:quickload :cl-occt)" \
+                 --eval "(asdf:load-system :cl-occt/tests)" \
                  --eval "(cl-occt::run-viewer-tests)" \
                  --quit'

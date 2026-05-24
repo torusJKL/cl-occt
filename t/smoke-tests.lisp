@@ -2829,11 +2829,7 @@
                set-light-position-angle-concentration
                set-light-color-intensity set-light-direction-valid
                set-headlight-valid
-               make-length-dimension-2p make-angle-dimension-3p
-               set-dimension-text-position-valid set-dimension-units-valid
-               set-dimension-arrow-length-valid set-dimension-extension-size-valid
-               set-dimension-custom-value-valid
-               named-color-red named-color-blue named-color-white
+                named-color-red named-color-blue named-color-white
                named-color-unknown named-color-exists-p-true named-color-exists-p-false
                hex-to-rgb-6-digit hex-to-rgb-3-digit hex-to-rgb-invalid
                normalize-color-keyword normalize-color-rgb-list normalize-color-hex
@@ -2877,11 +2873,8 @@
                text-font-set-composite-curve-mode-valid
                write-step-skips-ais-label
                write-stl-skips-ais-label
-               make-dimension-edge-keyword
-               set-dimension-text-alias
-               set-dimension-arrows-convenience
-                set-dimension-extension-convenience
-                make-line-3d-valid make-line-3d-zero-dir
+                make-dimension-edge-keyword
+                 make-line-3d-valid make-line-3d-zero-dir
                 make-circle-3d-valid make-circle-3d-zero-radius
                 make-ellipse-3d-valid make-ellipse-3d-zero-major
                 make-hyperbola-valid
@@ -3079,8 +3072,15 @@
                selection-selected-objects
                selection-selected-shapes
                selection-hilight
-               set-text-label-align-convenience
-               set-transparent-shading-alias))
+                set-text-label-align-convenience
+                set-transparent-shading-alias
+                make-length-dimension-2p make-angle-dimension-3p
+                set-dimension-text-position-valid set-dimension-units-valid
+                set-dimension-arrow-length-valid set-dimension-extension-size-valid
+                set-dimension-custom-value-valid
+                set-dimension-text-alias
+                set-dimension-arrows-convenience
+                set-dimension-extension-convenience))
       (funcall test-sym))
     (format t "~2&=== Viewer results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
