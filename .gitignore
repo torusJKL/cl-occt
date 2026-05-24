@@ -3,4 +3,4 @@ lib/
 *.step
 *.fasl
 *.fas
-docs/
+docs/index.html
