@@ -442,9 +442,23 @@
         :%rwmesh-name-format-short
         :%rwmesh-name-format-full
         :%meshvs-create-mesh
-        :%meshvs-free-mesh
-        :%meshvs-set-data
-        :%meshvs-display
+         :%meshvs-free-mesh
+         :%meshvs-set-data
+         :%meshvs-display
+        :%xcaf-new-doc
+        :%xcaf-free-doc
+        :%xcaf-save-shape-to-doc
+        :%xcaf-set-layer
+        :%xcaf-unset-one-layer
+        :%xcaf-unset-all-layers
+        :%xcaf-get-layer-count
+        :%xcaf-has-material
+        :%xcaf-add-view
+        :%xcaf-get-view-count
+        :%xcaf-get-visual-material-count
+        :%xcaf-get-visual-material
+        :%xcaf-get-clipping-plane-count
+        :%xcaf-expand-assembly
 ))
 
 (defpackage :cl-occt
@@ -894,9 +908,23 @@
                  :mesh-get-triangle-count
                  :mesh-triangle-adjacent
                  :mesh-triangle-elements
-                 :meshvs-mesh
-                 :meshvs-mesh-p
-                 :make-meshvs-mesh
-                 :meshvs-display
-                 :meshvs-free
-                 :meshvs-handle))
+                  :meshvs-mesh
+                  :meshvs-mesh-p
+                  :make-meshvs-mesh
+                  :meshvs-display
+                  :meshvs-free
+                  :meshvs-handle
+                  :xcaf-doc
+                  :xcaf-doc-p
+                  :make-xcaf-doc
+                  :xcaf-free-doc
+                  :xcaf-add-shape
+                  :xcaf-add-shape-to-layer
+                  :xcaf-remove-shape-from-layer
+                  :xcaf-get-shape-layers
+                  :xcaf-has-material
+                  :xcaf-add-view
+                  :xcaf-get-views
+                  :xcaf-get-visual-material
+                  :xcaf-get-clipping-planes
+                  :xcaf-expand-assembly))

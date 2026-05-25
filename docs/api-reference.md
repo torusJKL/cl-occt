@@ -1201,3 +1201,25 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
 
 Named colors include the standard X11/web color palette (`:alice-blue`, `:bisque`, `:crimson`, `:dark-olive-green`, `:gold`, `:indian-red`, `:khaki`, `:lavender`, `:medium-aquamarine`, `:navy`, `:olive-drab`, `:pale-goldenrod`, `:sienna`, `:tomato`, `:wheat`, etc.) plus numbered variants (`:blue-1`, `:gray-50`, `:orange-1`) and grey spellings (`:grey`, `:dark-grey`).
 
+### XCAF Document Tools
+
+Document-level metadata management for XCAF documents — layers, views, visual materials, clipping planes, and assembly editing.
+
+| Function | Description |
+|----------|-------------|
+| `(make-xcaf-doc)` | Create a new XCAF document. Returns `xcaf-doc` or nil |
+| `(xcaf-doc-p obj)` | Predicate for `xcaf-doc` instances |
+| `(xcaf-free-doc doc)` | Free a document's C handle |
+| `(xcaf-add-shape doc shape)` | Register a shape in the document's shape tree. Returns t or nil |
+| `(xcaf-add-shape-to-layer doc shape layer)` | Assign a named layer to a shape. Returns t or nil |
+| `(xcaf-remove-shape-from-layer doc shape layer)` | Remove a named layer from a shape. Returns t or nil |
+| `(xcaf-get-shape-layers doc shape)` | Get layer names for a shape. Returns list of strings or nil |
+| `(xcaf-has-material doc shape)` | Check if a shape has material density assigned. Returns t or nil |
+| `(xcaf-add-view doc)` | Create a new named view. Returns t or nil |
+| `(xcaf-get-views doc)` | List all views. Returns list of view plists or nil |
+| `(xcaf-get-visual-material doc shape)` | Get visual material color for a shape. Returns plist `(:color (r g b) :alpha a)` or nil |
+| `(xcaf-get-clipping-planes doc)` | List all clipping planes. Returns list of plane plists or nil |
+| `(xcaf-expand-assembly doc)` | Expand all compound shapes to assemblies. Returns t or nil |
+
+All functions accept nil for doc and return nil gracefully. Errors at the C level are available via `(get-error-message)`.
+
