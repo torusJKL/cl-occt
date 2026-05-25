@@ -1432,3 +1432,118 @@ All accept nil inputs and return nil gracefully.
   (ais-animation-start root))
 ```
 
+### Clip Plane
+
+| Function | Description |
+|----------|-------------|
+| `(make-clip-plane &key equation)` | Create a `Graphic3d_ClipPlane` with an optional equation `(A B C D)` (default `(1 0 0 0)`). Returns `clip-plane` or nil. |
+| `(free-clip-plane cp)` | Free a clip plane's C handle. Safe on nil. |
+| `(clip-plane-p obj)` | Predicate for `clip-plane` instances. |
+| `(set-clip-plane-equation cp equation)` | Set the clip plane equation as `(A B C D)`. |
+| `(clip-plane-equation cp)` | Get the clip plane equation as `(A B C D)`. |
+| `(set-clip-plane-on cp bool)` | Enable/disable the clip plane. |
+| `(clip-plane-on-p cp)` | Return `t` if the clip plane is active. |
+| `(set-clip-plane-capping cp bool)` | Enable/disable capping on the clipped geometry. |
+| `(set-clip-plane-cap-color cp color)` | Set the cap surface color (any color format). |
+
+### Shader Program
+
+| Function | Description |
+|----------|-------------|
+| `(make-shader-program)` | Create an empty `Graphic3d_ShaderProgram`. Returns `shader-program` or nil. |
+| `(free-shader-program prog)` | Free a shader program's C handle. Safe on nil. |
+| `(shader-program-p obj)` | Predicate for `shader-program` instances. |
+| `(set-shader-vertex-source prog source)` | Set the GLSL vertex shader source string. |
+| `(set-shader-fragment-source prog source)` | Set the GLSL fragment shader source string. |
+| `(set-shader-header prog header)` | Set the GLSL header string prepended to shader sources. |
+
+### Aspect Fill Area
+
+| Function | Description |
+|----------|-------------|
+| `(make-aspect-fill-area &key interior-style color edge-color edge-line-type)` | Create a `Graphic3d_AspectFillArea3d`. `:interior-style` is `:empty`, `:hollow`, `:solid` (default), or `:hatch`. `:color` and `:edge-color` accept any color format. `:edge-line-type` is `:solid`, `:dash`, `:dot`, or `:dot-dash`. |
+| `(free-aspect-fill-area a)` | Free a fill area aspect. Safe on nil. |
+| `(aspect-fill-area-p obj)` | Predicate for `aspect-fill-area` instances. |
+| `(aspect-fill-area-color a)` | Get the interior color as `(r g b)`. |
+| `(aspect-fill-area-edge-color a)` | Get the edge color as `(r g b)`. |
+| `(aspect-fill-area-interior-style a)` | Get the interior style keyword. |
+
+### Aspect Line
+
+| Function | Description |
+|----------|-------------|
+| `(make-aspect-line &key color type width)` | Create a `Graphic3d_AspectLine3d`. `:type` is `:solid`, `:dash`, `:dot`, or `:dot-dash`. |
+| `(free-aspect-line a)` | Free a line aspect. Safe on nil. |
+| `(aspect-line-p obj)` | Predicate for `aspect-line` instances. |
+| `(aspect-line-color a)` | Get the line color as `(r g b)`. |
+| `(aspect-line-type a)` | Get the line type keyword. |
+| `(aspect-line-width a)` | Get the line width as double. |
+
+### Aspect Marker
+
+| Function | Description |
+|----------|-------------|
+| `(make-aspect-marker &key color type scale)` | Create a `Graphic3d_AspectMarker3d`. `:type` is `:point`, `:plus`, `:star`, `:o`, `:x`, `:ball` (default), or `:ring`. |
+| `(free-aspect-marker a)` | Free a marker aspect. Safe on nil. |
+| `(aspect-marker-p obj)` | Predicate for `aspect-marker` instances. |
+| `(aspect-marker-color a)` | Get the marker color as `(r g b)`. |
+| `(aspect-marker-type a)` | Get the marker type keyword. |
+| `(aspect-marker-scale a)` | Get the marker scale as double. |
+
+### Aspect Text
+
+| Function | Description |
+|----------|-------------|
+| `(make-aspect-text &key color font style)` | Create a `Graphic3d_AspectText3d`. `:style` is `:normal`, `:bold`, `:italic`, or `:bold-italic`. |
+| `(free-aspect-text a)` | Free a text aspect. Safe on nil. |
+| `(aspect-text-p obj)` | Predicate for `aspect-text` instances. |
+| `(aspect-text-color a)` | Get the text color as `(r g b)`. |
+| `(aspect-text-font a)` | Get the font name as string. |
+| `(aspect-text-style a)` | Get the text style keyword. |
+
+### Graphic Structure
+
+| Function | Description |
+|----------|-------------|
+| `(make-graphic-structure viewer)` | Create a `Graphic3d_Structure` associated with a viewer. Returns `graphic-structure` or nil. |
+| `(free-graphic-structure gs)` | Free a graphic structure's C handle. Safe on nil. |
+| `(graphic-structure-p obj)` | Predicate for `graphic-structure` instances. |
+| `(set-graphic-structure-visible gs bool)` | Show/hide the structure. |
+| `(set-graphic-structure-transform gs matrix)` | Apply a 4x4 transformation matrix (list of 16 double-floats). |
+| `(remove-graphic-structure-transform gs)` | Reset the structure's transform to identity. |
+| `(graphic-structure-add-child parent child)` | Add a child structure (hierarchy). |
+| `(graphic-structure-remove-child parent child)` | Remove a child structure. |
+| `(graphic-structure-display gs)` | Display the structure in the viewer. |
+| `(graphic-structure-erase gs)` | Remove the structure from all viewers. |
+
+### Graphic Group
+
+| Function | Description |
+|----------|-------------|
+| `(make-graphic-group structure)` | Create a `Graphic3d_Group` inside a graphic structure. Returns `graphic-group` or nil. |
+| `(graphic-group-p obj)` | Predicate for `graphic-group` instances. |
+| `(set-graphic-group-visible gg bool)` | Show/hide the group. |
+| `(graphic-group-add-triangles gg vertices &key normals)` | Add triangle primitives. `vertices` is a flat list of `(x y z x y z ...)` float triples. `normals` is an optional flat list of normal vectors. |
+| `(graphic-group-add-lines gg vertices)` | Add line primitives from a flat list of `(x y z ...)` float triples. |
+| `(graphic-group-add-points gg vertices)` | Add point primitives from a flat list of `(x y z ...)` float triples. |
+| `(graphic-group-add-text gg text position)` | Add a text primitive at `(x y z)` position. |
+| `(set-graphic-group-aspect gg aspect)` | Set the fill or line aspect for the group. Accepts `aspect-fill-area` or `aspect-line` instances. |
+
+### Rendering Params
+
+| Function | Description |
+|----------|-------------|
+| `(viewer-rendering-params view)` | Get the `Graphic3d_RenderingParams` from a viewer view. Returns `rendering-params` or nil. |
+| `(rendering-params-p obj)` | Predicate for `rendering-params` instances. |
+| `(set-rendering-method params method)` | Set rendering method (`:rasterization` or `:ray-tracing`). |
+| `(rendering-method params)` | Get current rendering method keyword. |
+| `(set-ray-tracing-depth params n)` | Set ray-tracing depth (bounce count). |
+| `(ray-tracing-depth params)` | Get ray-tracing depth. |
+| `(set-ray-traced-shadows params bool)` | Enable/disable ray-traced shadows. |
+| `(ray-traced-shadows-p params)` | Check if ray-traced shadows are enabled. |
+| `(set-ray-traced-reflections params bool)` | Enable/disable ray-traced reflections. |
+| `(ray-traced-reflections-p params)` | Check if ray-traced reflections are enabled. |
+| `(set-ray-traced-antialiasing params bool)` | Enable/disable ray-traced antialiasing. |
+| `(ray-traced-antialiasing-p params)` | Check if ray-traced antialiasing is enabled. |
+```
+

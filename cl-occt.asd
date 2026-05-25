@@ -68,9 +68,15 @@
               (:file "viewer-dimensions")
               (:file "viewer-ais-types")
               (:file "animation")
-              (:file "texture")
-              (:file "materials")
-              (:file "selection")))))))
+               (:file "texture")
+               (:file "materials")
+               (:file "selection")
+               (:file "graphic3d-clip-plane")
+               (:file "graphic3d-shader-program")
+               (:file "graphic3d-aspects")
+               (:file "graphic3d-structure")
+               (:file "graphic3d-group")
+               (:file "graphic3d-rendering-params")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"

@@ -526,7 +526,83 @@
           :%ais-animation-object-create
           :%ais-animation-object-get-object
           :%ais-animation-camera-create
-          :%ais-animation-axis-rotation-create
+           :%ais-animation-axis-rotation-create
+           ;; Graphic3d ClipPlane
+           :%graphic3d-clip-plane-new
+           :%graphic3d-clip-plane-free
+           :%graphic3d-clip-plane-set-equation
+           :%graphic3d-clip-plane-get-equation
+           :%graphic3d-clip-plane-set-on
+           :%graphic3d-clip-plane-is-on
+           :%graphic3d-clip-plane-set-capping
+           :%graphic3d-clip-plane-set-cap-color
+           ;; Graphic3d ShaderProgram
+           :%graphic3d-shader-program-new
+           :%graphic3d-shader-program-free
+           :%graphic3d-shader-program-set-vertex-source
+           :%graphic3d-shader-program-set-fragment-source
+           :%graphic3d-shader-program-set-header
+           ;; Graphic3d AspectFillArea3d
+           :%graphic3d-aspect-fill-area-new
+           :%graphic3d-aspect-fill-area-free
+           :%graphic3d-aspect-fill-area-set-interior-color
+           :%graphic3d-aspect-fill-area-get-interior-color
+           :%graphic3d-aspect-fill-area-set-edge-color
+           :%graphic3d-aspect-fill-area-get-edge-color
+           :%graphic3d-aspect-fill-area-get-interior-style
+           ;; Graphic3d AspectLine3d
+           :%graphic3d-aspect-line-new
+           :%graphic3d-aspect-line-free
+           :%graphic3d-aspect-line-set-color
+           :%graphic3d-aspect-line-get-color
+           :%graphic3d-aspect-line-get-type
+           :%graphic3d-aspect-line-get-width
+           ;; Graphic3d AspectMarker3d
+           :%graphic3d-aspect-marker-new
+           :%graphic3d-aspect-marker-free
+           :%graphic3d-aspect-marker-set-color
+           :%graphic3d-aspect-marker-get-color
+           :%graphic3d-aspect-marker-get-type
+           :%graphic3d-aspect-marker-get-scale
+           ;; Graphic3d AspectText3d
+           :%graphic3d-aspect-text-new
+           :%graphic3d-aspect-text-free
+           :%graphic3d-aspect-text-set-color
+           :%graphic3d-aspect-text-get-color
+           :%graphic3d-aspect-text-get-font
+           :%graphic3d-aspect-text-get-style
+           ;; Graphic3d Structure
+           :%graphic3d-structure-new
+           :%graphic3d-structure-free
+           :%graphic3d-structure-set-visible
+           :%graphic3d-structure-set-transform
+           :%graphic3d-structure-remove-transform
+           :%graphic3d-structure-add-child
+           :%graphic3d-structure-remove-child
+           :%graphic3d-structure-display
+           :%graphic3d-structure-erase
+           ;; Graphic3d Group
+           :%graphic3d-group-new
+           :%graphic3d-group-free
+           :%graphic3d-group-set-visible
+           :%graphic3d-group-add-triangles
+           :%graphic3d-group-add-lines
+           :%graphic3d-group-add-points
+           :%graphic3d-group-add-text
+           :%graphic3d-group-set-aspect
+           :%graphic3d-group-set-line-aspect
+           ;; Graphic3d RenderingParams
+           :%graphic3d-view-rendering-params
+           :%graphic3d-rendering-params-set-method
+           :%graphic3d-rendering-params-get-method
+           :%graphic3d-rendering-params-set-raytracing-depth
+           :%graphic3d-rendering-params-get-raytracing-depth
+           :%graphic3d-rendering-params-set-shadows
+           :%graphic3d-rendering-params-get-shadows
+           :%graphic3d-rendering-params-set-reflections
+           :%graphic3d-rendering-params-get-reflections
+           :%graphic3d-rendering-params-set-antialiasing
+           :%graphic3d-rendering-params-get-antialiasing
 ))
 
 (defpackage :cl-occt
@@ -1088,4 +1164,95 @@
                     :make-animation-camera
                     :ais-animation-axis-rotation
                     :ais-animation-axis-rotation-p
-                    :make-animation-axis-rotation))
+                     :make-animation-axis-rotation
+                     ;; Graphic3d ClipPlane
+                     :clip-plane
+                     :clip-plane-p
+                     :make-clip-plane
+                     :free-clip-plane
+                     :set-clip-plane-equation
+                     :clip-plane-equation
+                     :set-clip-plane-on
+                     :clip-plane-on-p
+                     :set-clip-plane-capping
+                     :set-clip-plane-cap-color
+                     ;; Graphic3d ShaderProgram
+                     :shader-program
+                     :shader-program-p
+                     :make-shader-program
+                     :free-shader-program
+                     :set-shader-vertex-source
+                     :set-shader-fragment-source
+                     :set-shader-header
+                     ;; Graphic3d Aspects
+                     :aspect-fill-area
+                     :aspect-fill-area-p
+                     :make-aspect-fill-area
+                     :free-aspect-fill-area
+                     :aspect-fill-area-color
+                     :aspect-fill-area-edge-color
+                     :aspect-fill-area-interior-style
+                     :aspect-line
+                     :aspect-line-p
+                     :make-aspect-line
+                     :free-aspect-line
+                     :aspect-line-color
+                     :aspect-line-type
+                     :aspect-line-width
+                     :aspect-marker
+                     :aspect-marker-p
+                     :make-aspect-marker
+                     :free-aspect-marker
+                     :aspect-marker-color
+                     :aspect-marker-type
+                     :aspect-marker-scale
+                     :aspect-text
+                     :aspect-text-p
+                     :make-aspect-text
+                     :free-aspect-text
+                     :aspect-text-color
+                     :aspect-text-font
+                     :aspect-text-style
+                     ;; Graphic3d Structure
+                     :graphic-structure
+                     :graphic-structure-p
+                     :make-graphic-structure
+                     :free-graphic-structure
+                     :set-graphic-structure-visible
+                     :set-graphic-structure-transform
+                     :remove-graphic-structure-transform
+                     :graphic-structure-add-child
+                     :graphic-structure-remove-child
+                     :graphic-structure-display
+                     :graphic-structure-erase
+                     ;; Graphic3d Group
+                     :graphic-group
+                     :graphic-group-p
+                     :make-graphic-group
+                     :set-graphic-group-visible
+                     :graphic-group-add-triangles
+                     :graphic-group-add-lines
+                     :graphic-group-add-points
+                     :graphic-group-add-text
+                     :set-graphic-group-aspect
+                     ;; Graphic3d RenderingParams
+                     :rendering-params
+                     :rendering-params-p
+                     :viewer-rendering-params
+                     :set-rendering-method
+                     :rendering-method
+                     :set-ray-tracing-depth
+                     :ray-tracing-depth
+                     :set-ray-traced-shadows
+                     :ray-traced-shadows-p
+                     :set-ray-traced-reflections
+                     :ray-traced-reflections-p
+                     :set-ray-traced-antialiasing
+                     :ray-traced-antialiasing-p
+                     ;; Aspect enum maps
+                     :*interior-style-map*
+                     :*aspect-line-type-map*
+                     :*aspect-marker-type-map*
+                     :*text-style-map*
+                     :*rendering-method-map*
+                     ))

@@ -863,6 +863,127 @@
       (assert-true (ais-animation-axis-rotation-p anim))
       (ais-animation-free anim))))
 
+;; --- Graphic3d Structure (needs viewer) ---
+
+(deftest graphic-structure-make-valid
+  (with-viewer (v)
+    (let ((gs (make-graphic-structure v)))
+      (assert-true (graphic-structure-p gs))
+      (free-graphic-structure gs))))
+
+(deftest graphic-structure-free-nil-safe
+  (free-graphic-structure nil)
+  t)
+
+(deftest graphic-structure-free-double-safe
+  (with-viewer (v)
+    (let ((gs (make-graphic-structure v)))
+      (free-graphic-structure gs)
+      (free-graphic-structure gs))
+    t))
+
+(deftest graphic-structure-set-visible
+  (with-viewer (v)
+    (let ((gs (make-graphic-structure v)))
+      (set-graphic-structure-visible gs t)
+      (free-graphic-structure gs))))
+
+(deftest graphic-structure-display-erase
+  (with-viewer (v)
+    (let ((gs (make-graphic-structure v)))
+      (graphic-structure-display gs)
+      (graphic-structure-erase gs)
+      (free-graphic-structure gs))))
+
+(deftest graphic-structure-add-remove-child
+  (with-viewer (v)
+    (let ((parent (make-graphic-structure v))
+          (child (make-graphic-structure v)))
+      (graphic-structure-add-child parent child)
+      (graphic-structure-remove-child parent child)
+      (free-graphic-structure child)
+      (free-graphic-structure parent))))
+
+;; --- Graphic3d Group (needs viewer) ---
+
+(deftest graphic-group-make-valid
+  (with-viewer (v)
+    (let* ((gs (make-graphic-structure v))
+           (gg (make-graphic-group gs)))
+      (assert-true (graphic-group-p gg))
+      (free-graphic-structure gs))))
+
+(deftest graphic-group-set-visible
+  (with-viewer (v)
+    (let* ((gs (make-graphic-structure v))
+           (gg (make-graphic-group gs)))
+      (set-graphic-group-visible gg t)
+      (free-graphic-structure gs))))
+
+(deftest graphic-group-add-primitives
+  (with-viewer (v)
+    (let* ((gs (make-graphic-structure v))
+           (gg (make-graphic-group gs)))
+      (graphic-group-add-points gg '(0.0 0.0 0.0 1.0 1.0 1.0))
+      (graphic-group-add-lines gg '(0.0 0.0 0.0 1.0 0.0 0.0))
+      (graphic-group-add-text gg "test" '(0 0 0))
+      (free-graphic-structure gs))))
+
+(deftest graphic-group-add-triangles
+  (with-viewer (v)
+    (let* ((gs (make-graphic-structure v))
+           (gg (make-graphic-group gs)))
+      (graphic-group-add-triangles gg '(0 0 0 1 0 0 0 1 0))
+      (free-graphic-structure gs))))
+
+(deftest graphic-group-set-aspect
+  (with-viewer (v)
+    (let* ((gs (make-graphic-structure v))
+           (gg (make-graphic-group gs))
+           (fa (make-aspect-fill-area :color '(1 0 0))))
+      (set-graphic-group-aspect gg fa)
+      (free-aspect-fill-area fa)
+      (free-graphic-structure gs))))
+
+;; --- Graphic3d RenderingParams (needs viewer) ---
+
+(deftest viewer-rendering-params-valid
+  (with-viewer (v)
+    (let ((rp (viewer-rendering-params v)))
+      (assert-true (rendering-params-p rp)))))
+
+(deftest rendering-params-method-roundtrip
+  (with-viewer (v)
+    (let ((rp (viewer-rendering-params v)))
+      (set-rendering-method rp :ray-tracing)
+      (assert-true (eq (rendering-method rp) :ray-tracing))
+      (set-rendering-method rp :rasterization)
+      (assert-true (eq (rendering-method rp) :rasterization)))))
+
+(deftest rendering-params-shadows-toggle
+  (with-viewer (v)
+    (let ((rp (viewer-rendering-params v)))
+      (set-ray-traced-shadows rp t)
+      (assert-true (ray-traced-shadows-p rp))
+      (set-ray-traced-shadows rp nil)
+      (assert-nil (ray-traced-shadows-p rp)))))
+
+(deftest rendering-params-reflections-toggle
+  (with-viewer (v)
+    (let ((rp (viewer-rendering-params v)))
+      (set-ray-traced-reflections rp t)
+      (assert-true (ray-traced-reflections-p rp))
+      (set-ray-traced-reflections rp nil)
+      (assert-nil (ray-traced-reflections-p rp)))))
+
+(deftest rendering-params-antialiasing-toggle
+  (with-viewer (v)
+    (let ((rp (viewer-rendering-params v)))
+      (set-ray-traced-antialiasing rp t)
+      (assert-true (ray-traced-antialiasing-p rp))
+      (set-ray-traced-antialiasing rp nil)
+      (assert-nil (ray-traced-antialiasing-p rp)))))
+
 ;; --- Viewer ---
 
 (deftest make-viewer-returns-viewer
@@ -3368,6 +3489,144 @@
   (meshvs-free nil)
   t)
 
+;; --- Graphic3d ClipPlane (core) ---
+
+(deftest clip-plane-make-valid
+  (let ((cp (make-clip-plane)))
+    (assert-true (clip-plane-p cp))
+    (free-clip-plane cp)))
+
+(deftest clip-plane-make-with-equation
+  (let ((cp (make-clip-plane :equation '(1 0 0 -5))))
+    (assert-true (clip-plane-p cp))
+    (free-clip-plane cp)))
+
+(deftest clip-plane-free-nil-safe
+  (free-clip-plane nil)
+  t)
+
+(deftest clip-plane-free-double-safe
+  (let ((cp (make-clip-plane)))
+    (free-clip-plane cp)
+    (free-clip-plane cp))
+  t)
+
+(deftest clip-plane-p-nil
+  (assert-nil (clip-plane-p nil)))
+
+(deftest clip-plane-p-non-plane
+  (assert-nil (clip-plane-p :not-a-plane)))
+
+(deftest clip-plane-set-equation
+  (let ((cp (make-clip-plane)))
+    (set-clip-plane-equation cp '(1 0 0 0))
+    (assert-true (clip-plane-p cp))
+    (free-clip-plane cp)))
+
+(deftest clip-plane-get-equation
+  (let ((cp (make-clip-plane :equation '(1 0 0 0))))
+    (let ((eq (clip-plane-equation cp)))
+      (assert-true (listp eq))
+      (assert-true (= (length eq) 4)))
+    (free-clip-plane cp)))
+
+(deftest clip-plane-set-on-off
+  (let ((cp (make-clip-plane)))
+    (set-clip-plane-on cp nil)
+    (assert-nil (clip-plane-on-p cp))
+    (set-clip-plane-on cp t)
+    (assert-true (clip-plane-on-p cp))
+    (free-clip-plane cp)))
+
+(deftest clip-plane-set-capping
+  (let ((cp (make-clip-plane)))
+    (set-clip-plane-capping cp t)
+    (set-clip-plane-cap-color cp '(0.5 0.5 0.5))
+    (free-clip-plane cp)))
+
+;; --- Graphic3d ShaderProgram (core) ---
+
+(deftest shader-program-make-valid
+  (let ((prog (make-shader-program)))
+    (assert-true (shader-program-p prog))
+    (free-shader-program prog)))
+
+(deftest shader-program-free-nil-safe
+  (free-shader-program nil)
+  t)
+
+(deftest shader-program-free-double-safe
+  (let ((prog (make-shader-program)))
+    (free-shader-program prog)
+    (free-shader-program prog))
+  t)
+
+(deftest shader-program-set-vertex-source
+  (let ((prog (make-shader-program)))
+    (set-shader-vertex-source prog "void main() {}")
+    (free-shader-program prog)))
+
+(deftest shader-program-set-fragment-source
+  (let ((prog (make-shader-program)))
+    (set-shader-fragment-source prog "void main() {}")
+    (free-shader-program prog)))
+
+(deftest shader-program-set-header
+  (let ((prog (make-shader-program)))
+    (set-shader-header prog "#version 330 core")
+    (free-shader-program prog)))
+
+;; --- Graphic3d Aspects (core) ---
+
+(deftest aspect-fill-area-make-valid
+  (let ((a (make-aspect-fill-area)))
+    (assert-true (aspect-fill-area-p a))
+    (free-aspect-fill-area a)))
+
+(deftest aspect-fill-area-free-nil-safe
+  (free-aspect-fill-area nil)
+  t)
+
+(deftest aspect-fill-area-get-color
+  (let ((a (make-aspect-fill-area :color '(1 0 0))))
+    (assert-true (equal (aspect-fill-area-color a) '(1.0d0 0.0d0 0.0d0)))
+    (free-aspect-fill-area a)))
+
+(deftest aspect-line-make-valid
+  (let ((a (make-aspect-line :color '(0 1 0) :type :dash :width 2.0)))
+    (assert-true (aspect-line-p a))
+    (assert-true (= (aspect-line-width a) 2.0d0))
+    (free-aspect-line a)))
+
+(deftest aspect-line-get-color
+  (let ((a (make-aspect-line :color '(0 1 0))))
+    (destructuring-bind (r g b) (aspect-line-color a)
+      (assert-true (< (abs (- r 0.0)) 0.001))
+      (assert-true (< (abs (- g 1.0)) 0.001))
+      (assert-true (< (abs (- b 0.0)) 0.001)))
+    (free-aspect-line a)))
+
+(deftest aspect-marker-make-valid
+  (let ((a (make-aspect-marker :color '(0 0 1) :type :ball :scale 3.0)))
+    (assert-true (aspect-marker-p a))
+    (assert-true (= (aspect-marker-scale a) 3.0d0))
+    (free-aspect-marker a)))
+
+(deftest aspect-marker-get-type
+  (let ((a (make-aspect-marker :type :x)))
+    (assert-true (eq (aspect-marker-type a) :x))
+    (free-aspect-marker a)))
+
+(deftest aspect-text-make-valid
+  (let ((a (make-aspect-text :color '(1 1 1) :font "Arial" :style :bold)))
+    (assert-true (aspect-text-p a))
+    (free-aspect-text a)))
+
+(deftest aspect-text-get-font
+  (let ((a (make-aspect-text :font "Courier")))
+    (assert-true (stringp (aspect-text-font a)))
+    (free-aspect-text a)))
+
 ;; --- Animation (core: no viewer needed) ---
 
 (deftest animation-make-valid
@@ -3667,12 +3926,30 @@
                  xcaf-add-view-t xcaf-nil-doc-nil xcaf-remove-shape-from-layer-t
                  xcaf-get-visual-material-t xcaf-get-clipping-planes-t
                   xcaf-expand-assembly-t
-                  ;; Animation (core)
-                  animation-make-valid animation-make-nil-name
-                  animation-free-nil-safe animation-free-double-safe
-                  animation-duration-set-get animation-progress-set-get
-                  animation-start-pause-set
-                  animation-add-remove-child))
+                   ;; Animation (core)
+                   animation-make-valid animation-make-nil-name
+                   animation-free-nil-safe animation-free-double-safe
+                   animation-duration-set-get animation-progress-set-get
+                   animation-start-pause-set
+                   animation-add-remove-child
+                   ;; Graphic3d ClipPlane (core)
+                   clip-plane-make-valid clip-plane-make-with-equation
+                   clip-plane-free-nil-safe clip-plane-free-double-safe
+                   clip-plane-p-nil clip-plane-p-non-plane
+                   clip-plane-set-equation clip-plane-get-equation
+                   clip-plane-set-on-off clip-plane-set-capping
+                   ;; Graphic3d ShaderProgram (core)
+                   shader-program-make-valid
+                   shader-program-free-nil-safe shader-program-free-double-safe
+                   shader-program-set-vertex-source
+                   shader-program-set-fragment-source
+                   shader-program-set-header
+                   ;; Graphic3d Aspects (core)
+                   aspect-fill-area-make-valid aspect-fill-area-free-nil-safe
+                   aspect-fill-area-get-color
+                   aspect-line-make-valid aspect-line-get-color
+                   aspect-marker-make-valid aspect-marker-get-type
+                   aspect-text-make-valid aspect-text-get-font))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
@@ -3785,8 +4062,21 @@
                 set-dimension-text-alias
                 set-dimension-arrows-convenience
                 set-dimension-extension-convenience
-                ;; Animation (needs viewer)
-                animation-object-make-valid animation-axis-rotation-make-valid))
+                 ;; Animation (needs viewer)
+                 animation-object-make-valid animation-axis-rotation-make-valid
+                 ;; Graphic3d Structure (needs viewer)
+                 graphic-structure-make-valid graphic-structure-free-nil-safe
+                 graphic-structure-free-double-safe graphic-structure-set-visible
+                 graphic-structure-display-erase graphic-structure-add-remove-child
+                 ;; Graphic3d Group (needs viewer)
+                 graphic-group-make-valid graphic-group-set-visible
+                 graphic-group-add-primitives graphic-group-add-triangles
+                 graphic-group-set-aspect
+                 ;; Graphic3d RenderingParams (needs viewer)
+                 viewer-rendering-params-valid rendering-params-method-roundtrip
+                 rendering-params-shadows-toggle
+                 rendering-params-reflections-toggle
+                 rendering-params-antialiasing-toggle))
       (funcall test-sym))
     (format t "~2&=== Viewer results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
