@@ -65,8 +65,10 @@
             (:file "viewer-text-labels")
             (:file "viewer-defaults")
             (:file "viewer-drawer")
-             (:file "viewer-dimensions")
-             (:file "viewer-ais-types")))))))
+              (:file "viewer-dimensions")
+              (:file "viewer-ais-types")
+              (:file "texture")
+              (:file "materials")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"

@@ -458,7 +458,44 @@
         :%xcaf-get-visual-material-count
         :%xcaf-get-visual-material
         :%xcaf-get-clipping-plane-count
-        :%xcaf-expand-assembly
+         :%xcaf-expand-assembly
+         ;; Image / Texture / Material bindings
+         :%image-from-file
+         :%free-image
+         :%image-save
+         :%image-width
+         :%image-height
+         :%texture-2d-from-file
+         :%texture-2d-from-image
+         :%free-texture
+         :%texture-get-params
+         :%texture-2dplane-from-file
+         :%texture-2dplane-set-repeat
+         :%texture-2dplane-set-origin
+         :%texture-2dplane-set-scale
+         :%texture-2dplane-set-rotation
+         :%make-texture-params
+         :%free-texture-params
+         :%texture-params-set-filter
+         :%texture-params-set-repeat
+         :%texture-params-set-aniso
+         :%make-pbr-material
+         :%free-pbr-material
+         :%pbr-material-set-albedo
+         :%pbr-material-set-metallic
+         :%pbr-material-set-roughness
+         :%pbr-material-set-emissive
+         :%pbr-material-set-refraction-index
+         :%pbr-material-set-transparency
+         :%make-bsdf
+         :%free-bsdf
+         :%bsdf-set-ambient
+         :%bsdf-set-diffuse
+         :%bsdf-set-specular
+         :%bsdf-set-transmission
+         :%bsdf-set-reflection
+         :%bsdf-set-refraction-index
+         :%bsdf-set-absorption
 ))
 
 (defpackage :cl-occt
@@ -926,5 +963,49 @@
                   :xcaf-add-view
                   :xcaf-get-views
                   :xcaf-get-visual-material
-                  :xcaf-get-clipping-planes
-                  :xcaf-expand-assembly))
+                   :xcaf-get-clipping-planes
+                   :xcaf-expand-assembly
+                   ;; Image / Texture / Material public API
+                   :image
+                   :image-p
+                   :image-from-file
+                   :image-save
+                   :image-width
+                   :image-height
+                   :texture-2d
+                   :texture-2d-p
+                   :texture-2d-from-file
+                   :texture-2d-from-image
+                   :texture-params
+                   :texture-params-p
+                   :texture-2dplane
+                   :texture-2dplane-p
+                   :texture-2dplane-from-file
+                   :set-texture-plane-repeat
+                   :set-texture-plane-origin
+                   :set-texture-plane-scale
+                   :set-texture-plane-rotation
+                   :make-texture-params
+                   :texture-params
+                   :set-texture-params-filter
+                   :set-texture-params-repeat
+                   :set-texture-params-aniso
+                   :pbr-material
+                   :pbr-material-p
+                   :make-pbr-material
+                   :set-pbr-albedo
+                   :set-pbr-metallic
+                   :set-pbr-roughness
+                   :set-pbr-emissive
+                   :set-pbr-ior
+                   :set-pbr-transparency
+                   :bsdf
+                   :bsdf-p
+                   :make-bsdf
+                   :set-bsdf-ambient
+                   :set-bsdf-diffuse
+                   :set-bsdf-specular
+                   :set-bsdf-transmission
+                   :set-bsdf-reflection
+                   :set-bsdf-refraction-index
+                   :set-bsdf-absorption))

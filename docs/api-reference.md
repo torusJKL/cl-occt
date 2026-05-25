@@ -1223,3 +1223,115 @@ Document-level metadata management for XCAF documents — layers, views, visual 
 
 All functions accept nil for doc and return nil gracefully. Errors at the C level are available via `(get-error-message)`.
 
+### Image
+
+Load and inspect image pixel maps from disk (PNG, JPEG, BMP, TGA, etc.) using `Image_AlienPixMap`.
+
+| Function | Description |
+|----------|-------------|
+| `(image-p obj)` | Predicate: returns t for `image` instances |
+| `(image-from-file path)` | Load an image file into a pixel map. Returns `image` or nil on failure |
+| `(image-save image path)` | Save an image pixel map to a file. Format inferred from extension. Returns t or nil |
+| `(image-width image)` | Pixel width of an image. Returns integer or nil |
+| `(image-height image)` | Pixel height of an image. Returns integer or nil |
+
+```lisp
+(let ((img (image-from-file "/path/to/texture.png")))
+  (format t "Image size: ~dx~d~%" (image-width img) (image-height img))
+  (image-save img "/path/to/output.png"))
+```
+
+### Texture 2D
+
+Create 2D textures for surface mapping from files or loaded images. Texture objects are GC-managed via `tg:finalize`.
+
+| Function | Description |
+|----------|-------------|
+| `(texture-2d-p obj)` | Predicate: returns t for `texture-2d` instances (including `texture-2dplane`) |
+| `(texture-2d-from-file path)` | Create a `Graphic3d_Texture2D` from an image file path. Returns `texture-2d` or nil |
+| `(texture-2d-from-image image)` | Create a `Graphic3d_Texture2D` from an already-loaded `image`. Returns `texture-2d` or nil |
+
+### Texture 2D Plane
+
+Planar texture mapping with explicit UV scale, translation, and rotation control.
+
+| Function | Description |
+|----------|-------------|
+| `(texture-2dplane-p obj)` | Predicate: returns t for `texture-2dplane` instances |
+| `(texture-2dplane-from-file path)` | Create a `Graphic3d_Texture2Dplane` from an image file path |
+| `(set-texture-plane-repeat tex u-repeat v-repeat)` | **Stub**: In this OCCT version, use texture params repeat instead |
+| `(set-texture-plane-origin tex u v)` | Set UV translation via `SetTranslateS`/`SetTranslateT` |
+| `(set-texture-plane-scale tex u v)` | Set UV scale via `SetScaleS`/`SetScaleT` |
+| `(set-texture-plane-rotation tex angle-deg)` | Set texture rotation in degrees |
+
+```lisp
+(let ((tex (texture-2dplane-from-file "brick.png")))
+  (set-texture-plane-scale tex 2.0 2.0)
+  (set-texture-plane-rotation tex 45.0))
+```
+
+### Texture Params
+
+Configure texture filtering, repeat mode, and anisotropy. Params can be created standalone or accessed from a texture via `(texture-params tex)`.
+
+| Function | Description |
+|----------|-------------|
+| `(texture-params-p obj)` | Predicate: returns t for `texture-params` instances |
+| `(make-texture-params)` | Create a new `Graphic3d_TextureParams` with default settings |
+| `(texture-params texture-2d)` | Get the `texture-params` from a texture for direct modification. Returns nil if unavailable |
+| `(set-texture-params-filter params filter)` | Set filter mode: `:nearest`, `:bilinear`, or `:trilinear` |
+| `(set-texture-params-repeat params on)` | Set repeat mode: t = repeat, nil = clamp |
+| `(set-texture-params-aniso params level)` | Set anisotropic filtering level (0 = off, 2/4/8/16 for quality) |
+
+```lisp
+(let ((params (make-texture-params)))
+  (set-texture-params-filter params :trilinear)
+  (set-texture-params-repeat params t)
+  (set-texture-params-aniso params 4))
+```
+
+### PBR Material
+
+Create and configure metallic-roughness PBR materials (`Graphic3d_PBRMaterial`). PBR materials are value-type data objects (GC-managed).
+
+| Function | Description |
+|----------|-------------|
+| `(pbr-material-p obj)` | Predicate: returns t for `pbr-material` instances |
+| `(make-pbr-material)` | Create a new PBR material with default values (black, metallic=0, roughness=1, IOR=1.5) |
+| `(set-pbr-albedo mat r g b)` | Set albedo/base color. RGB in [0,1] |
+| `(set-pbr-metallic mat v)` | Set metalness: 0 = dielectric, 1 = metal |
+| `(set-pbr-roughness mat v)` | Set roughness: 0 = smooth, 1 = rough |
+| `(set-pbr-emissive mat r g b)` | Set emissive color. RGB in [0,1] |
+| `(set-pbr-ior mat v)` | Set index of refraction (>= 1.0) |
+| `(set-pbr-transparency mat v)` | Set transparency: 0 = opaque, 1 = fully transparent |
+
+```lisp
+(let ((mat (make-pbr-material)))
+  (set-pbr-albedo mat 0.9 0.2 0.1)
+  (set-pbr-metallic mat 1.0)
+  (set-pbr-roughness mat 0.3))
+```
+
+### BSDF Material
+
+Create and configure BSDF (Bidirectional Scattering Distribution Function) materials (`Graphic3d_BSDF`). BSDF materials are used for physically-based rendering in path tracing engines.
+
+| Function | Description |
+|----------|-------------|
+| `(bsdf-p obj)` | Predicate: returns t for `bsdf` instances |
+| `(make-bsdf)` | Create a new BSDF with default values |
+| `(set-bsdf-ambient bsdf r g b)` | Set ambient/diffuse weight. RGB in [0,1] |
+| `(set-bsdf-diffuse bsdf r g b)` | Set diffuse BRDF weight. RGB in [0,1] |
+| `(set-bsdf-specular bsdf r g b)` | Set specular BRDF weight. RGB in [0,1] |
+| `(set-bsdf-transmission bsdf r g b)` | Set transmission BTDF weight. RGB in [0,1] |
+| `(set-bsdf-reflection bsdf r g b)` | Set coat specular BRDF weight. RGB in [0,1] |
+| `(set-bsdf-refraction-index bsdf v)` | Set IOR for dielectric Fresnel base layer |
+| `(set-bsdf-absorption bsdf r g b coeff)` | Set volume absorption color and coefficient |
+
+```lisp
+(let ((bsdf (make-bsdf)))
+  (set-bsdf-diffuse bsdf 0.8 0.8 0.8)
+  (set-bsdf-specular bsdf 1.0 1.0 1.0)
+  (set-bsdf-refraction-index bsdf 1.5))
+```
+
