@@ -13,7 +13,7 @@ Source repository: [github.com/torusJKL/cl-occt](https://github.com/torusJKL/cl-
 ### Ubuntu 26.04 / Debian
 
 ```sh
-sudo apt install sbcl curl build-essential cmake libc6
+sudo apt install sbcl curl build-essential cmake libc6 librapidjson-dev
 ```
 
 ### Quicklisp (Common Lisp package manager)

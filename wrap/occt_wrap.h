@@ -59,6 +59,11 @@ occt_shape make_face_on_plane(occt_shape wire, double ox, double oy, double oz, 
 int get_error_code(void);
 const char* get_error_message(void);
 
+// --- IGES I/O ---
+
+int write_iges(occt_shape shape, const char* filename);
+occt_shape read_iges(const char* filename);
+
 // --- XDE Document Lifecycle ---
 typedef void* xde_doc;
 
@@ -66,6 +71,32 @@ xde_doc xde_new_doc(void);
 void   xde_free_doc(xde_doc doc);
 xde_doc xde_read_step(const char* filename);
 int    xde_write_step(xde_doc doc, const char* filename);
+
+// --- IGES Assembly (XDE) I/O ---
+
+xde_doc xde_read_iges(const char* filename);
+int    xde_write_iges(xde_doc doc, const char* filename);
+
+// --- OBJ Mesh I/O ---
+
+int write_obj(occt_shape shape, const char* filename,
+              int coordinate_system, int name_format, int per_vertex_colors);
+occt_shape read_obj(const char* filename, int coordinate_system);
+
+// --- VRML Export ---
+
+int write_vrml(occt_shape shape, const char* filename, double deflection);
+
+// --- glTF I/O ---
+
+int write_gltf(occt_shape shape, const char* filename,
+               int coordinate_system, int per_vertex_colors);
+occt_shape read_gltf(const char* filename, int coordinate_system);
+
+// --- PLY Export ---
+
+int write_ply(occt_shape shape, const char* filename,
+              int coordinate_system, int per_vertex_colors);
 
 // --- Label Navigation ---
 int  xde_get_root_count(xde_doc doc);

@@ -36,8 +36,18 @@
      :%make-wire
      :%make-face
    :%make-face-on-plane
-    :%get-error-code
-    :%get-error-message
+     :%get-error-code
+     :%get-error-message
+     :%write-iges
+     :%read-iges
+     :%xde-read-iges
+     :%xde-write-iges
+     :%write-obj
+     :%read-obj
+     :%write-vrml
+    :%write-gltf
+    :%read-gltf
+     :%write-ply
     :%xde-new-doc
     :%xde-free-doc
     :%xde-read-step
@@ -423,8 +433,18 @@
     :add-to-compound
     :compound-shape-p
     :read-step-assembly
-   :write-step-assembly
-    :assembly
+    :write-step-assembly
+    :write-iges
+    :read-iges
+    :write-iges-assembly
+    :read-iges-assembly
+    :write-obj
+    :read-obj
+    :write-vrml
+    :write-gltf
+    :read-gltf
+    :write-ply
+     :assembly
    :make-part
    :make-assembly
    :assembly-shape

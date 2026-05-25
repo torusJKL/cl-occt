@@ -250,4 +250,163 @@
                  t)))
       (%xde-free-doc doc))))
 
+;; --- Mesh I/O Utility Helpers ---
+
+(defun %coordinate-system->int (cs)
+  (case cs
+    (:zup 0)
+    (:yup 1)
+    (otherwise (error 'occt-error :code -1
+                      :message (format nil "Unknown coordinate system: ~S (expected :zup or :yup)" cs)))))
+
+(defun %name-format->int (nf)
+  (case nf
+    (:auto 0)
+    (:short 1)
+    (:full 2)
+    (otherwise (error 'occt-error :code -1
+                      :message (format nil "Unknown name format: ~S (expected :auto, :short, or :full)" nf)))))
+
+;; --- IGES I/O ---
+
+(defun write-iges (shape filename)
+  (cond
+    ((null shape)
+     (warn "write-iges: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-iges: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-iges (%ptr shape) filename)))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-iges (filename)
+  (make-shape (%read-iges filename)))
+
+(defun write-iges-assembly (root filename)
+  (when (null root)
+    (warn "write-iges-assembly: nil assembly, nothing written")
+    (return-from write-iges-assembly nil))
+  (let ((doc (%xde-new-doc)))
+    (unwind-protect
+         (progn
+           (%write-node doc "" root)
+           (let ((result (%xde-write-iges doc filename)))
+             (if (zerop result)
+                 (error 'occt-error
+                        :code (%get-error-code)
+                        :message (%get-error-message))
+                 t)))
+      (%xde-free-doc doc))))
+
+(defun read-iges-assembly (filename)
+  (let ((doc (%xde-read-iges filename)))
+    (if (cffi:null-pointer-p doc)
+        nil
+        (unwind-protect
+             (let ((root-paths (%xde-get-root-paths doc)))
+               (if (null root-paths)
+                   nil
+                   (make-instance 'assembly
+                     :children (loop for path in root-paths
+                                     collect (%read-node doc path)))))
+          (%xde-free-doc doc)))))
+
+;; --- OBJ Mesh I/O ---
+
+(defun write-obj (shape filename
+                  &key (coordinate-system :zup)
+                    (name-format :auto)
+                    (per-vertex-colors nil))
+  (cond
+    ((null shape)
+     (warn "write-obj: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-obj: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-obj (%ptr shape) filename
+                               (%coordinate-system->int coordinate-system)
+                               (%name-format->int name-format)
+                               (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-obj (filename &key (coordinate-system :zup))
+  (make-shape (%read-obj filename (%coordinate-system->int coordinate-system))))
+
+;; --- VRML Export ---
+
+(defun write-vrml (shape filename &key (deflection 0.1d0))
+  (cond
+    ((null shape)
+     (warn "write-vrml: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-vrml: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-vrml (%ptr shape) filename (coerce deflection 'double-float))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+;; --- glTF I/O ---
+
+(defun write-gltf (shape filename
+                   &key (coordinate-system :zup)
+                     (per-vertex-colors nil))
+  (cond
+    ((null shape)
+     (warn "write-gltf: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-gltf: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-gltf (%ptr shape) filename
+                                (%coordinate-system->int coordinate-system)
+                                (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-gltf (filename &key (coordinate-system :zup))
+  (make-shape (%read-gltf filename (%coordinate-system->int coordinate-system))))
+
+;; --- PLY Export ---
+
+(defun write-ply (shape filename
+                  &key (coordinate-system :zup)
+                    (per-vertex-colors nil))
+  (cond
+    ((null shape)
+     (warn "write-ply: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-ply: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-ply (%ptr shape) filename
+                               (%coordinate-system->int coordinate-system)
+                               (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
 

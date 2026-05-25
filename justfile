@@ -36,6 +36,8 @@ setup:
         -DBUILD_LIBRARY_TYPE=Shared \
         -DBUILD_MODULE_ApplicationFramework=ON \
         -DBUILD_MODULE_DataExchange=ON \
+        -DUSE_RAPIDJSON=ON \
+        -DBUILD_MODULE_DEGLTF=ON \
         -DBUILD_MODULE_Draw=OFF \
         -DBUILD_MODULE_FoundationClass=ON \
         -DBUILD_MODULE_ModelingAlgorithms=ON \
@@ -53,6 +55,7 @@ wrap:
         -L{{occt-install}}/lib \
         -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
         -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
+        -lTKDEGLTF -lTKDEIGES -lTKDEVRML -lTKDEPLY -lTKDEOBJ -lTKRWMesh \
         -lTKV3d -lTKOpenGl -lTKService -lTKHelix -lTKFillet -lTKOffset -lTKFeat \
         -Wl,--enable-new-dtags -Wl,-rpath,{{occt-install}}/lib
 

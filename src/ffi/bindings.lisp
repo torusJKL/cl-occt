@@ -228,6 +228,64 @@
 (defcfun (%read-stl "read_stl") :pointer
   (filename :string))
 
+;; --- IGES I/O ---
+
+(defcfun (%write-iges "write_iges") :int
+  (shape :pointer)
+  (filename :string))
+
+(defcfun (%read-iges "read_iges") :pointer
+  (filename :string))
+
+;; --- IGES Assembly (XDE) I/O ---
+
+(defcfun (%xde-read-iges "xde_read_iges") :pointer
+  (filename :string))
+
+(defcfun (%xde-write-iges "xde_write_iges") :int
+  (doc :pointer)
+  (filename :string))
+
+;; --- OBJ Mesh I/O ---
+
+(defcfun (%write-obj "write_obj") :int
+  (shape :pointer)
+  (filename :string)
+  (coordinate-system :int)
+  (name-format :int)
+  (per-vertex-colors :int))
+
+(defcfun (%read-obj "read_obj") :pointer
+  (filename :string)
+  (coordinate-system :int))
+
+;; --- VRML Export ---
+
+(defcfun (%write-vrml "write_vrml") :int
+  (shape :pointer)
+  (filename :string)
+  (deflection :double))
+
+;; --- glTF I/O ---
+
+(defcfun (%write-gltf "write_gltf") :int
+  (shape :pointer)
+  (filename :string)
+  (coordinate-system :int)
+  (per-vertex-colors :int))
+
+(defcfun (%read-gltf "read_gltf") :pointer
+  (filename :string)
+  (coordinate-system :int))
+
+;; --- PLY Export ---
+
+(defcfun (%write-ply "write_ply") :int
+  (shape :pointer)
+  (filename :string)
+  (coordinate-system :int)
+  (per-vertex-colors :int))
+
 (defcfun (%get-error-code "get_error_code") :int)
 
 (defcfun (%get-error-message "get_error_message") :string)

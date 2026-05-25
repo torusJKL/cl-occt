@@ -659,6 +659,124 @@
     (assert-true (typep result 'assembly))
     (assert-true (> (length (assembly-children result)) 0))))
 
+;; --- IGES I/O ---
+
+(deftest write-iges-valid
+  (let ((result (write-iges (make-box 10 20 30) "/tmp/clocct-test-box.igs")))
+    (assert-true result "write-iges should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.igs") "IGES file should exist"))
+
+(deftest write-iges-nil
+  (assert-nil (write-iges nil "/tmp/clocct-test-nil.igs")))
+
+(deftest read-iges-roundtrip
+  (write-iges (make-box 10 20 30) "/tmp/clocct-test-iges-rt.igs")
+  (let ((shape (read-iges "/tmp/clocct-test-iges-rt.igs")))
+    (assert-shape shape "read-iges should return a shape")))
+
+(deftest read-iges-nonexistent
+  (assert-nil (read-iges "/tmp/clocct-nonexistent.igs")))
+
+(deftest write-iges-assembly-valid
+  (let ((part (make-part (make-box 10 20 30) :name "box" :color '(:generic 1 0 0 1))))
+    (assert-true (write-iges-assembly part "/tmp/clocct-test-iges-assy.igs"))))
+
+(deftest write-iges-assembly-nil
+  (assert-nil (write-iges-assembly nil "/tmp/clocct-test-nil-assy.igs")))
+
+(deftest read-iges-assembly-nonexistent
+  (assert-nil (read-iges-assembly "/tmp/clocct-nonexistent.igs")))
+
+(deftest read-iges-assembly-roundtrip
+  (let* ((part (make-part (make-box 10 20 30) :name "box" :color '(:generic 1.0 0.0 0.0 1.0)))
+         (_ (write-iges-assembly part "/tmp/clocct-test-iges-rt.igs"))
+         (result (read-iges-assembly "/tmp/clocct-test-iges-rt.igs")))
+    (assert-true (typep result 'assembly))
+    (let ((child (first (assembly-children result))))
+      (assert-shape (assembly-shape child))
+      (assert-true (string= (assembly-name child) "box")))))
+
+;; --- OBJ I/O ---
+
+(deftest write-obj-valid
+  (let ((result (write-obj (make-box 10 20 30) "/tmp/clocct-test-box.obj")))
+    (assert-true result "write-obj should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.obj") "OBJ file should exist"))
+
+(deftest write-obj-nil
+  (assert-nil (write-obj nil "/tmp/clocct-test-nil.obj")))
+
+(deftest read-obj-roundtrip
+  (write-obj (make-box 10 20 30) "/tmp/clocct-test-obj-rt.obj")
+  (let ((shape (read-obj "/tmp/clocct-test-obj-rt.obj")))
+    (assert-shape shape "read-obj should return a shape")))
+
+(deftest read-obj-nonexistent
+  (assert-nil (read-obj "/tmp/clocct-nonexistent.obj")))
+
+(deftest write-obj-with-coordsys
+  (let ((result (write-obj (make-box 5 5 5) "/tmp/clocct-test-obj-zup.obj" :coordinate-system :zup)))
+    (assert-true result "write-obj with :zup should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-obj-zup.obj")))
+
+(deftest write-obj-per-vertex-colors
+  (let ((result (write-obj (make-box 5 5 5) "/tmp/clocct-test-obj-color.obj" :per-vertex-colors t)))
+    (assert-true result "write-obj with per-vertex colors should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-obj-color.obj")))
+
+;; --- VRML Export ---
+
+(deftest write-vrml-valid
+  (let ((result (write-vrml (make-box 10 20 30) "/tmp/clocct-test-box.wrl")))
+    (assert-true result "write-vrml should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.wrl") "VRML file should exist"))
+
+(deftest write-vrml-nil
+  (assert-nil (write-vrml nil "/tmp/clocct-test-nil.wrl")))
+
+(deftest write-vrml-deflection
+  (let ((result (write-vrml (make-sphere 10) "/tmp/clocct-test-sphere.wrl" :deflection 0.05)))
+    (assert-true result "write-vrml with custom deflection should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-sphere.wrl") "VRML file should exist"))
+
+;; --- glTF I/O ---
+
+(deftest write-gltf-valid
+  (let ((result (write-gltf (make-box 10 20 30) "/tmp/clocct-test-box.gltf")))
+    (assert-true result "write-gltf should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.gltf") "glTF file should exist"))
+
+(deftest write-gltf-nil
+  (assert-nil (write-gltf nil "/tmp/clocct-test-nil.gltf")))
+
+(deftest read-gltf-roundtrip
+  (write-gltf (make-box 10 20 30) "/tmp/clocct-test-gltf-rt.gltf")
+  (let ((shape (read-gltf "/tmp/clocct-test-gltf-rt.gltf")))
+    (assert-shape shape "read-gltf should return a shape")))
+
+(deftest read-gltf-nonexistent
+  (assert-nil (read-gltf "/tmp/clocct-nonexistent.gltf")))
+
+(deftest write-gltf-with-coordsys
+  (let ((result (write-gltf (make-box 5 5 5) "/tmp/clocct-test-gltf-yup.gltf" :coordinate-system :yup)))
+    (assert-true result "write-gltf with :yup should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-gltf-yup.gltf")))
+
+;; --- PLY Export ---
+
+(deftest write-ply-valid
+  (let ((result (write-ply (make-box 10 20 30) "/tmp/clocct-test-box.ply")))
+    (assert-true result "write-ply should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-box.ply") "PLY file should exist"))
+
+(deftest write-ply-nil
+  (assert-nil (write-ply nil "/tmp/clocct-test-nil.ply")))
+
+(deftest write-ply-with-coordsys
+  (let ((result (write-ply (make-box 5 5 5) "/tmp/clocct-test-ply-zup.ply" :coordinate-system :zup)))
+    (assert-true result "write-ply with :zup should return t"))
+  (assert-true (probe-file "/tmp/clocct-test-ply-zup.ply")))
+
 ;; --- Assembly Tree ---
 
 (deftest make-part-valid
@@ -2819,7 +2937,19 @@
                assembly-color-components assembly-no-color assembly-no-name
                write-step-assembly-valid write-step-assembly-nil
                read-step-assembly-nonexistent read-step-assembly-roundtrip
-               read-step-assembly-multi-part read-step-assembly-nested
+                read-step-assembly-multi-part read-step-assembly-nested
+                write-iges-valid write-iges-nil
+                read-iges-roundtrip read-iges-nonexistent
+                write-iges-assembly-valid write-iges-assembly-nil
+                read-iges-assembly-nonexistent read-iges-assembly-roundtrip
+                write-obj-valid write-obj-nil
+                read-obj-roundtrip read-obj-nonexistent
+                write-obj-with-coordsys write-obj-per-vertex-colors
+                write-vrml-valid write-vrml-nil write-vrml-deflection
+                write-gltf-valid write-gltf-nil
+                read-gltf-roundtrip read-gltf-nonexistent
+                write-gltf-with-coordsys
+                write-ply-valid write-ply-nil write-ply-with-coordsys
 
                ais-create-shape-from-box ais-create-shape-nil-shape
                ais-free-on-nil-safe ais-create-shape-nil-input

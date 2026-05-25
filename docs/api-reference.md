@@ -310,6 +310,43 @@ Original shape is unchanged. Nil in → nil out.
 | `(write-stl shape path &key deflection)` | Export to binary STL file (deflection=0.1) |
 | `(read-stl path)` | Import from STL file |
 
+### IGES I/O
+
+| Function | Description |
+|----------|-------------|
+| `(write-iges shape path)` | Export to IGES file |
+| `(read-iges path)` | Import from IGES file |
+| `(write-iges-assembly root path)` | Export assembly tree to IGES preserving colors |
+| `(read-iges-assembly path)` | Read IGES file with assembly structure |
+
+### OBJ Mesh I/O
+
+| Function | Description |
+|----------|-------------|
+| `(write-obj shape path &key coordinate-system name-format per-vertex-colors)` | Export to OBJ file |
+| `(read-obj path &key coordinate-system)` | Import from OBJ file |
+
+### VRML Export
+
+| Function | Description |
+|----------|-------------|
+| `(write-vrml shape path &key deflection)` | Export to VRML file (deflection=0.1) |
+
+### PLY Export
+
+| Function | Description |
+|----------|-------------|
+| `(write-ply shape path &key coordinate-system per-vertex-colors)` | Export to PLY file |
+
+### glTF I/O
+
+Requires OCCT built with `-DUSE_RAPIDJSON=ON -DBUILD_MODULE_DEGLTF=ON` and `librapidjson-dev` installed.
+
+| Function | Description |
+|----------|-------------|
+| `(write-gltf shape path &key coordinate-system per-vertex-colors)` | Export to glTF file (coordinate-system: `:zup` or `:yup`) |
+| `(read-gltf path &key coordinate-system)` | Import from glTF file |
+
 ### Compounds
 
 | Function | Description |
