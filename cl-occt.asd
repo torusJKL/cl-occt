@@ -69,7 +69,8 @@
               (:file "viewer-ais-types")
               (:file "animation")
               (:file "texture")
-              (:file "materials")))))))
+              (:file "materials")
+              (:file "selection")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"

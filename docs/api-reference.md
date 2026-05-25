@@ -934,6 +934,33 @@ Selection schemes (`scheme` parameter above): `:replace` (default), `:add`, `:re
 
 Status return values from `ais-move-to` can be decoded with `*status-of-detection-map*`. Status from `ais-select-detected`/`ais-select-point` with `*status-of-pick-map*`.
 
+#### Selection Filters
+
+| Function | Description |
+|----------|-------------|
+| `(make-edge-filter)` | Create a filter that restricts selection to edges only. Returns `edge-filter` or nil |
+| `(make-face-filter)` | Create a filter that restricts selection to faces only. Returns `face-filter` or nil |
+| `(make-shape-type-filter type)` | Create a filter for a specific shape type (`:edge`, `:face`, `:wire`, `:vertex`, `:shell`, `:solid`). Returns `shape-type-filter` or nil |
+| `(ais-add-filter ctx filter)` | Add a selection filter to the context. Returns t or nil |
+| `(ais-remove-filter ctx filter)` | Remove a selection filter from the context. Returns t or nil |
+| `(set-filter-edge-type filter edge-type)` | Set edge type (`:any-edge`, `:line`, `:circle`). Returns t or nil |
+| `(set-filter-face-type filter face-type)` | Set face type (`:any-face`, `:plane`, `:cylinder`, `:sphere`, `:torus`, `:revol`, `:cone`). Returns t or nil |
+| `(free-filter filter)` | Explicitly free a filter's C handle (safe on nil) |
+
+Predicates: `selection-filter-p`, `edge-filter-p`, `face-filter-p`, `shape-type-filter-p`. Type keywords are mapped via `*shape-type-map*`, `*edge-type-map*`, `*face-type-map*`.
+
+#### Entity Owners
+
+| Function | Description |
+|----------|-------------|
+| `(ais-selected-owner ctx)` | Return the current selected `entity-owner` during iteration, or nil |
+| `(owner-priority owner)` | Return selection priority as integer, or nil |
+| `(brep-owner-shape owner)` | Extract `TopoDS_Shape` from a `brep-owner`. Returns `shape` or nil |
+| `(owner-location owner)` | Return 4×4 transformation matrix as `#(16 double-floats)` or nil for identity |
+| `(free-owner owner)` | Explicitly free an owner's C handle (safe on nil) |
+
+Predicates: `entity-owner-p`, `brep-owner-p`. When iterating over selected AIS shapes, `ais-selected-owner` returns a `brep-owner` subclass of `entity-owner`.
+
 ### Lighting
 
 | Function | Description |

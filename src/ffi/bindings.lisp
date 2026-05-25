@@ -701,6 +701,50 @@
 (defcfun (%ais-context-set-to-hilight-selected "ais_context_set_to_hilight_selected") :void
   (ctx :pointer) (on :int))
 
+;; --- Selection Filters (StdSelect) ---
+
+(defcfun (%make-edge-filter "make_edge_filter") :pointer)
+
+(defcfun (%make-face-filter "make_face_filter") :pointer)
+
+(defcfun (%make-shape-type-filter "make_shape_type_filter") :pointer
+  (shape-type :int))
+
+(defcfun (%ais-context-add-filter "ais_context_add_filter") :void
+  (ctx :pointer) (filter :pointer))
+
+(defcfun (%ais-context-remove-filter "ais_context_remove_filter") :void
+  (ctx :pointer) (filter :pointer))
+
+(defcfun (%filter-set-edge-type "filter_set_edge_type") :void
+  (filter :pointer) (edge-type :int))
+
+(defcfun (%filter-set-face-type "filter_set_face_type") :void
+  (filter :pointer) (face-type :int))
+
+(defcfun (%free-filter "free_filter") :void
+  (filter :pointer))
+
+;; --- Entity Owners (SelectMgr / StdSelect) ---
+
+(defcfun (%ais-context-selected-owner "ais_context_selected_owner") :pointer
+  (ctx :pointer))
+
+(defcfun (%owner-priority "owner_priority") :int
+  (owner :pointer))
+
+(defcfun (%brep-owner-has-shape "owner_has_shape") :int
+  (owner :pointer))
+
+(defcfun (%brep-owner-shape "brep_owner_shape") :pointer
+  (owner :pointer))
+
+(defcfun (%owner-location "owner_location") :int
+  (owner :pointer) (matrix :pointer))
+
+(defcfun (%free-owner "free_owner") :void
+  (owner :pointer))
+
 (defcfun (%ais-set-tessellation "ais_set_tessellation") :void
   (obj :pointer) (deflection :double) (deviation :double))
 

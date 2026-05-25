@@ -203,6 +203,13 @@
 #include <BRepClass_FaceClassifier.hxx>
 #include <Standard_ErrorHandler.hxx>
 
+#include <StdSelect_EdgeFilter.hxx>
+#include <StdSelect_FaceFilter.hxx>
+#include <StdSelect_ShapeTypeFilter.hxx>
+#include <StdSelect_BRepOwner.hxx>
+#include <SelectMgr_EntityOwner.hxx>
+#include <SelectMgr_Filter.hxx>
+
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <Poly_Triangulation.hxx>
 #include <TopExp_Explorer.hxx>
@@ -3300,6 +3307,187 @@ void ais_context_set_to_hilight_selected(void* ctx_ptr, int on) {
     } catch (Standard_Failure& e) {
         set_error(e.what());
     }
+}
+
+// --- Selection Filters (StdSelect) ---
+
+void* make_edge_filter(void) {
+    clear_error();
+    try {
+        Handle(SelectMgr_Filter)* h = new Handle(SelectMgr_Filter);
+        *h = new StdSelect_EdgeFilter(StdSelect_AnyEdge);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_face_filter(void) {
+    clear_error();
+    try {
+        Handle(SelectMgr_Filter)* h = new Handle(SelectMgr_Filter);
+        *h = new StdSelect_FaceFilter(StdSelect_AnyFace);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* make_shape_type_filter(int shape_type) {
+    clear_error();
+    try {
+        Handle(SelectMgr_Filter)* h = new Handle(SelectMgr_Filter);
+        *h = new StdSelect_ShapeTypeFilter(static_cast<TopAbs_ShapeEnum>(shape_type));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void filter_set_edge_type(void* filter_ptr, int edge_type) {
+    clear_error();
+    if (!filter_ptr) { set_error("null filter", 2); return; }
+    try {
+        auto* filter = static_cast<Handle(SelectMgr_Filter)*>(filter_ptr);
+        Handle(StdSelect_EdgeFilter) ef = Handle(StdSelect_EdgeFilter)::DownCast(*filter);
+        if (ef.IsNull()) { set_error("not an EdgeFilter", 2); return; }
+        ef->SetType(static_cast<StdSelect_TypeOfEdge>(edge_type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void filter_set_face_type(void* filter_ptr, int face_type) {
+    clear_error();
+    if (!filter_ptr) { set_error("null filter", 2); return; }
+    try {
+        auto* filter = static_cast<Handle(SelectMgr_Filter)*>(filter_ptr);
+        Handle(StdSelect_FaceFilter) ff = Handle(StdSelect_FaceFilter)::DownCast(*filter);
+        if (ff.IsNull()) { set_error("not a FaceFilter", 2); return; }
+        ff->SetType(static_cast<StdSelect_TypeOfFace>(face_type));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_add_filter(void* ctx_ptr, void* filter_ptr) {
+    clear_error();
+    if (!ctx_ptr || !filter_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* filter = static_cast<Handle(SelectMgr_Filter)*>(filter_ptr);
+        (*ctx)->AddFilter(*filter);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_context_remove_filter(void* ctx_ptr, void* filter_ptr) {
+    clear_error();
+    if (!ctx_ptr || !filter_ptr) { set_error("null argument", 2); return; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        auto* filter = static_cast<Handle(SelectMgr_Filter)*>(filter_ptr);
+        (*ctx)->RemoveFilter(*filter);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void free_filter(void* filter_ptr) {
+    clear_error();
+    if (!filter_ptr) { return; }
+    delete static_cast<Handle(SelectMgr_Filter)*>(filter_ptr);
+}
+
+// --- Entity Owners (SelectMgr / StdSelect) ---
+
+void* ais_context_selected_owner(void* ctx_ptr) {
+    clear_error();
+    if (!ctx_ptr) { set_error("null context", 2); return nullptr; }
+    try {
+        auto* ctx = static_cast<Handle(AIS_InteractiveContext)*>(ctx_ptr);
+        Handle(SelectMgr_EntityOwner)* h = new Handle(SelectMgr_EntityOwner);
+        *h = (*ctx)->SelectedOwner();
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int owner_priority(void* owner_ptr) {
+    clear_error();
+    if (!owner_ptr) { set_error("null owner", 2); return 0; }
+    try {
+        auto* owner = static_cast<Handle(SelectMgr_EntityOwner)*>(owner_ptr);
+        return (*owner)->Priority();
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+int owner_has_shape(void* owner_ptr) {
+    clear_error();
+    if (!owner_ptr) { set_error("null owner", 2); return 0; }
+    try {
+        auto* owner = static_cast<Handle(SelectMgr_EntityOwner)*>(owner_ptr);
+        Handle(StdSelect_BRepOwner) brep = Handle(StdSelect_BRepOwner)::DownCast(*owner);
+        if (brep.IsNull()) { return 0; }
+        return brep->HasShape() ? 1 : 0;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void* brep_owner_shape(void* owner_ptr) {
+    clear_error();
+    if (!owner_ptr) { set_error("null owner", 2); return nullptr; }
+    try {
+        auto* owner = static_cast<Handle(SelectMgr_EntityOwner)*>(owner_ptr);
+        Handle(StdSelect_BRepOwner) brep = Handle(StdSelect_BRepOwner)::DownCast(*owner);
+        if (brep.IsNull()) { return nullptr; }
+        const TopoDS_Shape& s = brep->Shape();
+        if (s.IsNull()) { return nullptr; }
+        return new TopoDS_Shape(s);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int owner_location(void* owner_ptr, double* matrix) {
+    clear_error();
+    if (!owner_ptr || !matrix) { set_error("null argument", 2); return 0; }
+    try {
+        auto* owner = static_cast<Handle(SelectMgr_EntityOwner)*>(owner_ptr);
+        Handle(StdSelect_BRepOwner) brep = Handle(StdSelect_BRepOwner)::DownCast(*owner);
+        if (brep.IsNull()) { return 0; }
+        TopLoc_Location tl = brep->Location();
+        if (tl.IsIdentity()) { return 0; }
+        gp_Trsf loc = tl.Transformation();
+        gp_Mat rot = loc.VectorialPart();
+        gp_XYZ trans = loc.TranslationPart();
+        matrix[0]  = rot(1,1); matrix[1]  = rot(1,2); matrix[2]  = rot(1,3); matrix[3]  = 0;
+        matrix[4]  = rot(2,1); matrix[5]  = rot(2,2); matrix[6]  = rot(2,3); matrix[7]  = 0;
+        matrix[8]  = rot(3,1); matrix[9]  = rot(3,2); matrix[10] = rot(3,3); matrix[11] = 0;
+        matrix[12] = trans.X(); matrix[13] = trans.Y(); matrix[14] = trans.Z(); matrix[15] = 1;
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void free_owner(void* owner_ptr) {
+    clear_error();
+    if (!owner_ptr) { return; }
+    delete static_cast<Handle(SelectMgr_EntityOwner)*>(owner_ptr);
 }
 
 void ais_set_tessellation(void* obj_ptr, double deflection, double deviation) {

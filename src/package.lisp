@@ -233,6 +233,20 @@
         :%ais-context-set-pixel-tolerance
         :%ais-context-set-automatic-hilight
         :%ais-context-set-to-hilight-selected
+        :%ais-context-add-filter
+        :%ais-context-remove-filter
+        :%ais-context-selected-owner
+        :%make-edge-filter
+        :%make-face-filter
+        :%make-shape-type-filter
+        :%filter-set-edge-type
+        :%filter-set-face-type
+        :%free-filter
+        :%owner-priority
+        :%brep-owner-has-shape
+        :%brep-owner-shape
+        :%owner-location
+        :%free-owner
         :%ais-set-tessellation
          :%ais-create-trihedron
          :%ais-trihedron-set-datum-mode
@@ -699,6 +713,32 @@
         :*selection-scheme-map*
         :*status-of-detection-map*
         :*status-of-pick-map*
+        :entity-owner
+        :entity-owner-p
+        :brep-owner
+        :brep-owner-p
+        :selection-filter
+        :selection-filter-p
+        :edge-filter
+        :edge-filter-p
+        :face-filter
+        :face-filter-p
+        :shape-type-filter
+        :shape-type-filter-p
+        :make-edge-filter
+        :make-face-filter
+        :make-shape-type-filter
+        :ais-add-filter
+        :ais-remove-filter
+        :set-filter-edge-type
+        :set-filter-face-type
+        :ais-selected-owner
+        :owner-priority
+        :brep-owner-shape
+        :owner-location
+        :free-filter
+        :free-owner
+        :*shape-type-map*
         :ais-set-tessellation
         :viewer-light
         :viewer-light-p

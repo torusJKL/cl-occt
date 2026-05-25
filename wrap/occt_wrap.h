@@ -414,6 +414,26 @@ void   ais_context_set_pixel_tolerance(void* ctx, int pixels);
 void   ais_context_set_automatic_hilight(void* ctx, int on);
 void   ais_context_set_to_hilight_selected(void* ctx, int on);
 
+// --- Selection Filters (StdSelect) ---
+
+void*  make_edge_filter(void);
+void*  make_face_filter(void);
+void*  make_shape_type_filter(int shape_type);
+void   filter_set_edge_type(void* filter, int edge_type);
+void   filter_set_face_type(void* filter, int face_type);
+void   ais_context_add_filter(void* ctx, void* filter);
+void   ais_context_remove_filter(void* ctx, void* filter);
+void   free_filter(void* filter);
+
+// --- Entity Owners (SelectMgr / StdSelect) ---
+
+void*  ais_context_selected_owner(void* ctx);
+int    owner_priority(void* owner);
+void*  brep_owner_shape(void* owner);
+int    owner_has_shape(void* owner);
+int    owner_location(void* owner, double* matrix);
+void   free_owner(void* owner);
+
 // --- 3D Curves ---
 
 typedef void* occt_curve;

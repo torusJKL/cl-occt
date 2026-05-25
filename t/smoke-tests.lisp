@@ -1229,6 +1229,102 @@
       (assert-nil (ais-hilight-selected ctx) "ais-hilight-selected should work")
       (assert-nil (ais-unhilight-selected ctx) "ais-unhilight-selected should work"))))
 
+;; --- Selection Filter Tests ---
+
+(deftest make-edge-filter-valid
+  (let ((f (make-edge-filter)))
+    (assert-true (edge-filter-p f) "make-edge-filter should return edge-filter")
+    (assert-true (selection-filter-p f) "edge-filter should also be a selection-filter")))
+
+(deftest make-face-filter-valid
+  (let ((f (make-face-filter)))
+    (assert-true (face-filter-p f) "make-face-filter should return face-filter")
+    (assert-true (selection-filter-p f) "face-filter should also be a selection-filter")))
+
+(deftest make-shape-type-filter-valid
+  (let ((f (make-shape-type-filter :edge)))
+    (assert-true (shape-type-filter-p f) "make-shape-type-filter should return shape-type-filter")
+    (assert-true (selection-filter-p f) "shape-type-filter should also be a selection-filter")))
+
+(deftest filter-predicates-nil-on-null
+  (assert-nil (edge-filter-p nil) "edge-filter-p should return nil on nil")
+  (assert-nil (face-filter-p nil) "face-filter-p should return nil on nil")
+  (assert-nil (shape-type-filter-p nil) "shape-type-filter-p should return nil on nil")
+  (assert-nil (selection-filter-p nil) "selection-filter-p should return nil on nil"))
+
+(deftest filter-add-to-context
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (f (make-edge-filter)))
+      (assert-true (ais-add-filter ctx f) "ais-add-filter should return t")
+      (assert-true (ais-remove-filter ctx f) "ais-remove-filter should return t"))))
+
+(deftest filter-set-edge-type-valid
+  (let ((f (make-edge-filter)))
+    (assert-true (set-filter-edge-type f :line) "set-filter-edge-type :line should work")
+    (assert-true (set-filter-edge-type f :circle) "set-filter-edge-type :circle should work")
+    (assert-true (set-filter-edge-type f :any-edge) "set-filter-edge-type :any-edge should work")))
+
+(deftest filter-set-face-type-valid
+  (let ((f (make-face-filter)))
+    (assert-true (set-filter-face-type f :plane) "set-filter-face-type :plane should work")
+    (assert-true (set-filter-face-type f :cylinder) "set-filter-face-type :cylinder should work")
+    (assert-true (set-filter-face-type f :any-face) "set-filter-face-type :any-face should work")))
+
+(deftest filter-free-explicit
+  (let ((f (make-edge-filter)))
+    (assert-true (cffi:pointerp (%ptr f)) "filter should have valid pointer before free")
+    (free-filter f)
+    (assert-true (cffi:null-pointer-p (%ptr f)) "filter should have null pointer after free")))
+
+;; --- Entity Owner Tests ---
+
+(deftest entity-owner-selected-owner
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-selected ctx obj)
+      (ais-init-selected ctx)
+      (when (ais-more-selected ctx)
+        (let ((owner (ais-selected-owner ctx)))
+          (assert-true (entity-owner-p owner) "selected-owner should return entity-owner"))))))
+
+(deftest entity-owner-priority-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-selected ctx obj)
+      (ais-init-selected ctx)
+      (when (ais-more-selected ctx)
+        (let ((owner (ais-selected-owner ctx)))
+          (assert-true (integerp (owner-priority owner))
+                       "owner-priority should return integer"))))))
+
+(deftest brep-owner-shape-extraction
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (shape (make-box 10 20 30))
+           (obj (ais-display ctx shape)))
+      (ais-set-selected ctx obj)
+      (ais-init-selected ctx)
+      (when (ais-more-selected ctx)
+        (let ((owner (ais-selected-owner ctx)))
+          (assert-true (brep-owner-p owner) "owner should be brep-owner for shape")
+          (assert-true (shape-p (brep-owner-shape owner))
+                       "brep-owner-shape should return a shape"))))))
+
+(deftest owner-free-explicit
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (obj (ais-display ctx (make-box 10 20 30))))
+      (ais-set-selected ctx obj)
+      (ais-init-selected ctx)
+      (when (ais-more-selected ctx)
+        (let ((owner (ais-selected-owner ctx)))
+          (assert-true (cffi:pointerp (%ptr owner)) "owner should have valid pointer before free")
+          (free-owner owner)
+          (assert-true (cffi:null-pointer-p (%ptr owner)) "owner should have null pointer after free"))))))
+
 ;; --- Trihedron Extended ---
 
 (deftest set-trihedron-axis-colors-red-blue-green
@@ -3665,9 +3761,21 @@
                selection-clear-selected
                selection-is-selected
                selection-add-or-remove
-               selection-selected-objects
-               selection-selected-shapes
-               selection-hilight
+                selection-selected-objects
+                selection-selected-shapes
+                selection-hilight
+                make-edge-filter-valid
+                make-face-filter-valid
+                make-shape-type-filter-valid
+                filter-predicates-nil-on-null
+                filter-add-to-context
+                filter-set-edge-type-valid
+                filter-set-face-type-valid
+                filter-free-explicit
+                entity-owner-selected-owner
+                entity-owner-priority-valid
+                brep-owner-shape-extraction
+                owner-free-explicit
                 set-text-label-align-convenience
                 set-transparent-shading-alias
                 make-length-dimension-2p make-angle-dimension-3p
