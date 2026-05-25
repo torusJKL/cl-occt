@@ -602,7 +602,37 @@
            :%graphic3d-rendering-params-set-reflections
            :%graphic3d-rendering-params-get-reflections
            :%graphic3d-rendering-params-set-antialiasing
-           :%graphic3d-rendering-params-get-antialiasing
+            :%graphic3d-rendering-params-get-antialiasing
+            ;; Prs3d_Tool*
+            :%prs3d-tool-cylinder
+            :%prs3d-tool-sphere
+            :%prs3d-tool-torus
+            :%prs3d-tool-disk
+            :%prs3d-triangulation-free
+            :%prs3d-triangulation-vertex-count
+            :%prs3d-triangulation-triangle-count
+            :%prs3d-triangulation-has-normals
+            :%prs3d-triangulation-get-vertices
+            :%prs3d-triangulation-get-normals
+            :%prs3d-triangulation-get-triangles
+            :%prs3d-arrow
+            :%prs3d-bndbox
+            :%prs3d-segments-vertex-count
+            :%prs3d-segments-edge-count
+            :%prs3d-segments-free
+            :%prs3d-segments-get-vertices
+            :%prs3d-segments-get-edges
+            :%shape-bounding-box
+            ;; math_*
+            :%math-bfgs-minimize
+            :%math-frpr-minimize
+            :%math-pso-minimize
+            :%math-globoptmin-minimize
+            ;; IntTools
+            :%inttools-edge-edge
+            :%inttools-edge-face
+            :%inttools-face-face
+            :%inttools-free-curve
 ))
 
 (defpackage :cl-occt
@@ -1249,10 +1279,42 @@
                      :ray-traced-reflections-p
                      :set-ray-traced-antialiasing
                      :ray-traced-antialiasing-p
-                     ;; Aspect enum maps
-                     :*interior-style-map*
-                     :*aspect-line-type-map*
-                     :*aspect-marker-type-map*
-                     :*text-style-map*
-                     :*rendering-method-map*
-                     ))
+                      ;; Aspect enum maps
+                      :*interior-style-map*
+                      :*aspect-line-type-map*
+                      :*aspect-marker-type-map*
+                      :*text-style-map*
+                      :*rendering-method-map*
+                      ;; Prs3d Tools & Primitives
+                      :prs3d-triangulation
+                      :prs3d-triangulation-p
+                      :free-prs3d-triangulation
+                      :prs3d-triangulation-vertex-count
+                      :prs3d-triangulation-triangle-count
+                      :prs3d-triangulation-vertices
+                      :prs3d-triangulation-normals
+                      :prs3d-triangulation-triangles
+                      :make-prs3d-cylinder-mesh
+                      :make-prs3d-sphere-mesh
+                      :make-prs3d-torus-mesh
+                      :make-prs3d-disk-mesh
+                      :make-prs3d-arrow
+                      :prs3d-segments
+                      :prs3d-segments-p
+                      :free-prs3d-segments
+                      :prs3d-segments-vertex-count
+                      :prs3d-segments-edge-count
+                      :prs3d-segments-vertices
+                      :prs3d-segments-edges
+                      :make-prs3d-bndbox
+                      :shape-bounding-box-display
+                      ;; Math Optimization
+                      :bfgs-minimize
+                      :frpr-minimize
+                      :pso-minimize
+                      :globoptmin-minimize
+                      ;; IntTools Intersection
+                      :intersect-edge-edge
+                      :intersect-edge-face
+                      :intersect-face-face
+                      ))

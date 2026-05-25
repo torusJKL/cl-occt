@@ -923,6 +923,74 @@ int   graphic3d_rendering_params_get_reflections(void* p);
 void  graphic3d_rendering_params_set_antialiasing(void* p, int on);
 int   graphic3d_rendering_params_get_antialiasing(void* p);
 
+// --- Prs3d_Tool* (Parametric Triangulation Generators) ---
+
+void* prs3d_tool_cylinder(double radius, double height, int n_slices, int n_stacks);
+void* prs3d_tool_sphere(double radius, int n_slices, int n_stacks);
+void* prs3d_tool_torus(double major_radius, double minor_radius, int n_slices, int n_stacks);
+void* prs3d_tool_disk(double inner_radius, double outer_radius, int n_slices, int n_stacks);
+void  prs3d_triangulation_free(void* handle);
+int   prs3d_triangulation_vertex_count(void* handle);
+int   prs3d_triangulation_triangle_count(void* handle);
+int   prs3d_triangulation_has_normals(void* handle);
+void  prs3d_triangulation_get_vertices(void* handle, double* out, int max_count);
+void  prs3d_triangulation_get_normals(void* handle, double* out, int max_count);
+void  prs3d_triangulation_get_triangles(void* handle, int* out, int max_count);
+
+// --- Prs3d_Arrow, Prs3d_Text, Prs3d_BndBox ---
+
+void* prs3d_arrow(double sx, double sy, double sz,
+                  double ex, double ey, double ez,
+                  double shaft_radius, double cone_length,
+                  double cone_radius, int n_facets);
+void* prs3d_bndbox(double xmin, double ymin, double zmin,
+                   double xmax, double ymax, double zmax);
+int   prs3d_segments_vertex_count(void* handle);
+int   prs3d_segments_edge_count(void* handle);
+void  prs3d_segments_free(void* handle);
+void  prs3d_segments_get_vertices(void* handle, double* out, int max_count);
+void  prs3d_segments_get_edges(void* handle, int* out, int max_count);
+int   shape_bounding_box(occt_shape shape,
+                         double* xmin, double* ymin, double* zmin,
+                         double* xmax, double* ymax, double* zmax);
+
+// --- math_BFGS, math_FRPR, math_PSO, math_GlobOptMin ---
+
+int math_bfgs_minimize(double (*fn)(int, const double*), int n_vars,
+                       double* initial, double tolerance, int max_iter,
+                       double* out_minimizer, double* out_min_value,
+                       int* out_iterations);
+int math_frpr_minimize(double (*fn)(int, const double*), int n_vars,
+                       double* initial, double tolerance, int max_iter,
+                       double* out_minimizer, double* out_min_value,
+                       int* out_iterations);
+int math_pso_minimize(double (*fn)(int, const double*), int n_vars,
+                      double* lower, double* upper,
+                      double* initial, int n_particles, int max_iter,
+                      double tolerance,
+                      double* out_minimizer, double* out_min_value,
+                      int* out_iterations);
+int math_globoptmin_minimize(double (*fn)(int, const double*), int n_vars,
+                             double* lower, double* upper,
+                             double tolerance, int max_iter,
+                             double* out_minimizer, double* out_min_value,
+                             int* out_iterations);
+
+// --- IntTools_EdgeEdge, IntTools_EdgeFace, IntTools_FaceFace ---
+
+int  inttools_edge_edge(void* edge1, void* edge2,
+                        double* out_points, int max_points,
+                        int* out_count);
+int  inttools_edge_face(void* edge, void* face,
+                        double* out_points, int max_points,
+                        int* out_count);
+int  inttools_face_face(void* face1, void* face2,
+                        double* out_points, int max_points,
+                        int* out_point_count,
+                        void** out_curves, int max_curves,
+                        int* out_curve_count);
+void inttools_free_curve(void* curve);
+
 #ifdef __cplusplus
 }
 #endif

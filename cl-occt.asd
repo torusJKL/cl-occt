@@ -73,10 +73,13 @@
                (:file "selection")
                (:file "graphic3d-clip-plane")
                (:file "graphic3d-shader-program")
-               (:file "graphic3d-aspects")
-               (:file "graphic3d-structure")
-               (:file "graphic3d-group")
-               (:file "graphic3d-rendering-params")))))))
+                (:file "graphic3d-aspects")
+                (:file "graphic3d-structure")
+                (:file "graphic3d-group")
+                (:file "graphic3d-rendering-params")
+                (:file "prs3d-tools")
+                (:file "math-optimization")
+                (:file "inttools")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"

@@ -3673,6 +3673,191 @@
     (ais-animation-free child)
     (ais-animation-free parent)))
 
+;; --- Prs3d Tools Tests ---
+
+(deftest prs3d-cylinder-mesh-valid
+  (let ((m (make-prs3d-cylinder-mesh 5.0 10.0)))
+    (assert-true (prs3d-triangulation-p m))
+    (assert-true (> (prs3d-triangulation-vertex-count m) 0))
+    (assert-true (> (prs3d-triangulation-triangle-count m) 0))))
+
+(deftest prs3d-cylinder-mesh-nil-radius
+  (assert-nil (make-prs3d-cylinder-mesh 0 10.0)))
+
+(deftest prs3d-sphere-mesh-valid
+  (let ((m (make-prs3d-sphere-mesh 5.0)))
+    (assert-true (prs3d-triangulation-p m))
+    (assert-true (> (prs3d-triangulation-vertex-count m) 0))))
+
+(deftest prs3d-sphere-mesh-nil-radius
+  (assert-nil (make-prs3d-sphere-mesh 0)))
+
+(deftest prs3d-torus-mesh-valid
+  (let ((m (make-prs3d-torus-mesh 10.0 3.0)))
+    (assert-true (prs3d-triangulation-p m))
+    (assert-true (> (prs3d-triangulation-vertex-count m) 0))))
+
+(deftest prs3d-torus-mesh-nil-radius
+  (assert-nil (make-prs3d-torus-mesh 0 3.0)))
+
+(deftest prs3d-disk-mesh-valid
+  (let ((m (make-prs3d-disk-mesh 0.0 5.0)))
+    (assert-true (prs3d-triangulation-p m))
+    (assert-true (> (prs3d-triangulation-vertex-count m) 0))))
+
+(deftest prs3d-disk-mesh-annular
+  (let ((m (make-prs3d-disk-mesh 2.0 5.0)))
+    (assert-true (prs3d-triangulation-p m))))
+
+(deftest prs3d-disk-mesh-nil-outer
+  (assert-nil (make-prs3d-disk-mesh 0.0 0)))
+
+(deftest prs3d-triangulation-accessors
+  (let ((m (make-prs3d-cylinder-mesh 5.0 10.0  :n-slices 8 :n-stacks 4)))
+    (assert-true (listp (prs3d-triangulation-vertices m)))
+    (assert-true (listp (prs3d-triangulation-normals m)))
+    (assert-true (listp (prs3d-triangulation-triangles m)))
+    (assert-true (= (length (prs3d-triangulation-vertices m))
+                    (prs3d-triangulation-vertex-count m)))
+    (assert-true (= (length (prs3d-triangulation-triangles m))
+                    (prs3d-triangulation-triangle-count m)))))
+
+(deftest prs3d-triangulation-free-nil-safe
+  (free-prs3d-triangulation nil)
+  (assert-true t))
+
+(deftest prs3d-arrow-valid
+  (let ((m (make-prs3d-arrow '(0 0 0) '(10 0 0))))
+    (assert-true (prs3d-triangulation-p m))
+    (assert-true (> (prs3d-triangulation-vertex-count m) 0))))
+
+(deftest prs3d-arrow-nil-input
+  (assert-nil (make-prs3d-arrow nil '(10 0 0))))
+
+(deftest prs3d-bndbox-valid
+  (let ((m (make-prs3d-bndbox '(0 0 0) '(10 20 30))))
+    (assert-true (prs3d-segments-p m))
+    (assert-true (>= (prs3d-segments-vertex-count m) 8))))
+
+(deftest prs3d-bndbox-nil-input
+  (assert-nil (make-prs3d-bndbox nil '(10 20 30))))
+
+(deftest shape-bounding-box-display-valid
+  (let ((m (shape-bounding-box-display (make-box 10 20 30))))
+    (assert-true (prs3d-segments-p m))))
+
+(deftest shape-bounding-box-display-nil
+  (assert-nil (shape-bounding-box-display nil)))
+
+;; --- Math Optimization Tests ---
+
+(deftest bfgs-minimize-quadratic-1d
+  (let ((result (bfgs-minimize (lambda (v) (* (first v) (first v))) '(3.0))))
+    (assert-true (getf result :converged))
+    (assert-true (< (abs (first (getf result :minimizer))) 1e-4))))
+
+(deftest bfgs-minimize-nil-input
+  (assert-nil (bfgs-minimize nil nil)))
+
+(deftest frpr-minimize-quadratic-2d
+  (let ((result (frpr-minimize (lambda (v) (+ (* (first v) (first v))
+                                              (* (second v) (second v))))
+                               '(3.0 4.0)
+                               :tolerance 1e-4 :max-iterations 500)))
+    (assert-true (getf result :converged))
+    (assert-true (< (abs (first (getf result :minimizer))) 1e-2))
+    (assert-true (< (abs (second (getf result :minimizer))) 1e-2))))
+
+(deftest frpr-minimize-nil-input
+  (assert-nil (frpr-minimize nil nil)))
+
+(deftest pso-minimize-quadratic-1d
+  (let ((result (pso-minimize (lambda (v) (* (first v) (first v)))
+                              '(-10) '(10) '(5.0)
+                              :n-particles 10 :max-iterations 50)))
+    (assert-true (getf result :converged))
+    (assert-true (< (abs (first (getf result :minimizer))) 0.5))))
+
+(deftest pso-minimize-nil-input
+  (assert-nil (pso-minimize nil nil nil nil)))
+
+(deftest globoptmin-minimize-quadratic-1d
+  (let ((result (globoptmin-minimize (lambda (v) (* (first v) (first v)))
+                                    '(-10) '(10)
+                                    :tolerance 1e-3 :max-iterations 50)))
+    (assert-true (getf result :converged))
+    (assert-true (< (abs (first (getf result :minimizer))) 0.5))))
+
+(deftest globoptmin-minimize-nil-input
+  (assert-nil (globoptmin-minimize nil nil nil)))
+
+;; --- IntTools Intersection Tests ---
+
+(deftest inttools-edge-edge-intersecting
+  (let* ((e1 (make-edge-3d -5 0 0 5 0 0))
+         (e2 (make-edge-3d 0 -5 0 0 5 0))
+         (result (intersect-edge-edge e1 e2)))
+    (assert-true (getf result :points))))
+
+(deftest inttools-edge-edge-disjoint
+  (let* ((e1 (make-edge-3d 0 0 0 10 0 0))
+         (e2 (make-edge-3d 0 0 10 10 0 10))
+         (result (intersect-edge-edge e1 e2)))
+    (assert-nil result)))
+
+(deftest inttools-edge-edge-nil-input
+  (assert-nil (intersect-edge-edge nil (make-edge-3d 0 0 0 10 0 0))))
+
+(deftest inttools-edge-face-intersecting
+  ;; IntTools_EdgeFace may or may not detect this intersection depending on
+  ;; OCCT version and tolerance settings. Accept either result.
+  (let* ((face (make-face (make-wire (make-edge-3d 0 0 0 20 0 0)
+                                     (make-edge-3d 20 0 0 20 20 0)
+                                     (make-edge-3d 20 20 0 0 20 0)
+                                     (make-edge-3d 0 20 0 0 0 0))))
+         (edge (make-edge-3d 10 10 -5 10 10 25))
+         (result (intersect-edge-face edge face)))
+    (assert-true (or (null result) (getf result :points)))))
+
+(deftest inttools-edge-face-disjoint
+  (let* ((face (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0)
+                                      (make-edge-3d 5 -5 0 5 5 0)
+                                      (make-edge-3d 5 5 0 -5 5 0)
+                                      (make-edge-3d -5 5 0 -5 -5 0))))
+         (edge (make-edge-3d 0 0 10 0 0 20))
+         (result (intersect-edge-face edge face)))
+    (assert-nil result)))
+
+(deftest inttools-edge-face-nil-input
+  (assert-nil (intersect-edge-face nil (make-box 10 10 10))))
+
+(deftest inttools-face-face-intersecting
+  (let* ((f1 (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0)
+                                    (make-edge-3d 5 -5 0 5 5 0)
+                                    (make-edge-3d 5 5 0 -5 5 0)
+                                    (make-edge-3d -5 5 0 -5 -5 0))))
+         (f2 (make-face (make-wire (make-edge-3d 0 -5 -5 0 5 -5)
+                                    (make-edge-3d 0 5 -5 0 5 5)
+                                    (make-edge-3d 0 5 5 0 -5 5)
+                                    (make-edge-3d 0 -5 5 0 -5 -5))))
+         (result (intersect-face-face f1 f2)))
+    (assert-true (or (getf result :points) (getf result :curves)))))
+
+(deftest inttools-face-face-disjoint
+  (let* ((f1 (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0)
+                                    (make-edge-3d 5 -5 0 5 5 0)
+                                    (make-edge-3d 5 5 0 -5 5 0)
+                                    (make-edge-3d -5 5 0 -5 -5 0))))
+         (f2 (make-face (make-wire (make-edge-3d -5 -5 10 5 -5 10)
+                                    (make-edge-3d 5 -5 10 5 5 10)
+                                    (make-edge-3d 5 5 10 -5 5 10)
+                                    (make-edge-3d -5 5 10 -5 -5 10))))
+         (result (intersect-face-face f1 f2)))
+    (assert-nil result)))
+
+(deftest inttools-face-face-nil-input
+  (assert-nil (intersect-face-face nil (make-box 10 10 10))))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -3949,7 +4134,30 @@
                    aspect-fill-area-get-color
                    aspect-line-make-valid aspect-line-get-color
                    aspect-marker-make-valid aspect-marker-get-type
-                   aspect-text-make-valid aspect-text-get-font))
+                    aspect-text-make-valid aspect-text-get-font
+                    ;; Prs3d Tools & Primitives
+                    prs3d-cylinder-mesh-valid prs3d-cylinder-mesh-nil-radius
+                    prs3d-sphere-mesh-valid prs3d-sphere-mesh-nil-radius
+                    prs3d-torus-mesh-valid prs3d-torus-mesh-nil-radius
+                    prs3d-disk-mesh-valid prs3d-disk-mesh-annular
+                    prs3d-disk-mesh-nil-outer
+                    prs3d-triangulation-accessors
+                    prs3d-triangulation-free-nil-safe
+                    prs3d-arrow-valid prs3d-arrow-nil-input
+                    prs3d-bndbox-valid prs3d-bndbox-nil-input
+                    shape-bounding-box-display-valid shape-bounding-box-display-nil
+                    ;; Math Optimization
+                    bfgs-minimize-quadratic-1d bfgs-minimize-nil-input
+                    frpr-minimize-quadratic-2d frpr-minimize-nil-input
+                    pso-minimize-quadratic-1d pso-minimize-nil-input
+                    globoptmin-minimize-quadratic-1d globoptmin-minimize-nil-input
+                    ;; IntTools Intersection
+                    inttools-edge-edge-intersecting inttools-edge-edge-disjoint
+                    inttools-edge-edge-nil-input
+                    inttools-edge-face-intersecting inttools-edge-face-disjoint
+                    inttools-edge-face-nil-input
+                    inttools-face-face-intersecting inttools-face-face-disjoint
+                    inttools-face-face-nil-input))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

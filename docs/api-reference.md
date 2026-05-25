@@ -1545,5 +1545,125 @@ All accept nil inputs and return nil gracefully.
 | `(ray-traced-reflections-p params)` | Check if ray-traced reflections are enabled. |
 | `(set-ray-traced-antialiasing params bool)` | Enable/disable ray-traced antialiasing. |
 | `(ray-traced-antialiasing-p params)` | Check if ray-traced antialiasing is enabled. |
+
+### Prs3d Tools
+
+Generate triangulated meshes for parametric surfaces using Prs3d_Tool* classes.
+
+| Function | Description |
+|----------|-------------|
+| `(make-prs3d-cylinder-mesh radius height &key n-slices n-stacks)` | Generate a triangulated cylinder mesh. Returns `prs3d-triangulation` or nil on invalid parameters. |
+| `(make-prs3d-sphere-mesh radius &key n-slices n-stacks)` | Generate a triangulated sphere mesh. Returns `prs3d-triangulation` or nil. |
+| `(make-prs3d-torus-mesh major-radius minor-radius &key n-slices n-stacks)` | Generate a triangulated torus mesh. Returns `prs3d-triangulation` or nil. |
+| `(make-prs3d-disk-mesh inner-radius outer-radius &key n-slices n-stacks)` | Generate a triangulated disk/annulus mesh. inner-radius=0 for filled disk. Returns `prs3d-triangulation` or nil. |
+
+The `prs3d-triangulation` class provides access to vertex data:
+
+| Function | Description |
+|----------|-------------|
+| `(prs3d-triangulation-vertex-count obj)` | Number of vertices |
+| `(prs3d-triangulation-triangle-count obj)` | Number of triangles |
+| `(prs3d-triangulation-vertices obj)` | List of `(x y z)` vertex positions |
+| `(prs3d-triangulation-normals obj)` | List of `(nx ny nz)` vertex normals |
+| `(prs3d-triangulation-triangles obj)` | List of `(i0 i1 i2)` 0-based triangle indices |
+| `(free-prs3d-triangulation obj)` | Explicitly free C handle (safe on nil) |
+| `(prs3d-triangulation-p obj)` | Predicate for `prs3d-triangulation` instances |
+
+```lisp
+;; Generate a fine cylinder mesh
+(let ((mesh (make-prs3d-cylinder-mesh 5.0 10.0 :n-slices 32 :n-stacks 16)))
+  (prs3d-triangulation-vertex-count mesh))   ; → 544
+  (prs3d-triangulation-triangle-count mesh)  ; → 1024
+  (prs3d-triangulation-vertices mesh)        ; → ((x y z) ...)
+```
+
+### Prs3d Primitives
+
+Compute display triangulations for arrows and bounding boxes.
+
+| Function | Description |
+|----------|-------------|
+| `(make-prs3d-arrow start end &key shaft-radius cone-length cone-radius n-facets)` | Create an arrow triangulation (shaft + cone head) via Prs3d_Arrow::DrawShaded. `start` and `end` are `(x y z)` points. Returns `prs3d-triangulation` or nil. |
+| `(make-prs3d-bndbox min-corner max-corner)` | Create a bounding box display as line segments from `(x y z)` corner points. Returns `prs3d-segments` or nil. |
+| `(shape-bounding-box-display shape)` | Compute the bounding box of a shape and return it as a `prs3d-segments`. Returns nil on nil shape. |
+
+The `prs3d-segments` class provides access to line segment vertex data:
+
+| Function | Description |
+|----------|-------------|
+| `(prs3d-segments-vertex-count obj)` | Number of vertices |
+| `(prs3d-segments-edge-count obj)` | Number of line segments (edges) |
+| `(prs3d-segments-vertices obj)` | List of `(x y z)` vertex positions |
+| `(prs3d-segments-edges obj)` | List of `(i0 i1)` 0-based edge vertex index pairs |
+| `(free-prs3d-segments obj)` | Explicitly free C handle (safe on nil) |
+| `(prs3d-segments-p obj)` | Predicate for `prs3d-segments` instances |
+
+```lisp
+;; Arrow from origin along X axis
+(make-prs3d-arrow '(0 0 0) '(10 0 0) :shaft-radius 0.5 :cone-length 2.0 :cone-radius 1.0)
+
+;; Bounding box display
+(let ((box (make-box 10 20 30)))
+  (shape-bounding-box-display box))
+```
+
+### Math Optimization
+
+Multi-variate function minimization using OCCT's math solvers. Each solver accepts a Lisp objective function `(lambda (vector) ...)` where `vector` is a list of doubles.
+
+All solvers return a plist on success: `(:converged bool :iterations int :minimum-value double :minimizer list)`. Return nil on failure or nil inputs.
+
+| Function | Description |
+|----------|-------------|
+| `(bfgs-minimize fn initial &key tolerance max-iterations)` | BFGS quasi-Newton minimization. `fn` is a function of a list returning a double. `initial` is the starting point. |
+| `(frpr-minimize fn initial &key tolerance max-iterations)` | Fletcher-Reeves Polak-Ribiere conjugate gradient minimization. Same format as BFGS. |
+| `(pso-minimize fn lower upper initial &key n-particles max-iterations tolerance)` | Particle Swarm Optimization. `lower` and `upper` are bound lists. |
+| `(globoptmin-minimize fn lower upper &key tolerance max-iterations)` | Global optimization via math_GlobOptMin. Same format as PSO without initial guess. |
+
+```lisp
+;; Minimize f(x) = x^2 starting from x=3
+(bfgs-minimize (lambda (v) (* (first v) (first v))) '(3.0))
+;; → (:converged t :iterations 3 :minimum-value 0.0 :minimizer (0.0))
+
+;; Minimize f(x,y) = x^2 + y^2
+(frpr-minimize (lambda (v) (+ (* (first v) (first v)) (* (second v) (second v))))
+               '(3.0 4.0))
+
+;; Particle swarm with bounds
+(pso-minimize (lambda (v) (* (first v) (first v)))
+              '(-10) '(10) '(5.0) :n-particles 10 :max-iterations 50)
+```
+
+### IntTools Intersection
+
+Low-level geometric intersection queries between topological entities via IntTools.
+
+| Function | Description |
+|----------|-------------|
+| `(intersect-edge-edge edge1 edge2)` | Compute intersection between two edges. Returns plist `(:points ((x y z) ...))` or nil. |
+| `(intersect-edge-face edge face)` | Compute intersection between an edge and a face. Returns plist or nil. |
+| `(intersect-face-face face1 face2)` | Compute intersection between two faces. Returns plist `(:points (...) :curves (...))` or nil. Curves are `curve` objects. |
+
+All functions accept nil inputs and return nil. Returns nil for non-intersecting entities.
+
+```lisp
+;; Edge-edge intersection
+(let* ((e1 (make-edge-3d -5 0 0 5 0 0))
+       (e2 (make-edge-3d 0 -5 0 0 5 0)))
+  (intersect-edge-edge e1 e2))  ; → (:points ((0.0 0.0 0.0)))
+
+;; Edge-face intersection
+(let* ((face (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0)
+                                    (make-edge-3d 5 -5 0 5 5 0)
+                                    (make-edge-3d 5 5 0 -5 5 0)
+                                    (make-edge-3d -5 5 0 -5 -5 0))))
+       (edge (make-edge-3d 0 0 -5 0 0 5)))
+  (intersect-edge-face edge face))  ; → (:points ((0.0 0.0 0.0)))
+
+;; Face-face intersection (two perpendicular planes)
+(let* ((f1 (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0) ...)))
+       (f2 (make-face (make-wire (make-edge-3d 0 -5 -5 0 5 -5) ...))))
+  (intersect-face-face f1 f2))  ; → (:curves (...))
+```
 ```
 

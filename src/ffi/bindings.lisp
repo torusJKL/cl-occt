@@ -2277,4 +2277,113 @@
 (defcfun (%graphic3d-rendering-params-get-antialiasing "graphic3d_rendering_params_get_antialiasing") :int
   (p :pointer))
 
+;; --- Prs3d_Tool* (Parametric Triangulation Generators) ---
+
+(defcfun (%prs3d-tool-cylinder "prs3d_tool_cylinder") :pointer
+  (radius :double) (height :double) (n-slices :int) (n-stacks :int))
+
+(defcfun (%prs3d-tool-sphere "prs3d_tool_sphere") :pointer
+  (radius :double) (n-slices :int) (n-stacks :int))
+
+(defcfun (%prs3d-tool-torus "prs3d_tool_torus") :pointer
+  (major-radius :double) (minor-radius :double) (n-slices :int) (n-stacks :int))
+
+(defcfun (%prs3d-tool-disk "prs3d_tool_disk") :pointer
+  (inner-radius :double) (outer-radius :double) (n-slices :int) (n-stacks :int))
+
+(defcfun (%prs3d-triangulation-free "prs3d_triangulation_free") :void
+  (handle :pointer))
+
+(defcfun (%prs3d-triangulation-vertex-count "prs3d_triangulation_vertex_count") :int
+  (handle :pointer))
+
+(defcfun (%prs3d-triangulation-triangle-count "prs3d_triangulation_triangle_count") :int
+  (handle :pointer))
+
+(defcfun (%prs3d-triangulation-has-normals "prs3d_triangulation_has_normals") :int
+  (handle :pointer))
+
+(defcfun (%prs3d-triangulation-get-vertices "prs3d_triangulation_get_vertices") :void
+  (handle :pointer) (out :pointer) (max-count :int))
+
+(defcfun (%prs3d-triangulation-get-normals "prs3d_triangulation_get_normals") :void
+  (handle :pointer) (out :pointer) (max-count :int))
+
+(defcfun (%prs3d-triangulation-get-triangles "prs3d_triangulation_get_triangles") :void
+  (handle :pointer) (out :pointer) (max-count :int))
+
+;; --- Prs3d_Arrow, Prs3d_Text, Prs3d_BndBox ---
+
+(defcfun (%prs3d-arrow "prs3d_arrow") :pointer
+  (sx :double) (sy :double) (sz :double)
+  (ex :double) (ey :double) (ez :double)
+  (shaft-radius :double) (cone-length :double) (cone-radius :double)
+  (n-facets :int))
+
+(defcfun (%prs3d-bndbox "prs3d_bndbox") :pointer
+  (xmin :double) (ymin :double) (zmin :double)
+  (xmax :double) (ymax :double) (zmax :double))
+
+(defcfun (%prs3d-segments-vertex-count "prs3d_segments_vertex_count") :int
+  (handle :pointer))
+
+(defcfun (%prs3d-segments-edge-count "prs3d_segments_edge_count") :int
+  (handle :pointer))
+
+(defcfun (%prs3d-segments-free "prs3d_segments_free") :void
+  (handle :pointer))
+
+(defcfun (%prs3d-segments-get-vertices "prs3d_segments_get_vertices") :void
+  (handle :pointer) (out :pointer) (max-count :int))
+
+(defcfun (%prs3d-segments-get-edges "prs3d_segments_get_edges") :void
+  (handle :pointer) (out :pointer) (max-count :int))
+
+(defcfun (%shape-bounding-box "shape_bounding_box") :int
+  (shape :pointer)
+  (xmin :pointer) (ymin :pointer) (zmin :pointer)
+  (xmax :pointer) (ymax :pointer) (zmax :pointer))
+
+;; --- math_BFGS, math_FRPR, math_PSO, math_GlobOptMin ---
+
+(defcfun (%math-bfgs-minimize "math_bfgs_minimize") :int
+  (fn :pointer) (n-vars :int) (initial :pointer)
+  (tolerance :double) (max-iter :int)
+  (out-minimizer :pointer) (out-min-value :pointer) (out-iterations :pointer))
+
+(defcfun (%math-frpr-minimize "math_frpr_minimize") :int
+  (fn :pointer) (n-vars :int) (initial :pointer)
+  (tolerance :double) (max-iter :int)
+  (out-minimizer :pointer) (out-min-value :pointer) (out-iterations :pointer))
+
+(defcfun (%math-pso-minimize "math_pso_minimize") :int
+  (fn :pointer) (n-vars :int)
+  (lower :pointer) (upper :pointer) (initial :pointer)
+  (n-particles :int) (max-iter :int) (tolerance :double)
+  (out-minimizer :pointer) (out-min-value :pointer) (out-iterations :pointer))
+
+(defcfun (%math-globoptmin-minimize "math_globoptmin_minimize") :int
+  (fn :pointer) (n-vars :int)
+  (lower :pointer) (upper :pointer)
+  (tolerance :double) (max-iter :int)
+  (out-minimizer :pointer) (out-min-value :pointer) (out-iterations :pointer))
+
+;; --- IntTools_EdgeEdge, IntTools_EdgeFace, IntTools_FaceFace ---
+
+(defcfun (%inttools-edge-edge "inttools_edge_edge") :int
+  (edge1 :pointer) (edge2 :pointer)
+  (out-points :pointer) (max-points :int) (out-count :pointer))
+
+(defcfun (%inttools-edge-face "inttools_edge_face") :int
+  (edge :pointer) (face :pointer)
+  (out-points :pointer) (max-points :int) (out-count :pointer))
+
+(defcfun (%inttools-face-face "inttools_face_face") :int
+  (face1 :pointer) (face2 :pointer)
+  (out-points :pointer) (max-points :int) (out-point-count :pointer)
+  (out-curves :pointer) (max-curves :int) (out-curve-count :pointer))
+
+(defcfun (%inttools-free-curve "inttools_free_curve") :void
+  (curve :pointer))
+
 
