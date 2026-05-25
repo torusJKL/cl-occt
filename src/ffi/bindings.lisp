@@ -1557,3 +1557,43 @@
 
 (defcfun (%heal-shape-default "heal_shape_default") :pointer
   (shape :pointer))
+
+;; --- Sewing ---
+
+(defcfun (%sew-shapes "sew_shapes") :pointer
+  (shapes :pointer)
+  (num-shapes :int)
+  (tolerance :double)
+  (allow-non-manifold :int))
+
+;; --- Defeaturing ---
+
+(defcfun (%defeature-shape "defeature_shape") :pointer
+  (shape :pointer)
+  (faces :pointer)
+  (num-faces :int))
+
+;; --- Shape Check & Builder ---
+
+(defcfun (%check-shape-validity "check_shape_validity") :string
+  (shape :pointer))
+
+(defcfun (%boolean-builder "boolean_builder") :pointer
+  (shape1 :pointer)
+  (shape2 :pointer)
+  (operation :int))
+
+;; --- HLR ---
+
+(defcfun (%hlr-project "hlr_project") :pointer
+  (shape :pointer)
+  (proj-dx :double) (proj-dy :double) (proj-dz :double)
+  (px :double) (py :double) (pz :double))
+
+;; --- Shape Conversion ---
+
+(defcfun (%convert-to-revolution "convert_to_revolution") :pointer
+  (shape :pointer))
+
+(defcfun (%convert-swept-to-elementary "convert_swept_to_elementary") :pointer
+  (shape :pointer))

@@ -386,6 +386,13 @@
           :%apply-operator-sequence
           :%apply-healing-pipeline
           :%heal-shape-default
+          :%sew-shapes
+          :%defeature-shape
+          :%check-shape-validity
+          :%boolean-builder
+          :%hlr-project
+          :%convert-to-revolution
+          :%convert-swept-to-elementary
          :%shape-gprops-internal
        :%shape-distance-extrema-internal
        :%shape-type-to-int
@@ -795,4 +802,11 @@
                :shape-upgrade-continuity
                :apply-shape-process
                :apply-healing-pipeline
-               :heal-shape))
+                :heal-shape
+                :sew-shapes
+                :defeature-shape
+                :check-shape-validity
+                :boolean-builder
+                :hlr-project
+                :convert-to-revolution
+                :convert-swept-to-elementary))

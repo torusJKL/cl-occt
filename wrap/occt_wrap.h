@@ -593,6 +593,30 @@ occt_shape apply_operator_sequence(occt_shape shape, const char** operators, int
 occt_shape apply_healing_pipeline(occt_shape shape, const char* pipeline_name, const char* resource);
 occt_shape heal_shape_default(occt_shape shape);
 
+// --- Sewing ---
+
+occt_shape sew_shapes(occt_shape* shapes, int num_shapes, double tolerance, int allow_non_manifold);
+
+// --- Defeaturing ---
+
+occt_shape defeature_shape(occt_shape shape, occt_shape* faces, int num_faces);
+
+// --- Shape Check & Builder ---
+
+const char* check_shape_validity(occt_shape shape);
+occt_shape boolean_builder(occt_shape shape1, occt_shape shape2, int operation);
+
+// --- HLR ---
+
+occt_shape hlr_project(occt_shape shape,
+                        double proj_dx, double proj_dy, double proj_dz,
+                        double px, double py, double pz);
+
+// --- Shape Conversion ---
+
+occt_shape convert_to_revolution(occt_shape shape);
+occt_shape convert_swept_to_elementary(occt_shape shape);
+
 #ifdef __cplusplus
 }
 #endif

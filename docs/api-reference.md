@@ -220,6 +220,90 @@ Faces are obtained via `(map-shape-subshapes shape :face)`. Returns `nil` on nil
   (shell-shape box (list (first faces)) :thickness 2.0 :offset :outward))
 ```
 
+### Sewing
+
+Stitch adjacent faces/shells into a single watertight shape.
+
+| Function | Description |
+|----------|-------------|
+| `(sew-shapes shapes &key tolerance allow-non-manifold)` | Sew multiple shapes together. `:tolerance` (default 1e-6) controls gap tolerance. `:allow-non-manifold` (default nil) permits non-manifold topology. |
+
+Returns `nil` on nil or empty shapes list.
+
+```lisp
+;; Sew two adjacent boxes together
+(let* ((box1 (make-box 10 10 10))
+       (box2 (translate (make-box 10 10 10) 10 0 0)))
+  (sew-shapes (list box1 box2) :tolerance 0.1))
+```
+
+### Defeaturing
+
+Remove selected features (holes, protrusions, fillets, etc.) from a shape by specifying faces to remove.
+
+| Function | Description |
+|----------|-------------|
+| `(defeature-shape shape faces)` | Remove features from a shape. `faces` is a list of faces to remove. |
+
+Returns `nil` on nil shape, nil/empty faces list, or if defeaturing fails.
+
+```lisp
+;; Remove the first face of a box
+(let* ((box (make-box 30 20 10))
+       (faces (map-shape-subshapes box :face)))
+  (defeature-shape box (list (first faces))))
+```
+
+### Shape Check / Builder Algo
+
+Validate shape validity and perform boolean operations via the general BuilderAlgo.
+
+| Function | Description |
+|----------|-------------|
+| `(check-shape-validity shape)` | Check shape validity for boolean operations. Returns error description string or nil. |
+| `(boolean-builder shape1 shape2 &key operation)` | General boolean builder. `:operation` is `:fuse`, `:cut`, `:common`, or `:section`. |
+
+`check-shape-validity` returns nil for valid shapes or nil input. `boolean-builder` returns nil on nil inputs.
+
+```lisp
+;; Check shape validity
+(check-shape-validity (make-box 10 20 30))   ; => nil (valid)
+
+;; Boolean builder
+(boolean-builder (make-box 10 10 10) (make-cylinder 5 15) :operation :cut)
+```
+
+### HLR (Hidden Line Removal)
+
+Project a 3D shape onto a plane and classify edges as visible or hidden.
+
+| Function | Description |
+|----------|-------------|
+| `(hlr-project shape &key direction position)` | Project shape edges with HLR. `:direction` is `(dx dy dz)` projection direction (default `(0 0 1)`, top view). `:position` is `(px py pz)` projection plane origin (default `(0 0 0)`). |
+
+Returns a compound of visible and hidden edges, or nil on nil input. HLR edges are 2D projected edges — use `edge->curve` to extract the 2D curve; the 3D curve may not exist for hidden edges.
+
+```lisp
+;; Top-down HLR projection of a box
+(hlr-project (make-box 30 20 10) :direction '(0 0 -1) :position '(0 0 5))
+```
+
+### Shape Conversion
+
+Convert shape surfaces between analytic representations.
+
+| Function | Description |
+|----------|-------------|
+| `(convert-to-revolution shape)` | Convert elementary surfaces to revolution surfaces where possible. |
+| `(convert-swept-to-elementary shape)` | Convert swept surfaces to elementary surfaces where possible. |
+
+Both return nil on nil input or when conversion is not applicable.
+
+```lisp
+(convert-to-revolution (make-cylinder 5 20))
+(convert-swept-to-elementary (make-cylinder 5 20))
+```
+
 ### 3D Shape Offset
 
 Offset a solid or shell outward (enlarged) or inward (reduced).

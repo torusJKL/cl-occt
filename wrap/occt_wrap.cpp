@@ -10,10 +10,14 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Section.hxx>
+#include <BRepAlgoAPI_Defeaturing.hxx>
+#include <BRepAlgoAPI_Check.hxx>
+#include <BRepAlgoAPI_BuilderAlgo.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_Sewing.hxx>
 #include <gp_Trsf.hxx>
 #include <gp_Pnt2d.hxx>
 #include <gp_Vec2d.hxx>
@@ -145,6 +149,8 @@
 #include <BRepOffsetAPI_MakeOffset.hxx>
 #include <BRepOffsetAPI_DraftAngle.hxx>
 #include <BRepOffsetAPI_MakeEvolved.hxx>
+#include <HLRBRep_Algo.hxx>
+#include <HLRBRep_HLRToShape.hxx>
 #include <BRepFeat_MakeCylindricalHole.hxx>
 #include <BRepFeat_MakePrism.hxx>
 #include <BRepFeat_MakeRevol.hxx>
@@ -164,6 +170,8 @@
 #include <ShapeBuild_ReShape.hxx>
 #include <ShapeCustom.hxx>
 #include <ShapeCustom_BSplineRestriction.hxx>
+#include <ShapeCustom_ConvertToRevolution.hxx>
+#include <ShapeCustom_SweptToElementary.hxx>
 #include <ShapeUpgrade_ShapeDivideContinuity.hxx>
 #include <ShapeProcess.hxx>
 #include <ShapeProcess_ShapeContext.hxx>
@@ -6549,6 +6557,204 @@ occt_shape heal_shape_default(occt_shape shape) {
 
         if (current.IsNull()) { set_error("default healing produced null result"); return nullptr; }
         return from_shape(current);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Sewing ---
+
+occt_shape sew_shapes(occt_shape* shapes, int num_shapes, double tolerance, int allow_non_manifold) {
+    clear_error();
+    if (!shapes || num_shapes < 1) { set_error("no shapes provided", 2); return nullptr; }
+    try {
+        BRepBuilderAPI_Sewing sewer(tolerance, true, true, true, allow_non_manifold ? true : false);
+        for (int i = 0; i < num_shapes; i++) {
+            if (shapes[i]) {
+                sewer.Add(*to_shape(shapes[i]));
+            }
+        }
+        sewer.Perform();
+        const TopoDS_Shape& result = sewer.SewedShape();
+        if (result.IsNull()) { set_error("sewing produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Defeaturing ---
+
+occt_shape defeature_shape(occt_shape shape, occt_shape* faces, int num_faces) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!faces || num_faces < 1) { set_error("no faces provided", 2); return nullptr; }
+    try {
+        BRepAlgoAPI_Defeaturing defeaturer;
+        defeaturer.SetShape(*to_shape(shape));
+        NCollection_List<TopoDS_Shape> facesToRemove;
+        for (int i = 0; i < num_faces; i++) {
+            if (faces[i]) {
+                facesToRemove.Append(*to_shape(faces[i]));
+            }
+        }
+        defeaturer.AddFacesToRemove(facesToRemove);
+        defeaturer.Build();
+        if (!defeaturer.IsDone()) { set_error("defeaturing failed"); return nullptr; }
+        return from_shape(defeaturer.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shape Check ---
+
+const char* check_shape_validity(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        BRepAlgoAPI_Check checker(*to_shape(shape));
+        if (!checker.IsValid()) {
+            const NCollection_List<BOPAlgo_CheckResult>& results = checker.Result();
+            std::ostringstream oss;
+            for (NCollection_List<BOPAlgo_CheckResult>::Iterator it(results); it.More(); it.Next()) {
+                const BOPAlgo_CheckResult& cr = it.Value();
+                if (!cr.GetFaultyShapes1().IsEmpty()) {
+                    oss << "faulty shapes in object; ";
+                }
+            }
+            std::string msg = oss.str();
+            if (!msg.empty()) {
+                // Trim trailing "; "
+                msg = msg.substr(0, msg.length() - 2);
+                char* buf = new char[msg.length() + 1];
+                std::strcpy(buf, msg.c_str());
+                return buf;
+            }
+            return "shape is not valid";
+        }
+        return nullptr; // no errors
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape boolean_builder(occt_shape shape1, occt_shape shape2, int operation) {
+    clear_error();
+    if (!shape1 || !shape2) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        TopoDS_Shape result;
+        switch (operation) {
+            case 0: {
+                BRepAlgoAPI_Fuse maker(*to_shape(shape1), *to_shape(shape2));
+                if (!maker.IsDone()) { set_error("boolean builder fuse failed"); return nullptr; }
+                result = maker.Shape();
+                break;
+            }
+            case 1: {
+                BRepAlgoAPI_Cut maker(*to_shape(shape1), *to_shape(shape2));
+                if (!maker.IsDone()) { set_error("boolean builder cut failed"); return nullptr; }
+                result = maker.Shape();
+                break;
+            }
+            case 2: {
+                BRepAlgoAPI_Common maker(*to_shape(shape1), *to_shape(shape2));
+                if (!maker.IsDone()) { set_error("boolean builder common failed"); return nullptr; }
+                result = maker.Shape();
+                break;
+            }
+            case 3: {
+                BRepAlgoAPI_Section maker(*to_shape(shape1), *to_shape(shape2));
+                maker.Build();
+                if (!maker.IsDone()) { set_error("boolean builder section failed"); return nullptr; }
+                result = maker.Shape();
+                break;
+            }
+            default:
+                set_error("unknown boolean operation");
+                return nullptr;
+        }
+        if (result.IsNull()) { set_error("boolean builder produced null result"); return nullptr; }
+        return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- HLR ---
+
+occt_shape hlr_project(occt_shape shape,
+                        double proj_dx, double proj_dy, double proj_dz,
+                        double px, double py, double pz) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        occ::handle<HLRBRep_Algo> algo = new HLRBRep_Algo();
+        algo->Add(*to_shape(shape));
+        algo->Projector(HLRAlgo_Projector(gp_Ax2(gp_Pnt(px, py, pz),
+                                                     gp_Dir(proj_dx, proj_dy, proj_dz))));
+        algo->Update();
+        algo->Hide();
+
+        HLRBRep_HLRToShape shapesExtractor(algo);
+
+        TopoDS_Compound compound;
+        BRep_Builder builder;
+        builder.MakeCompound(compound);
+
+        TopoDS_Shape sv = shapesExtractor.VCompound();
+        if (!sv.IsNull()) builder.Add(compound, sv);
+        TopoDS_Shape sh = shapesExtractor.HCompound();
+        if (!sh.IsNull()) builder.Add(compound, sh);
+        TopoDS_Shape sov = shapesExtractor.OutLineVCompound();
+        if (!sov.IsNull()) builder.Add(compound, sov);
+        TopoDS_Shape soh = shapesExtractor.OutLineHCompound();
+        if (!soh.IsNull()) builder.Add(compound, soh);
+        TopoDS_Shape siv = shapesExtractor.Rg1LineVCompound();
+        if (!siv.IsNull()) builder.Add(compound, siv);
+        TopoDS_Shape sih = shapesExtractor.Rg1LineHCompound();
+        if (!sih.IsNull()) builder.Add(compound, sih);
+
+        return from_shape(compound);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- Shape Conversion ---
+
+occt_shape convert_to_revolution(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        occ::handle<ShapeCustom_ConvertToRevolution> converter =
+            new ShapeCustom_ConvertToRevolution();
+        BRepTools_Modifier modifier(*to_shape(shape));
+        modifier.Perform(converter);
+        if (!modifier.IsDone()) { set_error("conversion to revolution failed"); return nullptr; }
+        return from_shape(modifier.ModifiedShape(*to_shape(shape)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+occt_shape convert_swept_to_elementary(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        occ::handle<ShapeCustom_SweptToElementary> converter =
+            new ShapeCustom_SweptToElementary();
+        BRepTools_Modifier modifier(*to_shape(shape));
+        modifier.Perform(converter);
+        if (!modifier.IsDone()) { set_error("conversion to elementary failed"); return nullptr; }
+        return from_shape(modifier.ModifiedShape(*to_shape(shape)));
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return nullptr;

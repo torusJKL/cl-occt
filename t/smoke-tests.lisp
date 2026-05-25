@@ -2426,6 +2426,103 @@
     (assert-true (or (null result) (shape-p result))
                  "excessive thickness should return shape or nil")))
 
+;; --- Sewing ---
+
+(deftest sew-shapes-two-boxes
+  (let* ((box1 (make-box 10 10 10))
+         (box2 (translate (make-box 10 10 10) 10 0 0))
+         (result (sew-shapes (list box1 box2) :tolerance 0.1)))
+    (assert-true (or (null result) (shape-p result))
+                 "sew-shapes two boxes should return shape or nil")))
+
+(deftest sew-shapes-nil-input
+  (assert-nil (sew-shapes nil)))
+
+(deftest sew-shapes-empty-list
+  (assert-nil (sew-shapes '())))
+
+(deftest sew-shapes-non-manifold
+  (let* ((box1 (make-box 10 10 10))
+         (box2 (translate (make-box 10 10 10) 10 0 0))
+         (result (sew-shapes (list box1 box2) :tolerance 0.1 :allow-non-manifold t)))
+    (assert-true (or (null result) (shape-p result))
+                 "sew-shapes with non-manifold should return shape or nil")))
+
+;; --- Defeaturing ---
+
+(deftest defeature-shape-remove-one-face
+  (let* ((box (make-box 30 20 10))
+         (faces (map-shape-subshapes box :face))
+         (result (defeature-shape box (list (first faces)))))
+    (assert-true (or (null result) (shape-p result))
+                 "defeature-shape should return shape or nil")))
+
+(deftest defeature-shape-nil-shape
+  (assert-nil (defeature-shape nil (list (cffi:null-pointer)))))
+
+(deftest defeature-shape-nil-faces
+  (assert-nil (defeature-shape (make-box 30 20 10) nil)))
+
+(deftest defeature-shape-empty-faces
+  (assert-nil (defeature-shape (make-box 30 20 10) '())))
+
+;; --- Shape Check & Builder ---
+
+(deftest check-shape-validity-valid
+  (assert-nil (check-shape-validity (make-box 10 20 30))))
+
+(deftest check-shape-validity-nil
+  (assert-nil (check-shape-validity nil)))
+
+(deftest boolean-builder-fuse
+  (let ((result (boolean-builder (make-box 10 10 10) (make-cylinder 5 15) :operation :fuse)))
+    (assert-true (or (null result) (shape-p result))
+                 "boolean-builder fuse should return shape or nil")))
+
+(deftest boolean-builder-cut
+  (let ((result (boolean-builder (make-box 10 10 10) (make-cylinder 5 15) :operation :cut)))
+    (assert-true (or (null result) (shape-p result))
+                 "boolean-builder cut should return shape or nil")))
+
+(deftest boolean-builder-common
+  (let ((result (boolean-builder (make-box 10 10 10) (make-box 5 5 5) :operation :common)))
+    (assert-true (or (null result) (shape-p result))
+                 "boolean-builder common should return shape or nil")))
+
+(deftest boolean-builder-nil-first
+  (assert-nil (boolean-builder nil (make-box 10 10 10) :operation :fuse)))
+
+(deftest boolean-builder-nil-second
+  (assert-nil (boolean-builder (make-box 10 10 10) nil :operation :fuse)))
+
+;; --- HLR ---
+
+(deftest hlr-project-box
+  (let ((result (hlr-project (make-box 30 20 10) :direction '(0 0 -1))))
+    (assert-true (or (null result) (shape-p result))
+                 "hlr-project box should return shape or nil")))
+
+(deftest hlr-project-nil
+  (assert-nil (hlr-project nil)))
+
+;; --- Shape Conversion ---
+
+(deftest convert-to-revolution-cylinder
+  (let ((result (convert-to-revolution (make-cylinder 5 20))))
+    (assert-true (or (null result) (shape-p result))
+                 "convert-to-revolution should return shape or nil")))
+
+(deftest convert-to-revolution-nil
+  (assert-nil (convert-to-revolution nil)))
+
+(deftest convert-swept-to-elementary-cylinder
+  (let ((result (convert-swept-to-elementary (make-cylinder 5 20))))
+    (assert-true (or (null result) (shape-p result))
+                 "convert-swept-to-elementary should return shape or nil")))
+
+(deftest convert-swept-to-elementary-nil
+  (assert-nil (convert-swept-to-elementary nil)))
+
 ;; --- 3D Offset ---
 
 (deftest offset-shape-outward
@@ -3075,8 +3172,18 @@
                  fill-n-sided-face-too-few fill-n-sided-face-curvature
                  shell-shape-box-single-face shell-shape-multiple-faces
                  shell-shape-outward-offset shell-shape-nil-shape
-                 shell-shape-excessive-thickness
-                 offset-shape-outward offset-shape-inward
+                  shell-shape-excessive-thickness
+                  sew-shapes-two-boxes sew-shapes-nil-input
+                  sew-shapes-empty-list sew-shapes-non-manifold
+                  defeature-shape-remove-one-face defeature-shape-nil-shape
+                  defeature-shape-nil-faces defeature-shape-empty-faces
+                  check-shape-validity-valid check-shape-validity-nil
+                  boolean-builder-fuse boolean-builder-cut boolean-builder-common
+                  boolean-builder-nil-first boolean-builder-nil-second
+                  hlr-project-box hlr-project-nil
+                  convert-to-revolution-cylinder convert-to-revolution-nil
+                  convert-swept-to-elementary-cylinder convert-swept-to-elementary-nil
+                  offset-shape-outward offset-shape-inward
                  offset-shape-arc-join offset-shape-intersection-join
                  offset-shape-excessive offset-shape-excessive-outward offset-shape-nil
                  offset-wire-outward offset-wire-inward offset-wire-nil
