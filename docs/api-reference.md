@@ -1335,3 +1335,73 @@ Create and configure BSDF (Bidirectional Scattering Distribution Function) mater
   (set-bsdf-refraction-index bsdf 1.5))
 ```
 
+### Animation
+
+Animate objects and cameras in the 3D viewer over time.
+
+| Function | Description |
+|----------|-------------|
+| `(make-animation name)` | Create a named AIS_Animation. Returns `ais-animation` or nil |
+| `(ais-animation-p obj)` | Predicate for `ais-animation` instances |
+| `(ais-animation-start anim)` | Start the animation timer |
+| `(ais-animation-stop anim)` | Stop the animation timer |
+| `(ais-animation-playing-p anim)` | Check if the animation timer is running |
+| `(setf (ais-animation-duration anim) secs)` | Set animation duration in seconds |
+| `(ais-animation-duration anim)` | Get animation duration in seconds |
+| `(setf (ais-animation-progress anim) v)` | Set animation progress (0.0 to 1.0) |
+| `(ais-animation-progress anim)` | Get current animation progress |
+| `(setf (ais-animation-start-pause anim) secs)` | Set start pause in seconds |
+| `(add-animation parent child)` | Add child animation to parent (animation tree) |
+| `(remove-animation parent child)` | Remove child animation from parent |
+| `(ais-animation-free anim)` | Free an animation's C handle (safe to call multiple times) |
+| `(make-animation-object name ais-obj &key translation rotation-angle rotation-axis)` | Create animation that transforms an AIS object. `:translation` is `(dx dy dz)`, `:rotation-angle` in degrees, `:rotation-axis` is `(rx ry rz)` |
+| `(ais-animation-object-p obj)` | Predicate for `ais-animation-object` instances |
+| `(animation-object anim-obj)` | Get the ais-object being animated |
+| `(make-animation-camera name view start-cam end-cam)` | Create camera animation between two `viewer-camera` states |
+| `(ais-animation-camera-p obj)` | Predicate for `ais-animation-camera` instances |
+| `(make-animation-axis-rotation name ais-obj origin direction angle-degrees)` | Create rotation animation around an axis. `origin` and `direction` are `(x y z)` lists, `angle-degrees` in degrees |
+| `(ais-animation-axis-rotation-p obj)` | Predicate for `ais-animation-axis-rotation` instances |
+
+All accept nil inputs and return nil gracefully.
+
+```lisp
+;; Basic animation
+(let ((anim (make-animation "rotate-box")))
+  (setf (ais-animation-duration anim) 3.0)
+  (ais-animation-start anim))
+
+;; Animate an object's position
+(let* ((obj (ais-create-shape (make-box 10 20 30)))
+       (anim (make-animation-object "slide" obj
+                                    :translation '(50 0 0))))
+  (ais-animation-start anim))
+
+;; Camera animation (requires viewer)
+(with-viewer (v)
+  (let* ((start (viewer-camera v))
+         (end-cam (make-instance 'viewer-camera
+                    :eye '(100 100 100)
+                    :target '(0 0 0)
+                    :up '(0 1 0)
+                    :projection-type :perspective
+                    :fov 0.785))
+         (anim (make-animation-camera "pan" v start end-cam)))
+    (setf (ais-animation-duration anim) 3.0)
+    (ais-animation-start anim)))
+
+;; Rotation around an axis
+(let* ((obj (ais-create-shape (make-box 10 20 30)))
+       (anim (make-animation-axis-rotation "spin" obj
+                                            '(0 0 0) '(0 0 1) 360)))
+  (setf (ais-animation-duration anim) 2.0)
+  (ais-animation-start anim))
+
+;; Animation tree (parent plays children in sequence)
+(let* ((root (make-animation "root"))
+        (c1 (make-animation-object "c1" obj-1 :translation '(50 0 0)))
+        (c2 (make-animation-object "c2" obj-2 :translation '(0 50 0))))
+  (add-animation root c1)
+  (add-animation root c2)
+  (ais-animation-start root))
+```
+

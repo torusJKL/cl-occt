@@ -67,6 +67,7 @@
             (:file "viewer-drawer")
               (:file "viewer-dimensions")
               (:file "viewer-ais-types")
+              (:file "animation")
               (:file "texture")
               (:file "materials")))))))
 
@@ -82,5 +83,5 @@
                (asdf:load-system :cl-occt/tests)
                (multiple-value-bind (pass fail)
                    (funcall (find-symbol "RUN-CORE-TESTS" :cl-occt))
-                  (unless (zerop fail)
-                    (uiop:quit 1))))))
+                  (declare (ignore pass))
+                  (if (plusp fail) (uiop:quit 1))))))

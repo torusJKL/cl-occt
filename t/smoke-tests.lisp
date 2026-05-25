@@ -842,6 +842,27 @@
 
 
 
+;; --- Animation (viewer-based) ---
+
+(deftest animation-object-make-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (ais-obj (ais-display ctx (make-box 10 20 30)))
+           (anim (make-animation-object "obj-anim" ctx ais-obj
+                                        :translation '(50 0 0))))
+      (assert-true (ais-animation-object-p anim))
+      (ais-animation-free anim))))
+
+(deftest animation-axis-rotation-make-valid
+  (with-viewer (v)
+    (let* ((ctx (ais-create-context v))
+           (ais-obj (ais-display ctx (make-box 10 20 30)))
+           (anim (make-animation-axis-rotation "spin" ctx ais-obj
+                                                '(0 0 0) '(0 0 1)
+                                                :angle-end 360)))
+      (assert-true (ais-animation-axis-rotation-p anim))
+      (ais-animation-free anim))))
+
 ;; --- Viewer ---
 
 (deftest make-viewer-returns-viewer
@@ -3251,6 +3272,52 @@
   (meshvs-free nil)
   t)
 
+;; --- Animation (core: no viewer needed) ---
+
+(deftest animation-make-valid
+  (let ((anim (make-animation "test")))
+    (assert-true (ais-animation-p anim))
+    (ais-animation-free anim)))
+
+(deftest animation-make-nil-name
+  (assert-nil (make-animation nil)))
+
+(deftest animation-free-nil-safe
+  (ais-animation-free nil)
+  t)
+
+(deftest animation-free-double-safe
+  (let ((anim (make-animation "double-free")))
+    (ais-animation-free anim)
+    (ais-animation-free anim))
+  t)
+
+(deftest animation-duration-set-get
+  (let ((anim (make-animation "dur")))
+    (setf (ais-animation-duration anim) 5.0)
+    (assert-true (= (ais-animation-duration anim) 5.0))
+    (ais-animation-free anim)))
+
+(deftest animation-progress-set-get
+  (let ((anim (make-animation "prog")))
+    (setf (ais-animation-duration anim) 10.0)
+    (setf (ais-animation-progress anim) 0.5)
+    (assert-true (>= (ais-animation-progress anim) 0.49))
+    (ais-animation-free anim)))
+
+(deftest animation-start-pause-set
+  (let ((anim (make-animation "pause")))
+    (setf (ais-animation-start-pause anim) 2.0)
+    (ais-animation-free anim)))
+
+(deftest animation-add-remove-child
+  (let ((parent (make-animation "parent"))
+        (child (make-animation "child")))
+    (add-animation parent child)
+    (remove-animation parent child)
+    (ais-animation-free child)
+    (ais-animation-free parent)))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -3503,7 +3570,13 @@
                  make-xcaf-doc-valid xcaf-add-shape-t xcaf-add-shape-to-layer-t
                  xcaf-add-view-t xcaf-nil-doc-nil xcaf-remove-shape-from-layer-t
                  xcaf-get-visual-material-t xcaf-get-clipping-planes-t
-                 xcaf-expand-assembly-t))
+                  xcaf-expand-assembly-t
+                  ;; Animation (core)
+                  animation-make-valid animation-make-nil-name
+                  animation-free-nil-safe animation-free-double-safe
+                  animation-duration-set-get animation-progress-set-get
+                  animation-start-pause-set
+                  animation-add-remove-child))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
@@ -3603,7 +3676,9 @@
                 set-dimension-custom-value-valid
                 set-dimension-text-alias
                 set-dimension-arrows-convenience
-                set-dimension-extension-convenience))
+                set-dimension-extension-convenience
+                ;; Animation (needs viewer)
+                animation-object-make-valid animation-axis-rotation-make-valid))
       (funcall test-sym))
     (format t "~2&=== Viewer results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

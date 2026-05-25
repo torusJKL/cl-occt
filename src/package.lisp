@@ -495,7 +495,24 @@
          :%bsdf-set-transmission
          :%bsdf-set-reflection
          :%bsdf-set-refraction-index
-         :%bsdf-set-absorption
+          :%bsdf-set-absorption
+          ;; --- AIS Animation ---
+          :%ais-animation-create
+          :%ais-animation-free
+          :%ais-animation-start
+          :%ais-animation-stop
+          :%ais-animation-is-playing
+          :%ais-animation-set-duration
+          :%ais-animation-duration
+          :%ais-animation-set-progress
+          :%ais-animation-progress
+          :%ais-animation-set-start-pause
+          :%ais-animation-add
+          :%ais-animation-remove
+          :%ais-animation-object-create
+          :%ais-animation-object-get-object
+          :%ais-animation-camera-create
+          :%ais-animation-axis-rotation-create
 ))
 
 (defpackage :cl-occt
@@ -1007,5 +1024,28 @@
                    :set-bsdf-specular
                    :set-bsdf-transmission
                    :set-bsdf-reflection
-                   :set-bsdf-refraction-index
-                   :set-bsdf-absorption))
+                    :set-bsdf-refraction-index
+                    :set-bsdf-absorption
+                    ;; AIS Animation
+                    :ais-animation
+                    :ais-animation-p
+                    :make-animation
+                    :ais-animation-free
+                    :ais-animation-start
+                    :ais-animation-stop
+                    :ais-animation-playing-p
+                    :ais-animation-duration
+                    :ais-animation-progress
+                    :ais-animation-start-pause
+                    :add-animation
+                    :remove-animation
+                    :ais-animation-object
+                    :ais-animation-object-p
+                    :make-animation-object
+                    :animation-object
+                    :ais-animation-camera
+                    :ais-animation-camera-p
+                    :make-animation-camera
+                    :ais-animation-axis-rotation
+                    :ais-animation-axis-rotation-p
+                    :make-animation-axis-rotation))
