@@ -67,6 +67,24 @@
 #include <AIS_InteractiveContext.hxx>
 #include <AIS_Shape.hxx>
 #include <AIS_InteractiveObject.hxx>
+#include <AIS_ColoredShape.hxx>
+#include <AIS_Manipulator.hxx>
+#include <AIS_ConnectedInteractive.hxx>
+#include <AIS_PointCloud.hxx>
+#include <AIS_Plane.hxx>
+#include <AIS_Axis.hxx>
+#include <AIS_Line.hxx>
+#include <AIS_Circle.hxx>
+#include <AIS_TexturedShape.hxx>
+#include <AIS_ViewCube.hxx>
+#include <AIS_Triangulation.hxx>
+#include <AIS_ColorScale.hxx>
+#include <AIS_LightSource.hxx>
+#include <AIS_MultipleConnectedInteractive.hxx>
+#include <AIS_ManipulatorMode.hxx>
+#include <Graphic3d_ArrayOfTriangles.hxx>
+#include <Graphic3d_ArrayOfPoints.hxx>
+#include <Poly_Triangulation.hxx>
 #include <Aspect_GridType.hxx>
 #include <Aspect_GridDrawMode.hxx>
 #include <V3d_TypeOfOrientation.hxx>
@@ -3940,6 +3958,415 @@ void prsdim_set_display_units(void* dim_ptr, const char* units) {
         (**dim).SetDisplayUnits(TCollection_AsciiString(units));
     } catch (Standard_Failure& e) {
         set_error(e.what());
+    }
+}
+
+// --- AIS Interactive Types ---
+
+void* ais_create_colored_shape(occt_shape shape) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    try {
+        Handle(AIS_ColoredShape)* h = new Handle(AIS_ColoredShape)(new AIS_ColoredShape(*to_shape(shape)));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+int ais_colored_shape_set_color(void* obj_ptr, occt_shape sub, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null colored shape argument", 2); return 0; }
+    if (!sub) { set_error("null sub-shape argument", 2); return 0; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ColoredShape)*>(obj_ptr);
+        (*obj)->SetCustomColor(*to_shape(sub), Quantity_Color(r, g, b, Quantity_TOC_RGB));
+        return 1;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return 0;
+    }
+}
+
+void* ais_create_manipulator(void) {
+    clear_error();
+    try {
+        Handle(AIS_Manipulator)* h = new Handle(AIS_Manipulator)(new AIS_Manipulator());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_manipulator_attach(void* obj_ptr, void* ais_obj_ptr) {
+    clear_error();
+    if (!obj_ptr) { set_error("null manipulator argument", 2); return; }
+    if (!ais_obj_ptr) { set_error("null ais-object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Manipulator)*>(obj_ptr);
+        auto* ais = static_cast<Handle(AIS_InteractiveObject)*>(ais_obj_ptr);
+        (*obj)->Attach(*ais);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_manipulator_set_position(void* obj_ptr, double x, double y, double z) {
+    clear_error();
+    if (!obj_ptr) { set_error("null manipulator argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Manipulator)*>(obj_ptr);
+        (*obj)->SetPosition(gp_Ax2(gp_Pnt(x, y, z), gp_Dir(0, 0, 1)));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_manipulator_set_size(void* obj_ptr, double size) {
+    clear_error();
+    if (!obj_ptr) { set_error("null manipulator argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Manipulator)*>(obj_ptr);
+        (*obj)->SetSize(size);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_manipulator_set_active_axes(void* obj_ptr, int translate, int rotate, int scale) {
+    clear_error();
+    if (!obj_ptr) { set_error("null manipulator argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_Manipulator)*>(obj_ptr);
+        (*obj)->SetPart(AIS_MM_Translation, translate != 0);
+        (*obj)->SetPart(AIS_MM_Rotation, rotate != 0);
+        (*obj)->SetPart(AIS_MM_Scaling, scale != 0);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_connected(void* src_ptr) {
+    clear_error();
+    if (!src_ptr) { set_error("null source object argument", 2); return nullptr; }
+    try {
+        auto* src = static_cast<Handle(AIS_InteractiveObject)*>(src_ptr);
+        Handle(AIS_ConnectedInteractive)* h = new Handle(AIS_ConnectedInteractive)(new AIS_ConnectedInteractive());
+        (*h)->Connect(*src);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_multiple_connected(void) {
+    clear_error();
+    try {
+        Handle(AIS_MultipleConnectedInteractive)* h =
+            new Handle(AIS_MultipleConnectedInteractive)(new AIS_MultipleConnectedInteractive());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_multiple_connected_connect(void* obj_ptr, void* src_ptr) {
+    clear_error();
+    if (!obj_ptr) { set_error("null multiple-connected argument", 2); return; }
+    if (!src_ptr) { set_error("null source object argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_MultipleConnectedInteractive)*>(obj_ptr);
+        auto* src = static_cast<Handle(AIS_InteractiveObject)*>(src_ptr);
+        (*obj)->Connect(*src);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_point_cloud(double* verts, int count) {
+    clear_error();
+    if (!verts || count <= 0) { set_error("invalid point array", 2); return nullptr; }
+    try {
+        Handle(Graphic3d_ArrayOfPoints) arr = new Graphic3d_ArrayOfPoints(count);
+        for (int i = 0; i < count; i++) {
+            arr->AddVertex(gp_Pnt(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2]));
+        }
+        Handle(AIS_PointCloud)* h = new Handle(AIS_PointCloud)(new AIS_PointCloud());
+        (*h)->SetPoints(arr);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_point_cloud_set_colors(void* obj_ptr, double* colors, int count) {
+    clear_error();
+    if (!obj_ptr) { set_error("null point cloud argument", 2); return; }
+    if (!colors || count <= 0) { set_error("invalid color array", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_PointCloud)*>(obj_ptr);
+        Handle(Graphic3d_ArrayOfPoints) arr = new Graphic3d_ArrayOfPoints(count, true, false);
+        for (int i = 0; i < count; i++) {
+            arr->AddVertex(gp_Pnt(0, 0, 0),
+                           Quantity_Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2],
+                                          Quantity_TOC_RGB));
+        }
+        (*obj)->SetPoints(arr);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_point_cloud_set_size(void* obj_ptr, double size) {
+    clear_error();
+    if (!obj_ptr) { set_error("null point cloud argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_PointCloud)*>(obj_ptr);
+        // Point size not directly available in OCCT 8.0 AIS_PointCloud API
+        // Set via aspect attributes in the future
+        (void)size;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_triangulation(double* verts, int vcount, int* tris, int tcount, double* colors) {
+    clear_error();
+    if (!verts || vcount <= 0 || !tris || tcount <= 0) {
+        set_error("invalid vertex or triangle array", 2); return nullptr;
+    }
+    try {
+        NCollection_Array1<gp_Pnt> pntArr(1, vcount);
+        for (int i = 0; i < vcount; i++) {
+            pntArr.SetValue(i + 1, gp_Pnt(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2]));
+        }
+        NCollection_Array1<Poly_Triangle> triArr(1, tcount);
+        for (int i = 0; i < tcount; i++) {
+            triArr.SetValue(i + 1, Poly_Triangle(tris[i * 3] + 1, tris[i * 3 + 1] + 1, tris[i * 3 + 2] + 1));
+        }
+        Handle(Poly_Triangulation) polyTri = new Poly_Triangulation(pntArr, triArr);
+        Handle(AIS_Triangulation)* h = new Handle(AIS_Triangulation)(new AIS_Triangulation(polyTri));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_plane(double ox, double oy, double oz, double nx, double ny, double nz, double size) {
+    clear_error();
+    try {
+        gp_Ax2 axes(get_pnt(ox, oy, oz), get_dir(nx, ny, nz));
+        Handle(Geom_Plane) geomPlane = new Geom_Plane(axes);
+        Handle(AIS_Plane)* h = new Handle(AIS_Plane)(new AIS_Plane(geomPlane));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_axis(double ox, double oy, double oz, double dx, double dy, double dz) {
+    clear_error();
+    try {
+        gp_Pnt origin(ox, oy, oz);
+        gp_Dir dir(dx, dy, dz);
+        Handle(Geom_Line) geomLine = new Geom_Line(origin, dir);
+        Handle(AIS_Axis)* h = new Handle(AIS_Axis)(new AIS_Axis(geomLine));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_line(double x1, double y1, double z1, double x2, double y2, double z2) {
+    clear_error();
+    try {
+        gp_Pnt p1(x1, y1, z1);
+        gp_Pnt p2(x2, y2, z2);
+        Handle(Geom_Line) geomLine = new Geom_Line(p1, gp_Dir(gp_Vec(p1, p2)));
+        Handle(AIS_Line)* h = new Handle(AIS_Line)(new AIS_Line(geomLine));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_circle(double cx, double cy, double cz, double nx, double ny, double nz, double radius) {
+    clear_error();
+    if (radius <= 0) { set_error("non-positive radius", 2); return nullptr; }
+    try {
+        gp_Ax2 axes(get_pnt(cx, cy, cz), get_dir(nx, ny, nz));
+        Handle(Geom_Circle) geomCirc = new Geom_Circle(axes, radius);
+        Handle(AIS_Circle)* h = new Handle(AIS_Circle)(new AIS_Circle(geomCirc));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void* ais_create_textured_shape(occt_shape shape, const char* filename) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!filename) { set_error("null filename argument", 2); return nullptr; }
+    try {
+        Handle(AIS_TexturedShape)* h = new Handle(AIS_TexturedShape)(new AIS_TexturedShape(*to_shape(shape)));
+        (*h)->SetTextureFileName(TCollection_AsciiString(filename));
+        (*h)->SetDisplayMode(1);
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_textured_shape_set_repeat(void* obj_ptr, double u, double v) {
+    clear_error();
+    if (!obj_ptr) { set_error("null textured shape argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_TexturedShape)*>(obj_ptr);
+        (*obj)->SetTextureRepeat(u, v);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_textured_shape_set_origin(void* obj_ptr, double u, double v) {
+    clear_error();
+    if (!obj_ptr) { set_error("null textured shape argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_TexturedShape)*>(obj_ptr);
+        (*obj)->SetTextureOrigin(u, v);
+        (*obj)->Redisplay(true);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_view_cube(void) {
+    clear_error();
+    try {
+        Handle(AIS_ViewCube)* h = new Handle(AIS_ViewCube)(new AIS_ViewCube());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_view_cube_set_size(void* obj_ptr, double size) {
+    clear_error();
+    if (!obj_ptr) { set_error("null view cube argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ViewCube)*>(obj_ptr);
+        (*obj)->SetSize(size);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_view_cube_set_box_color(void* obj_ptr, double r, double g, double b) {
+    clear_error();
+    if (!obj_ptr) { set_error("null view cube argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ViewCube)*>(obj_ptr);
+        (*obj)->SetBoxColor(Quantity_Color(r, g, b, Quantity_TOC_RGB));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_view_cube_set_corner(void* obj_ptr, int corner) {
+    clear_error();
+    if (!obj_ptr) { set_error("null view cube argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ViewCube)*>(obj_ptr);
+        Handle(Graphic3d_TransformPers) pers =
+            new Graphic3d_TransformPers(Graphic3d_TMF_TriedronPers,
+                                         static_cast<Aspect_TypeOfTriedronPosition>(corner),
+                                         NCollection_Vec2<int>(0, 0));
+        (*obj)->SetTransformPersistence(pers);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_color_scale(void) {
+    clear_error();
+    try {
+        Handle(AIS_ColorScale)* h = new Handle(AIS_ColorScale)(new AIS_ColorScale());
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+void ais_color_scale_set_range(void* obj_ptr, double min, double max) {
+    clear_error();
+    if (!obj_ptr) { set_error("null color scale argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ColorScale)*>(obj_ptr);
+        (*obj)->SetRange(min, max);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_color_scale_set_size(void* obj_ptr, double w, double h) {
+    clear_error();
+    if (!obj_ptr) { set_error("null color scale argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ColorScale)*>(obj_ptr);
+        (*obj)->SetSize(w, h);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_color_scale_set_title(void* obj_ptr, const char* title) {
+    clear_error();
+    if (!obj_ptr) { set_error("null color scale argument", 2); return; }
+    if (!title) { set_error("null title argument", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ColorScale)*>(obj_ptr);
+        (*obj)->SetTitle(TCollection_AsciiString(title));
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void ais_color_scale_set_intervals(void* obj_ptr, int n) {
+    clear_error();
+    if (!obj_ptr) { set_error("null color scale argument", 2); return; }
+    if (n < 1) { set_error("invalid number of intervals", 2); return; }
+    try {
+        auto* obj = static_cast<Handle(AIS_ColorScale)*>(obj_ptr);
+        (*obj)->SetNumberOfIntervals(n);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+    }
+}
+
+void* ais_create_light_source(void* light_ptr) {
+    clear_error();
+    if (!light_ptr) { set_error("null light argument", 2); return nullptr; }
+    try {
+        auto* light = static_cast<Handle(V3d_Light)*>(light_ptr);
+        Handle(AIS_LightSource)* h = new Handle(AIS_LightSource)(new AIS_LightSource(*light));
+        return h;
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
     }
 }
 

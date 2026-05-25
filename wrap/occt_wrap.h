@@ -185,6 +185,49 @@ int   ais_trihedron_set_datum_part_color(void* obj, int part, double r, double g
 void  ais_trihedron_set_text_color(void* obj, double r, double g, double b);
 void  ais_trihedron_set_wireframe_color(void* obj, double r, double g, double b);
 
+// --- AIS Interactive Types ---
+
+void* ais_create_colored_shape(occt_shape shape);
+int   ais_colored_shape_set_color(void* obj, occt_shape sub, double r, double g, double b);
+
+void* ais_create_manipulator(void);
+void  ais_manipulator_attach(void* obj, void* ais_obj);
+void  ais_manipulator_set_position(void* obj, double x, double y, double z);
+void  ais_manipulator_set_size(void* obj, double size);
+void  ais_manipulator_set_active_axes(void* obj, int translate, int rotate, int scale);
+
+void* ais_create_connected(void* src);
+void* ais_create_multiple_connected(void);
+void  ais_multiple_connected_connect(void* obj, void* src);
+
+void* ais_create_point_cloud(double* verts, int count);
+void  ais_point_cloud_set_colors(void* obj, double* colors, int count);
+void  ais_point_cloud_set_size(void* obj, double size);
+
+void* ais_create_triangulation(double* verts, int vcount, int* tris, int tcount, double* colors);
+
+void* ais_create_plane(double ox, double oy, double oz, double nx, double ny, double nz, double size);
+void* ais_create_axis(double ox, double oy, double oz, double dx, double dy, double dz);
+void* ais_create_line(double x1, double y1, double z1, double x2, double y2, double z2);
+void* ais_create_circle(double cx, double cy, double cz, double nx, double ny, double nz, double radius);
+
+void* ais_create_textured_shape(occt_shape shape, const char* filename);
+void  ais_textured_shape_set_repeat(void* obj, double u, double v);
+void  ais_textured_shape_set_origin(void* obj, double u, double v);
+
+void* ais_create_view_cube(void);
+void  ais_view_cube_set_size(void* obj, double size);
+void  ais_view_cube_set_box_color(void* obj, double r, double g, double b);
+void  ais_view_cube_set_corner(void* obj, int corner);
+
+void* ais_create_color_scale(void);
+void  ais_color_scale_set_range(void* obj, double min, double max);
+void  ais_color_scale_set_size(void* obj, double w, double h);
+void  ais_color_scale_set_title(void* obj, const char* title);
+void  ais_color_scale_set_intervals(void* obj, int n);
+
+void* ais_create_light_source(void* light);
+
 // --- Custom Material ---
 void* make_material(double ar, double ag, double ab, double dr, double dg, double db,
                      double sr, double sg, double sb, double shininess, double transparency);

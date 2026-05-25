@@ -240,9 +240,40 @@
          :%ais-trihedron-set-size
          :%ais-trihedron-set-transform-pers
           :%ais-trihedron-set-datum-part-color
-          :%ais-trihedron-set-text-color
-          :%ais-trihedron-set-wireframe-color
-        :%make-brep-font-from-file
+           :%ais-trihedron-set-text-color
+           :%ais-trihedron-set-wireframe-color
+        :%ais-create-colored-shape
+        :%ais-colored-shape-set-color
+        :%ais-create-manipulator
+        :%ais-manipulator-attach
+        :%ais-manipulator-set-position
+        :%ais-manipulator-set-size
+        :%ais-manipulator-set-active-axes
+        :%ais-create-connected
+        :%ais-create-multiple-connected
+        :%ais-multiple-connected-connect
+        :%ais-create-point-cloud
+        :%ais-point-cloud-set-colors
+        :%ais-point-cloud-set-size
+        :%ais-create-triangulation
+        :%ais-create-plane
+        :%ais-create-axis
+        :%ais-create-line
+        :%ais-create-circle
+        :%ais-create-textured-shape
+        :%ais-textured-shape-set-repeat
+        :%ais-textured-shape-set-origin
+        :%ais-create-view-cube
+        :%ais-view-cube-set-size
+        :%ais-view-cube-set-box-color
+        :%ais-view-cube-set-corner
+        :%ais-create-color-scale
+        :%ais-color-scale-set-range
+        :%ais-color-scale-set-size
+        :%ais-color-scale-set-title
+        :%ais-color-scale-set-intervals
+        :%ais-create-light-source
+         :%make-brep-font-from-file
         :%make-brep-font-from-name
         :%free-brep-font
         :%make-text-shape
@@ -514,8 +545,38 @@
          :show-trihedron
          :set-trihedron-axis-colors
          :set-trihedron-text-color
-         :set-trihedron-wireframe-color
-        :ais-set-transparency
+          :set-trihedron-wireframe-color
+         :make-colored-shape
+         :make-manipulator
+         :set-manipulator-position
+         :set-manipulator-size
+         :attach-manipulator
+         :set-manipulator-active-axes
+         :make-connected-interactive
+         :make-point-cloud
+         :set-point-cloud-colors
+         :set-point-cloud-size
+         :make-ais-plane
+         :make-ais-axis
+         :make-ais-line
+         :make-ais-circle
+         :make-textured-shape
+         :set-texture-repeat
+         :set-texture-origin
+         :make-view-cube
+         :set-view-cube-size
+         :set-view-cube-box-color
+         :set-view-cube-corner
+         :make-ais-triangulation
+         :make-color-scale
+         :set-color-scale-range
+         :set-color-scale-size
+         :set-color-scale-title
+         :set-color-scale-intervals
+         :make-light-source
+         :make-multiple-connected
+         :connect-to-multiple
+         :ais-set-transparency
         :ais-set-material
         :ais-set-custom-material
         :make-material

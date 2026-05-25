@@ -777,6 +777,42 @@ Note: `TopExp_Explorer` visits every sub-shape at each parent level. A box's 12 
 | `(ais-displayed-p ctx obj)` | Check if an object is currently displayed |
 | `(ais-free obj)` | Free an ais-object's C handle |
 
+### AIS Interactive Types
+
+| Function | Description |
+|----------|-------------|
+| `(make-colored-shape shape)` | Create an AIS colored shape with per-subshape color support |
+| `(set-colored-shape-color cs sub-shape color)` | Set color of a sub-shape within a colored shape |
+| `(make-manipulator)` | Create an interactive manipulator gizmo |
+| `(attach-manipulator manip ais-obj)` | Attach a manipulator to an AIS object |
+| `(set-manipulator-position manip x y z)` | Set manipulator position in world coordinates |
+| `(set-manipulator-size manip size)` | Set manipulator visual size |
+| `(set-manipulator-active-axes manip &key translate rotate scale)` | Enable/disable manipulator mode axes |
+| `(make-connected-interactive source)` | Create a connected interactive object sharing another's geometry |
+| `(make-point-cloud vertices)` | Create a point cloud from a list of (x y z) triples |
+| `(set-point-cloud-colors pc colors)` | Set per-point colors for a point cloud |
+| `(set-point-cloud-size pc size)` | Set point rendering size in pixels |
+| `(make-ais-plane position normal &key size)` | Create an AIS plane overlay |
+| `(make-ais-axis origin direction)` | Create an AIS axis overlay |
+| `(make-ais-line point1 point2)` | Create an AIS line segment |
+| `(make-ais-circle center normal radius)` | Create an AIS circle overlay |
+| `(make-textured-shape shape filename)` | Create a shape with an image texture applied |
+| `(set-texture-repeat obj u v)` | Set texture repeat count in UV directions |
+| `(set-texture-origin obj u v)` | Set texture mapping origin offset |
+| `(make-view-cube)` | Create a 3D orientation cube widget |
+| `(set-view-cube-size vc size)` | Set view cube size |
+| `(set-view-cube-box-color vc color)` | Set view cube face color |
+| `(set-view-cube-corner vc corner)` | Position view cube in a view corner |
+| `(make-ais-triangulation vertices triangles &key colors)` | Create a colored mesh display |
+| `(make-color-scale)` | Create a color scale legend bar widget |
+| `(set-color-scale-range cs min max)` | Set color scale value range |
+| `(set-color-scale-size cs width height)` | Set color scale display dimensions |
+| `(set-color-scale-title cs title)` | Set color scale title |
+| `(set-color-scale-intervals cs n)` | Set number of color intervals |
+| `(make-light-source light)` | Create an interactive light source representation |
+| `(make-multiple-connected)` | Create a multiple-connected composite object |
+| `(connect-to-multiple mc source)` | Connect an AIS object to a multiple-connected composite |
+
 ### Styling
 
 | Function | Description |

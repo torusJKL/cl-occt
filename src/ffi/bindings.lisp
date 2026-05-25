@@ -485,6 +485,101 @@
 (defcfun (%ais-trihedron-set-wireframe-color "ais_trihedron_set_wireframe_color") :void
   (obj :pointer) (r :double) (g :double) (b :double))
 
+;; --- AIS Interactive Types ---
+
+(defcfun (%ais-create-colored-shape "ais_create_colored_shape") :pointer
+  (shape :pointer))
+
+(defcfun (%ais-colored-shape-set-color "ais_colored_shape_set_color") :int
+  (obj :pointer) (sub :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-create-manipulator "ais_create_manipulator") :pointer)
+
+(defcfun (%ais-manipulator-attach "ais_manipulator_attach") :void
+  (obj :pointer) (ais-obj :pointer))
+
+(defcfun (%ais-manipulator-set-position "ais_manipulator_set_position") :void
+  (obj :pointer) (x :double) (y :double) (z :double))
+
+(defcfun (%ais-manipulator-set-size "ais_manipulator_set_size") :void
+  (obj :pointer) (size :double))
+
+(defcfun (%ais-manipulator-set-active-axes "ais_manipulator_set_active_axes") :void
+  (obj :pointer) (translate :int) (rotate :int) (scale :int))
+
+(defcfun (%ais-create-connected "ais_create_connected") :pointer
+  (src :pointer))
+
+(defcfun (%ais-create-multiple-connected "ais_create_multiple_connected") :pointer)
+
+(defcfun (%ais-multiple-connected-connect "ais_multiple_connected_connect") :void
+  (obj :pointer) (src :pointer))
+
+(defcfun (%ais-create-point-cloud "ais_create_point_cloud") :pointer
+  (verts :pointer) (count :int))
+
+(defcfun (%ais-point-cloud-set-colors "ais_point_cloud_set_colors") :void
+  (obj :pointer) (colors :pointer) (count :int))
+
+(defcfun (%ais-point-cloud-set-size "ais_point_cloud_set_size") :void
+  (obj :pointer) (size :double))
+
+(defcfun (%ais-create-triangulation "ais_create_triangulation") :pointer
+  (verts :pointer) (vcount :int) (tris :pointer) (tcount :int) (colors :pointer))
+
+(defcfun (%ais-create-plane "ais_create_plane") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (nx :double) (ny :double) (nz :double) (size :double))
+
+(defcfun (%ais-create-axis "ais_create_axis") :pointer
+  (ox :double) (oy :double) (oz :double)
+  (dx :double) (dy :double) (dz :double))
+
+(defcfun (%ais-create-line "ais_create_line") :pointer
+  (x1 :double) (y1 :double) (z1 :double)
+  (x2 :double) (y2 :double) (z2 :double))
+
+(defcfun (%ais-create-circle "ais_create_circle") :pointer
+  (cx :double) (cy :double) (cz :double)
+  (nx :double) (ny :double) (nz :double) (radius :double))
+
+(defcfun (%ais-create-textured-shape "ais_create_textured_shape") :pointer
+  (shape :pointer) (filename :string))
+
+(defcfun (%ais-textured-shape-set-repeat "ais_textured_shape_set_repeat") :void
+  (obj :pointer) (u :double) (v :double))
+
+(defcfun (%ais-textured-shape-set-origin "ais_textured_shape_set_origin") :void
+  (obj :pointer) (u :double) (v :double))
+
+(defcfun (%ais-create-view-cube "ais_create_view_cube") :pointer)
+
+(defcfun (%ais-view-cube-set-size "ais_view_cube_set_size") :void
+  (obj :pointer) (size :double))
+
+(defcfun (%ais-view-cube-set-box-color "ais_view_cube_set_box_color") :void
+  (obj :pointer) (r :double) (g :double) (b :double))
+
+(defcfun (%ais-view-cube-set-corner "ais_view_cube_set_corner") :void
+  (obj :pointer) (corner :int))
+
+(defcfun (%ais-create-color-scale "ais_create_color_scale") :pointer)
+
+(defcfun (%ais-color-scale-set-range "ais_color_scale_set_range") :void
+  (obj :pointer) (min :double) (max :double))
+
+(defcfun (%ais-color-scale-set-size "ais_color_scale_set_size") :void
+  (obj :pointer) (w :double) (h :double))
+
+(defcfun (%ais-color-scale-set-title "ais_color_scale_set_title") :void
+  (obj :pointer) (title :string))
+
+(defcfun (%ais-color-scale-set-intervals "ais_color_scale_set_intervals") :void
+  (obj :pointer) (n :int))
+
+(defcfun (%ais-create-light-source "ais_create_light_source") :pointer
+  (light :pointer))
+
 ;; --- Per-Object Properties ---
 
 (defcfun (%make-material "make_material") :pointer

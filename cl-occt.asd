@@ -63,7 +63,8 @@
             (:file "viewer-text-labels")
             (:file "viewer-defaults")
             (:file "viewer-drawer")
-             (:file "viewer-dimensions")))))))
+             (:file "viewer-dimensions")
+             (:file "viewer-ais-types")))))))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"

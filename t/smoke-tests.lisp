@@ -2989,6 +2989,114 @@
   (assert-nil (fix-edge nil))
   (assert-nil (fix-face nil)))
 
+(deftest make-colored-shape-from-box
+  (let ((cs (make-colored-shape (make-box 10 20 30))))
+    (assert-true (ais-object-p cs))))
+
+(deftest make-colored-shape-nil-shape
+  (assert-nil (make-colored-shape nil)))
+
+(deftest make-manipulator-created
+  (let ((m (make-manipulator)))
+    (assert-true (ais-object-p m))))
+
+(deftest make-manipulator-set-position
+  (let ((m (make-manipulator)))
+    (set-manipulator-position m 10 20 30)
+    (assert-true t)))
+
+(deftest make-manipulator-set-size
+  (let ((m (make-manipulator)))
+    (set-manipulator-size m 50.0)
+    (assert-true t)))
+
+(deftest make-connected-interactive-from-shape
+  (let* ((ais (ais-create-shape (make-box 10 20 30)))
+         (conn (make-connected-interactive ais)))
+    (assert-true (ais-object-p conn))))
+
+(deftest make-connected-interactive-nil
+  (assert-nil (make-connected-interactive nil)))
+
+(deftest make-point-cloud-valid
+  (let ((pc (make-point-cloud '((0 0 0) (1 0 0) (0 1 0)))))
+    (assert-true (ais-object-p pc))))
+
+(deftest make-point-cloud-nil
+  (assert-nil (make-point-cloud nil)))
+
+(deftest make-point-cloud-empty
+  (assert-nil (make-point-cloud '())))
+
+(deftest make-ais-plane-valid
+  (let ((p (make-ais-plane '(0 0 0) '(0 0 1))))
+    (assert-true (ais-object-p p))))
+
+(deftest make-ais-axis-valid
+  (let ((a (make-ais-axis '(0 0 0) '(1 0 0))))
+    (assert-true (ais-object-p a))))
+
+(deftest make-ais-line-valid
+  (let ((l (make-ais-line '(0 0 0) '(10 0 0))))
+    (assert-true (ais-object-p l))))
+
+(deftest make-ais-circle-valid
+  (let ((c (make-ais-circle '(0 0 0) '(0 0 1) 50.0)))
+    (assert-true (ais-object-p c))))
+
+(deftest make-view-cube-created
+  (let ((vc (make-view-cube)))
+    (assert-true (ais-object-p vc))))
+
+(deftest make-view-cube-set-size
+  (let ((vc (make-view-cube)))
+    (set-view-cube-size vc 60.0)
+    (assert-true t)))
+
+(deftest make-view-cube-set-corner
+  (let ((vc (make-view-cube)))
+    (set-view-cube-corner vc :upper-right)
+    (assert-true t)))
+
+(deftest make-color-scale-created
+  (let ((cs (make-color-scale)))
+    (assert-true (ais-object-p cs))))
+
+(deftest make-color-scale-set-range
+  (let ((cs (make-color-scale)))
+    (set-color-scale-range cs 0.0 100.0)
+    (assert-true t)))
+
+(deftest make-color-scale-set-size
+  (let ((cs (make-color-scale)))
+    (set-color-scale-size cs 50 200)
+    (assert-true t)))
+
+(deftest make-color-scale-set-title
+  (let ((cs (make-color-scale)))
+    (set-color-scale-title cs "Test")
+    (assert-true t)))
+
+(deftest make-color-scale-set-intervals
+  (let ((cs (make-color-scale)))
+    (set-color-scale-intervals cs 10)
+    (assert-true t)))
+
+(deftest make-multiple-connected-created
+  (let ((mc (make-multiple-connected)))
+    (assert-true (ais-object-p mc))))
+
+(deftest make-multiple-connected-connect
+  (let* ((ais (ais-create-shape (make-box 10 20 30)))
+         (mc (make-multiple-connected)))
+    (connect-to-multiple mc ais)
+    (assert-true t)))
+
+(deftest make-triangulation-valid
+  (let ((tri (make-ais-triangulation '((0 0 0) (1 0 0) (0 1 0) (0 0 1))
+                                      '((0 1 2) (0 2 3)))))
+    (assert-true (ais-object-p tri))))
+
 (defun run-core-tests ()
   "Run tests that do not require an X display (geometry, I/O, DAG, colors, text shapes)."
   (setq *test-result* (make-test-result))
@@ -3216,8 +3324,18 @@
                  shape-split-u-valid shape-split-u-nil
                  shape-upgrade-continuity-valid shape-upgrade-continuity-nil
                  apply-shape-process-single-valid apply-shape-process-sequence-valid apply-shape-process-nil
-                 heal-shape-valid heal-shape-nil
-                 fix-shaped-nil-input-all))
+                  heal-shape-valid heal-shape-nil
+                  fix-shaped-nil-input-all
+                make-colored-shape-from-box make-colored-shape-nil-shape
+                make-manipulator-created make-manipulator-set-position make-manipulator-set-size
+                make-connected-interactive-from-shape make-connected-interactive-nil
+                make-point-cloud-valid make-point-cloud-nil make-point-cloud-empty
+                make-ais-plane-valid make-ais-axis-valid make-ais-line-valid make-ais-circle-valid
+                make-view-cube-created make-view-cube-set-size make-view-cube-set-corner
+                make-color-scale-created make-color-scale-set-range make-color-scale-set-size
+                make-color-scale-set-title make-color-scale-set-intervals
+                make-multiple-connected-created make-multiple-connected-connect
+                make-triangulation-valid))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)
