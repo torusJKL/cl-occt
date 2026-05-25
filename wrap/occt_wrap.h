@@ -29,7 +29,7 @@ occt_shape rotate(occt_shape shape, double ax, double ay, double az, double angl
 int write_step(occt_shape shape, const char* filename);
 occt_shape read_step(const char* filename);
 
-int write_stl(occt_shape shape, const char* filename, double deflection);
+int write_stl(occt_shape shape, const char* filename, double deflection, double angle, int relative);
 occt_shape read_stl(const char* filename);
 
 void free_shape(occt_shape shape);
@@ -659,6 +659,33 @@ occt_shape hlr_project(occt_shape shape,
 
 occt_shape convert_to_revolution(occt_shape shape);
 occt_shape convert_swept_to_elementary(occt_shape shape);
+
+// --- Mesh Operations (BRepMesh_IncrementalMesh, Poly_Triangulation, Poly_Connect) ---
+
+occt_shape mesh_shape(occt_shape shape, double deflection, double angle, int relative);
+
+int mesh_get_vertices(occt_shape shape, double* out_verts, int max_count);
+int mesh_get_triangles(occt_shape shape, int* out_tris, int max_count);
+int mesh_get_normals(occt_shape shape, double* out_normals, int max_count);
+int mesh_get_triangle_count(occt_shape shape);
+
+int mesh_triangle_adjacent(occt_shape shape, int tri_index, int edge_index);
+int mesh_triangle_elements(occt_shape shape, int tri_index, int* out_n1, int* out_n2, int* out_n3);
+
+// --- RWMesh Utility Enums ---
+
+int rwmesh_coordinate_system_zup(void);
+int rwmesh_coordinate_system_yup(void);
+int rwmesh_name_format_auto(void);
+int rwmesh_name_format_short(void);
+int rwmesh_name_format_full(void);
+
+// --- MeshVS ---
+
+void* meshvs_create_mesh(void);
+void  meshvs_free_mesh(void* mesh);
+int   meshvs_set_data(void* mesh, double* verts, int vcount, int* tris, int tcount, double* colors);
+void  meshvs_display(void* ctx, void* mesh);
 
 #ifdef __cplusplus
 }

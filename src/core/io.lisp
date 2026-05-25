@@ -41,10 +41,12 @@
   **See also:** `write-step`, `read-stl`, `read-step-assembly`"
   (make-shape (%read-step filename)))
 
-(defun write-stl (shape filename &key (deflection 0.1d0))
+(defun write-stl (shape filename &key (deflection 0.1d0) (angle 0.5d0) (relative nil))
   "Write **shape** to an STL file at **filename**.
 
   **deflection** controls the tessellation quality (smaller = finer).
+  **angle** controls the angular deviation in radians (default 0.5).
+  **relative** when non-nil uses relative deflection mode.
   Returns `t` on success, signals an OCCT error on failure, or
   returns `nil` if **shape** is null or not a valid shape.
 
@@ -52,8 +54,9 @@
 
     (write-stl (make-box 10 20 30) \"/tmp/clocct-test-box.stl\")
     (write-stl (make-sphere 10) \"/tmp/clocct-test-sphere.stl\" :deflection 0.05)
+    (write-stl (make-box 10 20 30) \"/tmp/clocct-test-box.stl\" :angle 0.2 :relative t)
 
-  **See also:** `read-stl`, `write-step`"
+  **See also:** `read-stl`, `write-step`, `mesh-shape`"
   (cond
     ((null shape)
      (warn "write-stl: nil shape, nothing written")
@@ -62,7 +65,10 @@
      (warn "write-stl: not a shape object, nothing written")
      nil)
     (t
-     (let ((result (%write-stl (%ptr shape) filename (coerce deflection 'double-float))))
+     (let ((result (%write-stl (%ptr shape) filename
+                               (coerce deflection 'double-float)
+                               (coerce angle 'double-float)
+                               (if relative 1 0))))
        (if (zerop result)
            (error 'occt-error
                   :code (%get-error-code)

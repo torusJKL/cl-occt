@@ -424,11 +424,27 @@
           :%hlr-project
           :%convert-to-revolution
           :%convert-swept-to-elementary
-         :%shape-gprops-internal
-       :%shape-distance-extrema-internal
-       :%shape-type-to-int
-     :%curve-kind->keyword
-     :%surface-kind->keyword
+          :%shape-gprops-internal
+        :%shape-distance-extrema-internal
+        :%shape-type-to-int
+      :%curve-kind->keyword
+      :%surface-kind->keyword
+        :%mesh-shape
+        :%mesh-get-vertices
+        :%mesh-get-triangles
+        :%mesh-get-normals
+        :%mesh-get-triangle-count
+        :%mesh-triangle-adjacent
+        :%mesh-triangle-elements
+        :%rwmesh-coordinate-system-zup
+        :%rwmesh-coordinate-system-yup
+        :%rwmesh-name-format-auto
+        :%rwmesh-name-format-short
+        :%rwmesh-name-format-full
+        :%meshvs-create-mesh
+        :%meshvs-free-mesh
+        :%meshvs-set-data
+        :%meshvs-display
 ))
 
 (defpackage :cl-occt
@@ -863,11 +879,24 @@
                :shape-upgrade-continuity
                :apply-shape-process
                :apply-healing-pipeline
-                :heal-shape
-                :sew-shapes
-                :defeature-shape
-                :check-shape-validity
-                :boolean-builder
-                :hlr-project
-                :convert-to-revolution
-                :convert-swept-to-elementary))
+                 :heal-shape
+                 :sew-shapes
+                 :defeature-shape
+                 :check-shape-validity
+                 :boolean-builder
+                 :hlr-project
+                 :convert-to-revolution
+                 :convert-swept-to-elementary
+                 :mesh-shape
+                 :mesh-get-vertices
+                 :mesh-get-triangles
+                 :mesh-get-normals
+                 :mesh-get-triangle-count
+                 :mesh-triangle-adjacent
+                 :mesh-triangle-elements
+                 :meshvs-mesh
+                 :meshvs-mesh-p
+                 :make-meshvs-mesh
+                 :meshvs-display
+                 :meshvs-free
+                 :meshvs-handle))

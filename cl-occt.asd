@@ -32,6 +32,7 @@
             (:file "mass-properties")
             (:file "shape-analysis")
              (:file "topology")
+             (:file "mesh")
              (:file "fillet")
              (:file "chamfer")
              (:file "blend")

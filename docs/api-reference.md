@@ -391,7 +391,7 @@ Original shape is unchanged. Nil in → nil out.
 
 | Function | Description |
 |----------|-------------|
-| `(write-stl shape path &key deflection)` | Export to binary STL file (deflection=0.1) |
+| `(write-stl shape path &key deflection angle relative)` | Export to binary STL file (deflection=0.1, angle=0.5 rad, relative=nil) |
 | `(read-stl path)` | Import from STL file |
 
 ### IGES I/O
@@ -430,6 +430,47 @@ Requires OCCT built with `-DUSE_RAPIDJSON=ON -DBUILD_MODULE_DEGLTF=ON` and `libr
 |----------|-------------|
 | `(write-gltf shape path &key coordinate-system per-vertex-colors)` | Export to glTF file (coordinate-system: `:zup` or `:yup`) |
 | `(read-gltf path &key coordinate-system)` | Import from glTF file |
+
+### Mesh Operations
+
+Control shape tessellation and access mesh data (vertices, triangles, normals, connectivity).
+
+| Function | Description |
+|----------|-------------|
+| `(mesh-shape shape &key deflection angle relative)` | Explicitly triangulate shape using BRepMesh_IncrementalMesh. Returns shape for chaining, nil on invalid input |
+| `(mesh-get-vertices shape)` | Extract vertex positions as list of `(x y z)` triples. Returns nil if unmeshed |
+| `(mesh-get-triangles shape)` | Extract triangle indices as list of `(i0 i1 i2)` 0-based triples. Returns nil if unmeshed |
+| `(mesh-get-normals shape)` | Extract per-vertex normals as list of `(nx ny nz)` vectors. Returns nil if unavailable |
+| `(mesh-get-triangle-count shape)` | Number of triangles (nil instead of 0 if unmeshed) |
+| `(mesh-triangle-adjacent shape tri-index edge-index)` | Get adjacent triangle index across edge (0-2). Returns nil on boundary |
+| `(mesh-triangle-elements shape tri-index)` | Three vertex indices of a triangle as multiple values. Returns nil on invalid index |
+
+```lisp
+;; Mesh a box with fine tessellation
+(let ((box (mesh-shape (make-box 10 20 30) :deflection 0.05 :angle 0.2)))
+  (mesh-get-vertices box))  ; → ((x y z) ...)
+
+;; Chain mesh with STL export
+(write-stl (mesh-shape (make-box 10 20 30) :deflection 0.02) "fine.stl")
+```
+
+### MeshVS Display (Raw Mesh Viewer)
+
+Display polygonal meshes directly in the viewer without requiring a TopoDS_Shape.
+
+| Function | Description |
+|----------|-------------|
+| `(make-meshvs-mesh vertices triangles &key colors)` | Create a MeshVS displayable mesh from vertices and triangles |
+| `(meshvs-display ctx mesh)` | Display a meshvs-mesh in an AIS context |
+| `(meshvs-free mesh)` | Explicitly free a meshvs-mesh's C handle; safe to call on nil |
+
+```lisp
+(with-viewer (v)
+  (let* ((ctx (ais-create-context v))
+         (mesh (make-meshvs-mesh '((0 0 0) (10 0 0) (10 10 0) (0 10 0))
+                                 '((0 1 2) (0 2 3)))))
+    (meshvs-display ctx mesh)))
+```
 
 ### Compounds
 
