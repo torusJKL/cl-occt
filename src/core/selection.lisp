@@ -31,21 +31,27 @@
 ;; --- Predicates ---
 
 (defun entity-owner-p (obj)
+  "**Returns:** `t` if **obj** is an `entity-owner` object."
   (typep obj 'entity-owner))
 
 (defun brep-owner-p (obj)
+  "**Returns:** `t` if **obj** is a `brep-owner` object."
   (typep obj 'brep-owner))
 
 (defun selection-filter-p (obj)
+  "**Returns:** `t` if **obj** is a `selection-filter` object."
   (typep obj 'selection-filter))
 
 (defun edge-filter-p (obj)
+  "**Returns:** `t` if **obj** is an `edge-filter` object."
   (typep obj 'edge-filter))
 
 (defun face-filter-p (obj)
+  "**Returns:** `t` if **obj** is a `face-filter` object."
   (typep obj 'face-filter))
 
 (defun shape-type-filter-p (obj)
+  "**Returns:** `t` if **obj** is a `shape-type-filter` object."
   (typep obj 'shape-type-filter))
 
 ;; --- TopAbs shape type conversion ---

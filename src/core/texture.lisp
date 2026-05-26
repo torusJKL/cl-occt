@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defclass image ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps an Image_PixMap handle with GC via tg:finalize."))
 
 (defun image-p (obj)
   "Returns `t` if **obj** is an `image` instance."
@@ -54,7 +55,8 @@ Returns t on success, nil otherwise.
 ;; --- Texture 2D ---
 
 (defclass texture-2d ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps a Graphic3d_Texture2D handle with GC via tg:finalize."))
 
 (defun texture-2d-p (obj)
   "Returns `t` if **obj** is a `texture-2d` instance (including `texture-2dplane`)."
@@ -94,7 +96,8 @@ Returns a `texture-2d` instance or nil on failure.
 ;; --- Texture 2D Plane ---
 
 (defclass texture-2dplane (texture-2d)
-  ())
+  ()
+  (:documentation "Wraps a Graphic3d_Texture2Dplane handle with GC via tg:finalize."))
 
 (defun texture-2dplane-p (obj)
   "Returns `t` if **obj** is a `texture-2dplane` instance."
@@ -162,7 +165,8 @@ Returns a `texture-2dplane` instance or nil on failure.
 ;; --- Texture Params ---
 
 (defclass texture-params ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps a Graphic3d_TextureParams handle with GC via tg:finalize."))
 
 (defun texture-params-p (obj)
   "Returns `t` if **obj** is a `texture-params` instance."

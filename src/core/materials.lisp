@@ -3,7 +3,8 @@
 ;; --- PBR Material ---
 
 (defclass pbr-material ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps a Graphic3d_PBRMaterial handle with GC via tg:finalize."))
 
 (defun pbr-material-p (obj)
   "Returns `t` if **obj** is a `pbr-material` instance."
@@ -91,7 +92,8 @@ Returns a `pbr-material` instance or nil.
 ;; --- BSDF Material ---
 
 (defclass bsdf ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps a Graphic3d_BSDF handle with GC via tg:finalize."))
 
 (defun bsdf-p (obj)
   "Returns `t` if **obj** is a `bsdf` instance."

@@ -5,7 +5,8 @@
    (%diffuse :initarg :diffuse :reader material-diffuse)
    (%specular :initarg :specular :reader material-specular)
    (%shininess :initarg :shininess :initform 0.5 :reader material-shininess)
-   (%transparency :initarg :transparency :initform 0.0 :reader material-transparency)))
+   (%transparency :initarg :transparency :initform 0.0 :reader material-transparency))
+  (:documentation "Represents a Graphic3d_MaterialAspect with ambient, diffuse, specular, shininess, transparency."))
 
 (defun material-p (obj)
   "Returns `t` if **obj** is a `material` instance."
@@ -28,7 +29,8 @@
 (defparameter *material-presets*
   '(:brass :bronze :copper :gold :pewter :plastic :silver :steel :stone
     :shiny-plastic :satin :metalized :neon-phc :chrome :aluminium :obsidian
-    :glass :jade :matte :shiny :default))
+    :glass :jade :matte :shiny :default)
+  "List of available material preset keyword names.")
 
 (defun material-preset-list ()
   "Returns the list of available material preset keyword names.

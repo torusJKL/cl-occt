@@ -95,6 +95,14 @@
 ;; ----------------------------------------------------------------
 
 (defun xcaf-add-linear-dimension (doc shape points &key value)
+  "Add a linear dimension to **shape** in the XCAF **doc**.
+
+  **points** is a list of 2 (x y z) points defining the dimension.
+  **value** is the measured value (required).
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-angular-dimension`, `xcaf-add-diameter-dimension`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-linear-dimension: nil doc") nil)
@@ -114,6 +122,14 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-add-angular-dimension (doc shape edges &key value)
+  "Add an angular dimension to **shape** in the XCAF **doc**.
+
+  **edges** is a list of 2 edge shapes defining the angle.
+  **value** is the measured angle (required).
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-linear-dimension`, `xcaf-add-diameter-dimension`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-angular-dimension: nil doc") nil)
@@ -138,6 +154,13 @@
          (cffi:foreign-free edge-arr))))))
 
 (defun xcaf-add-diameter-dimension (doc shape subshape &key value)
+  "Add a diameter dimension to **shape** via **subshape** in the XCAF **doc**.
+
+  **value** is the measured diameter (required).
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-linear-dimension`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-diameter-dimension: nil doc") nil)
@@ -154,6 +177,15 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-add-tolerance (doc shape type &key value modifiers)
+  "Add a tolerance to **shape** in the XCAF **doc**.
+
+  **type** is a keyword like :flatness, :position, :parallelism, etc.
+  **value** is the tolerance value.
+  **modifiers** is an optional list of modifier keywords (:mmc, :lmc, :rfs, :projected).
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-geometric-tolerance`, `xcaf-add-datum`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-tolerance: nil doc") nil)
@@ -180,6 +212,13 @@
          (if (zerop result) nil t))))))
 
 (defun xcaf-add-datum (doc shape &key label)
+  "Add a datum reference to **shape** in the XCAF **doc**.
+
+  **label** is the datum label string (required).
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-tolerance`, `xcaf-add-geometric-tolerance`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-datum: nil doc") nil)
@@ -192,6 +231,15 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-add-geometric-tolerance (doc shape type value &key datums)
+  "Add a geometric tolerance to **shape** in the XCAF **doc**.
+
+  **type** is a keyword like :flatness, :position, :parallelism, etc.
+  **value** is the tolerance value.
+  **datums** is an optional list of datum label strings.
+
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-tolerance`, `xcaf-add-datum`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-geometric-tolerance: nil doc") nil)
@@ -224,6 +272,11 @@
            (cffi:foreign-free datum-arr)))))))
 
 (defun xcaf-get-dimensions (doc shape)
+  "Get the list of dimensions attached to **shape** in the XCAF **doc**.
+
+  Returns a list of dimension plists with :type, :value, :nb-points, :points.
+
+  **See also:** `xcaf-add-linear-dimension`, `xcaf-get-tolerances`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-dimensions: nil doc") nil)
@@ -240,6 +293,11 @@
                dims)))))))
 
 (defun xcaf-get-tolerances (doc shape)
+  "Get the list of tolerances attached to **shape** in the XCAF **doc**.
+
+  Returns a list of tolerance plists with :type, :value, :geom-tolerance-p.
+
+  **See also:** `xcaf-add-tolerance`, `xcaf-get-dimensions`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-tolerances: nil doc") nil)
@@ -256,6 +314,11 @@
                tols)))))))
 
 (defun xcaf-get-datums (doc shape)
+  "Get the list of datum labels attached to **shape** in the XCAF **doc**.
+
+  Returns a list of datum strings.
+
+  **See also:** `xcaf-add-datum`, `xcaf-add-geometric-tolerance`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-datums: nil doc") nil)

@@ -3,7 +3,8 @@
 (defclass shape-extrema ()
   ((%distance :initarg :distance :reader extrema-distance)
    (%point-on-shape1 :initarg :point-on-shape1 :reader extrema-point-on-shape1)
-   (%point-on-shape2 :initarg :point-on-shape2 :reader extrema-point-on-shape2)))
+   (%point-on-shape2 :initarg :point-on-shape2 :reader extrema-point-on-shape2))
+  (:documentation "Holds minimum distance result between two shapes and the closest points."))
 
 (in-package :cl-occt.impl)
 
@@ -250,7 +251,8 @@
 (defclass proximity-zone ()
   ((%distance :initarg :distance :reader proximity-distance)
    (%subshape1 :initarg :subshape1 :reader proximity-subshape1)
-   (%subshape2 :initarg :subshape2 :reader proximity-subshape2)))
+   (%subshape2 :initarg :subshape2 :reader proximity-subshape2))
+  (:documentation "Holds proximity analysis result: distance and the two subshapes involved."))
 
 (in-package :cl-occt.impl)
 

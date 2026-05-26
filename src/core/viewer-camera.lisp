@@ -7,7 +7,8 @@
    (%target :initarg :target :reader %target)
    (%up :initarg :up :reader %up)
    (%projection-type :initarg :projection-type :reader %projection-type)
-   (%fov :initarg :fov :reader %fov)))
+   (%fov :initarg :fov :reader %fov))
+  (:documentation "Snapshot of a V3d_View camera state (eye, target, up, projection, FOV)."))
 
 (defun viewer-camera-p (obj)
   "Returns `t` if **obj** is a `viewer-camera` object.

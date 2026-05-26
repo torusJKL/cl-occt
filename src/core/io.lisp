@@ -276,6 +276,16 @@
 ;; --- IGES I/O ---
 
 (defun write-iges (shape filename)
+  "Write **shape** to an IGES file at **filename**.
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-iges (make-box 10 20 30) \"/tmp/box.igs\")
+
+  **See also:** `read-iges`, `write-iges-assembly`"
   (cond
     ((null shape)
      (warn "write-iges: nil shape, nothing written")
@@ -292,9 +302,26 @@
            t)))))
 
 (defun read-iges (filename)
+  "Read a shape from an IGES file at **filename**.
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **Example:**
+
+      (let ((shape (read-iges \"/tmp/box.igs\")))
+        (when shape (shape-type shape)))
+
+  **See also:** `write-iges`, `read-step`"
   (make-shape (%read-iges filename)))
 
 (defun write-iges-assembly (root filename)
+  "Write an assembly tree to an IGES file using XDE.
+
+  **root** is an assembly instance (from `make-part` or `make-assembly`).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **root** is null.
+
+  **See also:** `read-iges-assembly`, `write-iges`"
   (when (null root)
     (warn "write-iges-assembly: nil assembly, nothing written")
     (return-from write-iges-assembly nil))
@@ -311,6 +338,11 @@
       (%xde-free-doc doc))))
 
 (defun read-iges-assembly (filename)
+  "Read an assembly tree from an IGES file using XDE.
+
+  Returns an assembly hierarchy, or `nil` if the file cannot be read.
+
+  **See also:** `write-iges-assembly`, `read-step-assembly`"
   (let ((doc (%xde-read-iges filename)))
     (if (cffi:null-pointer-p doc)
         nil
@@ -329,6 +361,20 @@
                   &key (coordinate-system :zup)
                     (name-format :auto)
                     (per-vertex-colors nil))
+  "Write **shape** to an OBJ file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **name-format** :auto, :short, or :full (default :auto)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-obj (make-box 10 20 30) \"/tmp/box.obj\")
+
+  **See also:** `read-obj`, `write-stl`"
   (cond
     ((null shape)
      (warn "write-obj: nil shape, nothing written")
@@ -348,11 +394,29 @@
            t)))))
 
 (defun read-obj (filename &key (coordinate-system :zup))
+  "Read a shape from an OBJ file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **See also:** `write-obj`, `read-step`"
   (make-shape (%read-obj filename (%coordinate-system->int coordinate-system))))
 
 ;; --- VRML Export ---
 
 (defun write-vrml (shape filename &key (deflection 0.1d0))
+  "Write **shape** to a VRML file at **filename**.
+
+  **deflection** controls the tessellation quality (smaller = finer).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-vrml (make-box 10 20 30) \"/tmp/box.wrl\")
+
+  **See also:** `write-stl`, `write-obj`"
   (cond
     ((null shape)
      (warn "write-vrml: nil shape, nothing written")
@@ -373,6 +437,19 @@
 (defun write-gltf (shape filename
                    &key (coordinate-system :zup)
                      (per-vertex-colors nil))
+  "Write **shape** to a glTF file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-gltf (make-box 10 20 30) \"/tmp/box.gltf\")
+
+  **See also:** `read-gltf`, `write-obj`"
   (cond
     ((null shape)
      (warn "write-gltf: nil shape, nothing written")
@@ -391,6 +468,13 @@
            t)))))
 
 (defun read-gltf (filename &key (coordinate-system :zup))
+  "Read a shape from a glTF file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **See also:** `write-gltf`, `read-obj`"
   (make-shape (%read-gltf filename (%coordinate-system->int coordinate-system))))
 
 ;; --- PLY Export ---
@@ -398,6 +482,19 @@
 (defun write-ply (shape filename
                   &key (coordinate-system :zup)
                     (per-vertex-colors nil))
+  "Write **shape** to a PLY file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-ply (make-box 10 20 30) \"/tmp/box.ply\")
+
+  **See also:** `write-stl`, `write-obj`"
   (cond
     ((null shape)
      (warn "write-ply: nil shape, nothing written")

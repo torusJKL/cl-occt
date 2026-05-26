@@ -5,7 +5,8 @@
 (defclass prs3d-triangulation ()
   ((%ptr :initarg :ptr :reader %ptr)
    (%vertex-count-cache :initform nil)
-   (%triangle-count-cache :initform nil)))
+   (%triangle-count-cache :initform nil))
+  (:documentation "Wraps a Prs3d triangulation handle with GC via tg:finalize."))
 
 (defun free-prs3d-triangulation (obj)
   "Explicitly free a prs3d-triangulation's C handle. Safe to call on nil."
@@ -140,9 +141,11 @@
 ;; --- prs3d-segments (used by BndBox and other wireframe display) ---
 
 (defclass prs3d-segments ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps a Prs3d line segments handle with GC via tg:finalize."))
 
 (defun free-prs3d-segments (obj)
+  "Explicitly free a prs3d-segments C handle. Safe to call on nil."
   (when (and obj (typep obj 'prs3d-segments))
     (let ((ptr (%ptr obj)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -156,17 +159,21 @@
     obj))
 
 (defun prs3d-segments-p (obj)
+  "**Returns:** `t` if **obj** is a `prs3d-segments` object."
   (typep obj 'prs3d-segments))
 
 (defun prs3d-segments-vertex-count (obj)
+  "Return the number of vertices in a prs3d-segments, or nil."
   (when (and (typep obj 'prs3d-segments) (%ptr obj))
     (%prs3d-segments-vertex-count (%ptr obj))))
 
 (defun prs3d-segments-edge-count (obj)
+  "Return the number of edges in a prs3d-segments, or nil."
   (when (and (typep obj 'prs3d-segments) (%ptr obj))
     (%prs3d-segments-edge-count (%ptr obj))))
 
 (defun prs3d-segments-vertices (obj)
+  "Return vertex positions as list of (x y z) triples, or nil."
   (when (and (typep obj 'prs3d-segments) (%ptr obj))
     (let* ((count (prs3d-segments-vertex-count obj))
            (arr (cffi:foreign-alloc :double :count (* count 3))))
@@ -180,6 +187,7 @@
         (cffi:foreign-free arr)))))
 
 (defun prs3d-segments-edges (obj)
+  "Return edge indices as list of (i0 i1) pairs (0-based vertex indices), or nil."
   (when (and (typep obj 'prs3d-segments) (%ptr obj))
     (let* ((count (prs3d-segments-edge-count obj))
            (arr (cffi:foreign-alloc :int :count (* count 2))))

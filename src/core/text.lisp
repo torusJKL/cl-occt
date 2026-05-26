@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defclass brep-font ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps a Font_BRepFont handle for TrueType/OpenType font loading."))
 
 (defun brep-font-p (obj)
   "Return `t` if **obj** is a BREP font object.
@@ -16,7 +17,8 @@
   ((%ptr :initarg :ptr :reader %ptr)
    (text :initform nil :reader ais-text-label-text)
    (position :initform nil :reader ais-text-label-position)
-   (color :initform nil :reader ais-text-label-color)))
+   (color :initform nil :reader ais-text-label-color))
+  (:documentation "Wraps an AIS_TextLabel for interactive 3D text annotations."))
 
 (defun ais-text-label-p (obj)
   "Return `t` if **obj** is an AIS text label object.
@@ -30,6 +32,9 @@
 (in-package :cl-occt.impl)
 
 (defun make-brep-font (ptr)
+  "Wrap a raw Font_BRepFont C pointer in a `brep-font` CLOS instance with finalization.
+
+  Returns a `brep-font` object, or nil if **ptr** is null."
   (if (cffi:null-pointer-p ptr)
       nil
       (let ((f (make-instance 'cl-occt:brep-font :ptr ptr)))

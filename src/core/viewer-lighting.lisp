@@ -16,7 +16,8 @@
 
 (defclass viewer-light ()
   ((%ptr :initarg :ptr :reader %ptr)
-   (%type :initarg :type :reader light-type)))
+   (%type :initarg :type :reader light-type))
+  (:documentation "Wraps a Graphic3d_CLight handle with GC via tg:finalize."))
 
 (defun viewer-light-p (obj)
   "Returns `t` if **obj** is a `viewer-light` instance."

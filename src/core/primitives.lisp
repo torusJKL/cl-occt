@@ -1,6 +1,9 @@
 (in-package :cl-occt.impl)
 
 (defun make-shape (ptr)
+  "Wrap a raw TopoDS_Shape C pointer in a `shape` CLOS instance with finalization.
+
+  Returns a `shape` object, or nil if **ptr** is null."
   (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((s (make-instance 'cl-occt:shape :ptr ptr)))

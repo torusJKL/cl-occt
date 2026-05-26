@@ -2,15 +2,21 @@
 
 (defclass xcaf-doc ()
   ((%ptr :initarg :%ptr :reader %ptr :initform nil))
-  )
+  (:documentation "Wraps an XCAF (extended STEP with metadata) document handle."))
 
 (defmethod print-object ((obj xcaf-doc) stream)
   (print-unreadable-object (obj stream :type t :identity t)))
 
 (defun xcaf-doc-p (obj)
+  "**Returns:** `t` if **obj** is an `xcaf-doc` object."
   (typep obj 'xcaf-doc))
 
 (defun make-xcaf-doc ()
+  "Create a new XCAF document for CAD data exchange (STEP with metadata).
+
+  Returns an `xcaf-doc` object, or nil on failure.
+
+  **See also:** `xcaf-free-doc`, `xcaf-add-shape`, `xcaf-add-view`"
   (let* ((ptr (cffi:foreign-alloc :pointer))
          (result (%xcaf-new-doc ptr)))
     (if (and (not (zerop result))
@@ -19,12 +25,16 @@
         nil)))
 
 (defun xcaf-free-doc (doc)
+  "Explicitly free an XCAF document. Returns `t` on success."
   (when doc
     (%xcaf-free-doc (%ptr doc))
     (setf (slot-value doc '%ptr) nil)
     t))
 
 (defun xcaf-add-shape (doc shape)
+  "Add a **shape** to the XCAF **doc**. Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-shape-to-layer`, `xcaf-has-material`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-shape: nil doc")
@@ -37,6 +47,10 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-add-shape-to-layer (doc shape layer)
+  "Add a **shape** to a named **layer** in the XCAF **doc**.
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-remove-shape-from-layer`, `xcaf-get-shape-layers`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-shape-to-layer: nil doc")
@@ -52,6 +66,10 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-remove-shape-from-layer (doc shape layer)
+  "Remove a **shape** from a named **layer** in the XCAF **doc**.
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-shape-to-layer`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-remove-shape-from-layer: nil doc")
@@ -67,11 +85,17 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-get-shape-layers (doc shape)
+  "Get the layers associated with a **shape** in the XCAF **doc**.
+  **Note:** Not yet implemented."
   (declare (ignore doc shape))
   (warn "xcaf-get-shape-layers: not yet implemented")
   nil)
 
 (defun xcaf-has-material (doc shape)
+  "Check if a **shape** has an associated material in the XCAF **doc**.
+  Returns `t` if material exists, `nil` otherwise.
+
+  **See also:** `xcaf-get-visual-material`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-has-material: nil doc")
@@ -83,6 +107,9 @@
      (not (zerop (%xcaf-has-material (%ptr doc) (%ptr shape)))))))
 
 (defun xcaf-add-view (doc)
+  "Add a view to the XCAF **doc**. Returns `t` on success.
+
+  **See also:** `xcaf-get-views`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-add-view: nil doc")
@@ -92,6 +119,10 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-get-views (doc)
+  "Get the list of views in the XCAF **doc**.
+  Returns a list of view plists, or nil.
+
+  **See also:** `xcaf-add-view`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-views: nil doc")
@@ -103,6 +134,10 @@
                collect (list :index i)))))))
 
 (defun xcaf-get-visual-material (doc shape)
+  "Get the visual material (color and alpha) of a **shape** in the XCAF **doc**.
+  Returns a plist with `:color` (r g b) and `:alpha`, or nil if not set.
+
+  **See also:** `xcaf-has-material`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-visual-material: nil doc")
@@ -129,6 +164,8 @@
          (cffi:foreign-free out-a))))))
 
 (defun xcaf-get-clipping-planes (doc)
+  "Get the list of clipping planes in the XCAF **doc**.
+  Returns a list of plists, or nil."
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-get-clipping-planes: nil doc")
@@ -140,6 +177,10 @@
                collect (list :index i)))))))
 
 (defun xcaf-expand-assembly (doc)
+  "Expand the assembly structure in the XCAF **doc**.
+  Returns `t` on success, `nil` on failure.
+
+  **See also:** `xcaf-add-shape`"
   (cond
     ((or (null doc) (null (%ptr doc)))
      (warn "xcaf-expand-assembly: nil doc")

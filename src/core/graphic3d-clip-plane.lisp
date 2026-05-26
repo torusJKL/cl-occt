@@ -1,12 +1,24 @@
 (in-package :cl-occt)
 
 (defclass clip-plane ()
-  ((%handle :initarg :handle :reader %handle)))
+  ((%handle :initarg :handle :reader %handle))
+  (:documentation "Wraps a Graphic3d_ClipPlane handle with GC via tg:finalize."))
 
 (defun clip-plane-p (obj)
+  "**Returns:** `t` if **obj** is a `clip-plane` object."
   (typep obj 'clip-plane))
 
 (defun make-clip-plane (&key (equation '(1 0 0 0)))
+  "Create a Graphic3d_ClipPlane with the given clipping plane **equation**.
+
+  **equation** is (a b c d) representing the plane ax + by + cz + d = 0.
+  Points with positive distance to the plane are clipped.
+
+  **Example:**
+
+      (make-clip-plane :equation '(0 0 1 -5))  ; clip below z=5
+
+  **See also:** `clip-plane-p`, `free-clip-plane`, `set-clip-plane-equation`"
   (destructuring-bind (a b c d) equation
     (let* ((ptr (%graphic3d-clip-plane-new
                  (coerce a 'double-float)
@@ -20,6 +32,7 @@
       obj)))
 
 (defun free-clip-plane (cp)
+  "Explicitly free a clip-plane's C handle. Safe to call on nil."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -27,6 +40,8 @@
         (setf (slot-value cp '%handle) (cffi:null-pointer))))))
 
 (defun set-clip-plane-equation (cp equation)
+  "Set the clipping plane **equation** (a b c d) for **cp**.
+  Returns the clip-plane object."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -39,6 +54,7 @@
         cp))))
 
 (defun clip-plane-equation (cp)
+  "Return the clipping plane equation (a b c d) of **cp**."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -50,6 +66,7 @@
                 (cffi:mem-ref d :double)))))))
 
 (defun set-clip-plane-on (cp on)
+  "Enable or disable clipping for **cp**. Returns the clip-plane object."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -57,12 +74,15 @@
         cp))))
 
 (defun clip-plane-on-p (cp)
+  "**Returns:** `t` if clipping plane **cp** is enabled."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
         (not (zerop (%graphic3d-clip-plane-is-on ptr)))))))
 
 (defun set-clip-plane-capping (cp on)
+  "Enable or disable capping (filled intersection surface) for **cp**.
+  Returns the clip-plane object."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))
@@ -70,6 +90,8 @@
         cp))))
 
 (defun set-clip-plane-cap-color (cp color)
+  "Set the cap color for **cp** as an (r g b) list.
+  Returns the clip-plane object."
   (when (clip-plane-p cp)
     (let ((ptr (%handle cp)))
       (when (and ptr (not (cffi:null-pointer-p ptr)))

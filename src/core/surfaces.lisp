@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defclass surface ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps a Geom_Surface handle from OCCT with GC via tg:finalize."))
 
 (defun surface-p (obj)
   "**Returns:** `t` if `obj` is a `surface` object, `nil` otherwise."
@@ -20,6 +21,9 @@
     (6 :bspline-surface)))
 
 (defun make-surface (ptr)
+  "Wrap a raw Geom_Surface C pointer in a `surface` CLOS instance with finalization.
+
+  Returns a `surface` object, or nil if **ptr** is null."
   (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((s (make-instance 'cl-occt:surface :ptr ptr)))

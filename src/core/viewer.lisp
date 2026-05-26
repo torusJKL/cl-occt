@@ -3,7 +3,8 @@
 (defclass viewer ()
   ((%driver :initarg :driver :reader %driver)
    (%viewer :initarg :viewer :reader %viewer)
-   (%view   :initarg :view   :reader %view)))
+   (%view   :initarg :view   :reader %view))
+  (:documentation "Wraps an OCCT V3d_Viewer + V3d_View with GC via tg:finalize."))
 
 (defun viewer-p (v)
   "Returns `t` if **v** is a `viewer` object.
@@ -94,7 +95,8 @@
 ;; --- AIS Context ---
 
 (defclass ais-context ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps an AIS_InteractiveContext handle with GC via tg:finalize."))
 
 (defun ais-context-p (v)
   "Returns `t` if **v** is an `ais-context` object.
@@ -137,7 +139,8 @@
 ;; --- AIS Object ---
 
 (defclass ais-object ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps an AIS_InteractiveObject handle with GC via tg:finalize."))
 
 (defun ais-object-p (v)
   "Returns `t` if **v** is an `ais-object` object.
@@ -290,15 +293,18 @@
 
 (defparameter *selection-scheme-map*
   '((:replace . 0) (:add . 1) (:remove . 2) (:xor . 3)
-    (:clear . 4) (:replace-extra . 5)))
+    (:clear . 4) (:replace-extra . 5))
+  "Maps selection scheme keywords to AIS_SelectionScheme integer codes.")
 
 (defparameter *status-of-detection-map*
   '((:error . 0) (:nothing . 1) (:all-bad . 2) (:selected . 3)
-    (:only-one-detected . 4) (:only-one-good . 5) (:several-good . 6)))
+    (:only-one-detected . 4) (:only-one-good . 5) (:several-good . 6))
+  "Maps detection status keywords to AIS_StatusOfDetection integer codes.")
 
 (defparameter *status-of-pick-map*
   '((:error . 0) (:nothing-selected . 1) (:removed . 2)
-    (:one-selected . 3) (:several-selected . 4)))
+    (:one-selected . 3) (:several-selected . 4))
+  "Maps pick status keywords to AIS_StatusOfPick integer codes.")
 
 (defun %lookup (key map)
   (cdr (assoc key map)))

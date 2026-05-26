@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defclass curve ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps a Geom_Curve handle from OCCT with GC via tg:finalize."))
 
 (defun curve-p (obj)
   "**Returns:** `t` if `obj` is a `curve` object, `nil` otherwise."
@@ -23,6 +24,9 @@
     (9 :helix)))
 
 (defun make-curve (ptr)
+  "Wrap a raw Geom_Curve C pointer in a `curve` CLOS instance with finalization.
+
+  Returns a `curve` object, or nil if **ptr** is null."
   (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((c (make-instance 'cl-occt:curve :ptr ptr)))
