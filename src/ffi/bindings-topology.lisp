@@ -42,3 +42,44 @@
   (wire :pointer)
   (ox :double) (oy :double) (oz :double)
   (nx :double) (ny :double) (nz :double))
+
+(defcfun (%free-shape-array "free_shape_array") :void
+  (arr :pointer))
+
+(defcfun (%face-edges "face_edges") :int
+  (face :pointer)
+  (out-edges :pointer)
+  (out-count :pointer))
+
+(defcfun (%edge-vertices "edge_vertices") :int
+  (edge :pointer)
+  (out-start :pointer)
+  (out-end :pointer))
+
+(defcfun (%vertex-edges "vertex_edges") :int
+  (vertex :pointer)
+  (parent :pointer)
+  (out-edges :pointer)
+  (out-count :pointer))
+
+(defcfun (%edge-faces "edge_faces") :int
+  (edge :pointer)
+  (parent :pointer)
+  (out-faces :pointer)
+  (out-count :pointer))
+
+(defcfun (%face-wires "face_wires") :int
+  (face :pointer)
+  (out-wires :pointer)
+  (out-count :pointer))
+
+(defcfun (%wire-edges "wire_edges") :int
+  (wire :pointer)
+  (out-edges :pointer)
+  (out-count :pointer))
+
+(defcfun (%shape-type-int "shape_type_int") :int
+  (shape :pointer))
+
+(defcfun (%shape-orientation-int "shape_orientation_int") :int
+  (shape :pointer))

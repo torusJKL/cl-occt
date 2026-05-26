@@ -1664,7 +1664,66 @@ All functions accept nil inputs and return nil. Returns nil for non-intersecting
 ;; Face-face intersection (two perpendicular planes)
 (let* ((f1 (make-face (make-wire (make-edge-3d -5 -5 0 5 -5 0) ...)))
        (f2 (make-face (make-wire (make-edge-3d 0 -5 -5 0 5 -5) ...))))
-  (intersect-face-face f1 f2))  ; → (:curves (...))
+  (intersect-face-face f1 f2))  ; → (:curves (...)))
 ```
+
+### Topology Navigation
+
+Navigate the topological graph of a shape: face→edges, edge→vertices, vertex→edges, edge→faces, face→wires, wire→edges, and adjacency queries.
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `(face-edges face)` | list | Bounding edges of a face |
+| `(edge-vertices edge)` | start-vertex, end-vertex | Two vertices of an edge |
+| `(vertex-edges vertex parent)` | list | All edges incident to a vertex within a parent shape |
+| `(edge-faces edge parent)` | list | One or two faces sharing a given edge within a parent shape |
+| `(face-wires face)` | list | Wires of a face (outer wire + holes) |
+| `(wire-edges wire)` | list | Ordered edges of a wire (via BRepTools_WireExplorer) |
+| `(shape-type shape)` | keyword | Shape type: `:solid`, `:face`, `:edge`, `:vertex`, `:wire`, `:shell`, `:compound` |
+| `(subshape-orientation shape)` | keyword | Orientation: `:forward`, `:reversed`, `:internal`, `:external` |
+
+All functions return nil for invalid or nil inputs.
+
+```lisp
+;; Navigate from face to edges to vertices
+(let* ((box (make-box 10 20 30))
+       (face (first (map-shape-subshapes box :face)))
+       (edges (face-edges face))
+       (edge (first edges)))
+  (multiple-value-bind (v1 v2) (edge-vertices edge)
+    (list v1 v2)))
+
+;; Get shape type
+(shape-type (make-box 10 20 30))  ; → :solid
+(shape-type (make-wire (make-edge 0 0 10 0)))  ; → :wire
 ```
+
+### Subshape Properties
+
+Per-face and per-edge geometric properties for AI-driven shape analysis.
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `(face-area face)` | double-float or nil | Area of a face via BRepGProp |
+| `(edge-length edge)` | double-float or nil | 3D curve length of an edge |
+| `(face-normal-at-center face)` | nx, ny, nz | Outward unit normal at the UV center of a face |
+| `(face-surface-type face)` | keyword or nil | Surface type: `:plane`, `:cylinder`, `:cone`, `:sphere`, `:torus` |
+| `(edge-curve-type edge)` | keyword or nil | Curve type: `:line`, `:circle`, `:ellipse`, `:hyperbola`, `:parabola` |
+| `(face-bounding-box face)` | xmin, ymin, zmin, xmax, ymax, zmax | Axis-aligned bounding box of a face |
+| `(edge-bounding-box edge)` | xmin, ymin, zmin, xmax, ymax, zmax | Axis-aligned bounding box of an edge |
+| `(subshape-bounding-box shape)` | xmin, ymin, zmin, xmax, ymax, zmax | Bounding box of any subshape |
+| `(face-center face)` | x, y, z | 3D point at the UV midpoint of a face |
+| `(shape-extent-along shape dx dy dz)` | min-proj, max-proj | Extent (projection range) along a direction vector |
+
+All functions return nil or nil-values for invalid/nil inputs.
+
+```lisp
+;; Compute area of each face of a box
+(let* ((box (make-box 10 20 30))
+       (faces (map-shape-subshapes box :face)))
+  (mapcar #'face-area faces))  ; → (200.0 200.0 300.0 300.0 600.0 600.0)
+
+;; Extent (height) of a box along Z
+(let ((box (make-box 10 20 30)))
+  (shape-extent-along box 0 0 1))  ; → 0.0, 30.0
 

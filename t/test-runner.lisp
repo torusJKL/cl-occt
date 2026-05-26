@@ -161,6 +161,20 @@
                 topology-make-polygon-too-few-points
                 topology-triangle-count topology-wire-order-check
                 topology-edge->curve topology-face->surface
+                topology-face-edges-box topology-face-edges-nil
+                topology-edge-vertices-box topology-edge-vertices-nil
+                topology-vertex-edges-box topology-vertex-edges-nil
+                topology-edge-faces-box topology-edge-faces-nil
+                topology-face-wires-box topology-face-wires-nil
+                topology-wire-edges-box topology-wire-edges-nil
+                topology-shape-type-box topology-shape-type-wire topology-shape-type-nil
+                topology-orientation-face topology-orientation-nil
+                topology-face-area-box topology-face-area-known topology-face-area-nil
+                topology-edge-length-box topology-edge-length-nil
+                topology-face-normal-box
+                topology-face-surface-type-planar topology-edge-curve-type-linear
+                topology-face-bounding-box topology-edge-bounding-box topology-subshape-bounding-box-vertex
+                topology-face-center-box topology-shape-extent-along
                 fillet-edge-constant fillet-edge-nil-shape
                 fillet-edges-multiple fillet-edge-variable-valid
                 fillet-wire-corner-valid fillet-wire-all-corners-valid

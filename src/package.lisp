@@ -246,9 +246,26 @@
    :%brep-owner-has-shape
    :%brep-owner-shape
    :%owner-location
-   :%free-owner
-   :%ais-set-tessellation
-   :%ais-create-trihedron
+    :%free-owner
+    :%face-edges
+    :%edge-vertices
+    :%vertex-edges
+    :%edge-faces
+    :%face-wires
+    :%wire-edges
+    :%shape-type-int
+    :%shape-orientation-int
+    :%free-shape-array
+    :%face-area
+    :%edge-length
+    :%face-normal-at-center
+    :%face-surface-type
+    :%edge-curve-type
+    :%subshape-bounding-box
+    :%face-center
+    :%shape-extent-along
+    :%ais-set-tessellation
+    :%ais-create-trihedron
    :%ais-trihedron-set-datum-mode
    :%ais-trihedron-set-draw-arrows
    :%ais-trihedron-set-size
@@ -440,10 +457,17 @@
    :%convert-swept-to-elementary
    :%shape-gprops-internal
    :%shape-distance-extrema-internal
-   :%shape-type-to-int
-   :%curve-kind->keyword
-   :%surface-kind->keyword
-   :%mesh-shape
+    :%shape-type-to-int
+    :%curve-kind->keyword
+    :%surface-kind->keyword
+    :*orientation-map*
+    :%int-to-shape-type
+    :%int-to-orientation
+    :%geomabs-surface-type->keyword
+    :%geomabs-curve-type->keyword
+    :%collect-shape-array
+    :%bounding-box-values
+    :%mesh-shape
    :%mesh-get-vertices
    :%mesh-get-triangles
    :%mesh-get-normals
@@ -1317,5 +1341,25 @@
    ;; IntTools Intersection
    :intersect-edge-edge
    :intersect-edge-face
-   :intersect-face-face
-                      ))
+    :intersect-face-face
+    ;; Topology Navigation
+    :face-edges
+    :edge-vertices
+    :vertex-edges
+    :edge-faces
+    :face-wires
+    :wire-edges
+    :shape-type
+    :subshape-orientation
+    ;; Subshape Properties
+    :face-area
+    :edge-length
+    :face-normal-at-center
+    :face-surface-type
+    :edge-curve-type
+    :face-bounding-box
+    :edge-bounding-box
+    :subshape-bounding-box
+    :face-center
+    :shape-extent-along
+                       ))
