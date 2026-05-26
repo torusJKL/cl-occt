@@ -10,7 +10,6 @@ The existing boolean operations (fuse, cut, common, section) cover basic CSG but
 - **ArgumentAnalyzer**: `BOPAlgo_ArgumentAnalyzer` — debug why a boolean operation fails
 - **MakeConnected**: `BOPAlgo_MakeConnected` — connect shapes along faces to form a watertight result
 - **MakePeriodic**: `BOPAlgo_MakePeriodic` — make a shape periodic along an axis
-- **Documentation**: Update `api-reference.md` with all new function signatures
 
 ## Capabilities
 
@@ -29,6 +28,5 @@ The existing boolean operations (fuse, cut, common, section) cover basic CSG but
 
 - **C wrapper** (`wrap/`): ~6 new `extern "C"` functions for the 6 BOPAlgo operations
 - **CFFI layer** (`src/ffi/`): ~6 new `defcfun` bindings
-- **Core layer** (`src/core/`): New `bop-splitter.lisp`, `bop-make-volume.lisp`, `bop-cells-builder.lisp`, `bop-utilities.lisp`
-- **Tests** (`tests/`): Test files for each new capability
-- **Docs** (`doc/api-reference.md`): Sections for each new operation
+- **Core layer** (`src/core/`): New `bop-splitter.lisp`, `bop-volume.lisp`, `bop-utilities.lisp`
+- **Tests** (`t/`): New `bop-tests.lisp` — 14 tests covering all 6 operations

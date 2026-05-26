@@ -426,9 +426,15 @@
    :%make-revol-feature
    :%make-pipe-feature
    :%local-extrude
-   :%make-groove
-   :%make-rib
-   :%fix-shape
+    :%make-groove
+    :%make-rib
+    :%split-shape
+    :%make-volume
+    :%cells-builder
+    :%argument-analyzer
+    :%make-connected-shapes
+    :%make-shape-periodic
+    :%fix-shape
    :%fix-wire
    :%fix-solid
    :%fix-edge
@@ -1334,10 +1340,17 @@
    :make-prs3d-bndbox
    :shape-bounding-box-display
    ;; Math Optimization
-   :bfgs-minimize
-   :frpr-minimize
-   :pso-minimize
-   :globoptmin-minimize
+    :bfgs-minimize
+    :frpr-minimize
+    :pso-minimize
+    :globoptmin-minimize
+    ;; BOPAlgo wrappers
+    :split-shape
+    :make-volume
+    :cells-builder
+    :boolean-argument-analyzer
+    :make-connected
+    :make-periodic
    ;; IntTools Intersection
    :intersect-edge-edge
    :intersect-edge-face

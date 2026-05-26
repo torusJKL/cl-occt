@@ -312,8 +312,15 @@
                     inttools-edge-edge-nil-input
                     inttools-edge-face-intersecting inttools-edge-face-disjoint
                     inttools-edge-face-nil-input
-                    inttools-face-face-intersecting inttools-face-face-disjoint
-                    inttools-face-face-nil-input))
+                     inttools-face-face-intersecting inttools-face-face-disjoint
+                     inttools-face-face-nil-input
+                     ;; BOPAlgo operations
+                     split-shape-box-by-plane split-shape-multiple-tools split-shape-nil-shape
+                     make-volume-two-shells make-volume-nil-input
+                     cells-builder-select-all cells-builder-with-selection cells-builder-nil-input
+                     argument-analyzer-valid-shapes argument-analyzer-nil-input
+                     make-connected-two-boxes make-connected-nil-input
+                     make-periodic-box-along-x make-periodic-nil-shape))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

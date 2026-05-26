@@ -107,8 +107,11 @@
    (:file "core/graphic3d-group")
    (:file "core/graphic3d-rendering-params")
    (:file "core/prs3d-tools")
-   (:file "core/math-optimization")
-   (:file "core/inttools")))
+    (:file "core/math-optimization")
+    (:file "core/inttools")
+    (:file "core/bop-splitter")
+    (:file "core/bop-volume")
+    (:file "core/bop-utilities")))
 
 (asdf:defsystem :cl-occt/tests
   :description "Tests for cl-occt"
@@ -148,8 +151,9 @@
    (:file "animation-structure-group-tests")
    (:file "prs3d-math-inttools-tests")
    (:file "check-hlr-conversion-tests")
-   (:file "topology-navigation-tests")
-   (:file "test-runner"))
+    (:file "topology-navigation-tests")
+    (:file "bop-tests")
+    (:file "test-runner"))
   :perform (test-op (o c)
              (let ((*package* (find-package :cl-occt)))
                (asdf:load-system :cl-occt/tests)

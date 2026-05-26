@@ -77,6 +77,50 @@ Lower-level local shape modifications on individual faces.
 
 All propagate nil: if any argument is nil, result is nil.
 
+### BOPAlgo Operations
+
+Advanced boolean operations using OCCT's `BOPAlgo_*` classes.
+
+| Function | Description |
+|----------|-------------|
+| `(split-shape shape tools)` | Split `shape` by tool(s). `tools` is a single shape or a list of tool shapes. Returns a compound of split pieces |
+| `(make-volume (list shapes...))` | Create solids from enclosed cavities between a list of shapes. Returns a compound of resulting volumes |
+| `(cells-builder shapes operation &optional selection)` | Select specific cells from a boolean operation. `operation` is an int (0=FUSE, 1=COMMON, 2=CUT, 3=CUT21, 4=SECTION). `selection` is an optional list of shape indices to include. Returns a compound |
+| `(boolean-argument-analyzer (list shapes...))` | Analyze shapes for potential boolean issues. Returns a diagnostic string, or nil if clean |
+| `(make-connected (list shapes...))` | Connect shapes along common faces to form a watertight result |
+| `(make-periodic shape dx dy dz)` | Make a shape periodic along the specified direction (dominant axis). Direction is a vector `(dx dy dz)` |
+
+All functions accept `shape` objects and return `shape` objects (or nil). List arguments are converted to C arrays internally.
+
+```lisp
+;; Split a box by a plane
+(let ((box (make-box 30 20 10))
+      (plane (make-face (make-wire
+               (make-edge-3d -15 -10 5 15 -10 5)
+               (make-edge-3d 15 -10 5 15 10 5)
+               (make-edge-3d 15 10 5 -15 10 5)
+               (make-edge-3d -15 10 5 -15 -10 5)))))
+  (split-shape box plane))
+
+;; Create volumes from two overlapping boxes
+(make-volume (list (make-box 10 10 10) (make-box 20 20 20)))
+
+;; Cells builder: FUSE two boxes, select all cells
+(cells-builder (list (make-box 20 20 20)
+                     (translate (make-box 20 20 20) 10 10 10))
+               0)
+
+;; Check shapes for boolean validity
+(boolean-argument-analyzer (list (make-box 10 20 30) (make-sphere 5)))
+
+;; Connect two touching boxes
+(make-connected (list (make-box 20 20 20)
+                      (translate (make-box 20 20 20) 10 0 0)))
+
+;; Make a box periodic along X
+(make-periodic (make-box 10 20 30) 1.0 0.0 0.0)
+```
+
 ### Edge Fillet
 
 | Function | Description |

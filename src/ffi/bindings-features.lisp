@@ -50,3 +50,35 @@
   (profile :pointer)
   (thickness :double)
   (dx :double) (dy :double) (dz :double))
+
+;; --- BOPAlgo Operations ---
+
+(defcfun (%split-shape "split_shape") :pointer
+  (shape :pointer)
+  (tools :pointer)
+  (num-tools :int))
+
+(defcfun (%make-volume "make_volume") :pointer
+  (shapes :pointer)
+  (num-shapes :int))
+
+(defcfun (%cells-builder "cells_builder") :pointer
+  (shapes :pointer)
+  (num-shapes :int)
+  (operation :int)
+  (selection :pointer)
+  (sel-count :int))
+
+;; --- BOPAlgo Utilities ---
+
+(defcfun (%argument-analyzer "argument_analyzer") :string
+  (shapes :pointer)
+  (num-shapes :int))
+
+(defcfun (%make-connected-shapes "make_connected_shapes") :pointer
+  (shapes :pointer)
+  (num-shapes :int))
+
+(defcfun (%make-shape-periodic "make_shape_periodic") :pointer
+  (shape :pointer)
+  (dx :double) (dy :double) (dz :double))

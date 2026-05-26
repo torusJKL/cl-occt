@@ -1,6 +1,9 @@
 #include "occt_wrap_internal.h"
 #include "occt_wrap_operations.h"
 #include "occt_wrap_features.h"
+#include <BOPAlgo_Splitter.hxx>
+#include <BOPAlgo_MakerVolume.hxx>
+#include <BOPAlgo_CellsBuilder.hxx>
 
 static gp_Ax1 face_to_axis(const TopoDS_Face& face) {
     BRepAdaptor_Surface adaptor(face);
@@ -752,6 +755,92 @@ occt_shape make_rib(occt_shape shape, occt_shape profile_face, double thickness,
         TopoDS_Shape result = fuse.Shape();
         if (result.IsNull() || is_empty_shape(result)) { set_error("rib produced empty result"); return nullptr; }
         return from_shape(result);
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- BOPAlgo Splitter ---
+
+occt_shape split_shape(occt_shape shape, occt_shape* tools, int num_tools) {
+    clear_error();
+    if (!shape) { set_error("null shape argument", 2); return nullptr; }
+    if (!tools || num_tools < 1) { set_error("no tools provided", 2); return nullptr; }
+    try {
+        BOPAlgo_Splitter splitter;
+        NCollection_List<TopoDS_Shape> args;
+        args.Append(*to_shape(shape));
+        splitter.SetArguments(args);
+        for (int i = 0; i < num_tools; i++) {
+            if (!tools[i]) { set_error("null tool in array", 2); return nullptr; }
+            splitter.AddTool(*to_shape(tools[i]));
+        }
+        splitter.Perform();
+        if (splitter.HasErrors()) { set_error("BOPAlgo_Splitter failed"); return nullptr; }
+        return from_shape(splitter.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- BOPAlgo MakerVolume ---
+
+occt_shape make_volume(occt_shape* shapes, int num_shapes) {
+    clear_error();
+    if (!shapes || num_shapes < 1) { set_error("no shapes provided", 2); return nullptr; }
+    try {
+        BOPAlgo_MakerVolume maker;
+        NCollection_List<TopoDS_Shape> list;
+        for (int i = 0; i < num_shapes; i++) {
+            if (!shapes[i]) { set_error("null shape in array", 2); return nullptr; }
+            list.Append(*to_shape(shapes[i]));
+        }
+        maker.SetArguments(list);
+        maker.Perform();
+        if (maker.HasErrors()) { set_error("BOPAlgo_MakerVolume failed"); return nullptr; }
+        return from_shape(maker.Shape());
+    } catch (Standard_Failure& e) {
+        set_error(e.what());
+        return nullptr;
+    }
+}
+
+// --- BOPAlgo CellsBuilder ---
+
+occt_shape cells_builder(occt_shape* shapes, int num_shapes, int operation,
+                          int* selection, int sel_count) {
+    clear_error();
+    if (!shapes || num_shapes < 1) { set_error("no shapes provided", 2); return nullptr; }
+    try {
+        BOPAlgo_CellsBuilder builder;
+        NCollection_List<TopoDS_Shape> list;
+        for (int i = 0; i < num_shapes; i++) {
+            if (!shapes[i]) { set_error("null shape in array", 2); return nullptr; }
+            list.Append(*to_shape(shapes[i]));
+        }
+        builder.SetArguments(list);
+        builder.Perform();
+        if (builder.HasErrors()) { set_error("BOPAlgo_CellsBuilder failed"); return nullptr; }
+
+        if (selection && sel_count > 0) {
+            NCollection_List<TopoDS_Shape> toTake;
+            for (int i = 0; i < sel_count; i++) {
+                int idx = selection[i];
+                if (idx < 0 || idx >= num_shapes) {
+                    set_error("selection index out of range", 2);
+                    return nullptr;
+                }
+                toTake.Append(*to_shape(shapes[idx]));
+            }
+            NCollection_List<TopoDS_Shape> toAvoid;
+            builder.AddToResult(toTake, toAvoid);
+        } else {
+            builder.AddAllToResult();
+        }
+
+        return from_shape(builder.Shape());
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return nullptr;

@@ -24,6 +24,13 @@ occt_shape make_groove(occt_shape shape, occt_shape face,
 occt_shape make_rib(occt_shape shape, occt_shape profile, double thickness,
                     double dx, double dy, double dz);
 
+// --- BOPAlgo Operations ---
+
+occt_shape split_shape(occt_shape shape, occt_shape* tools, int num_tools);
+occt_shape make_volume(occt_shape* shapes, int num_shapes);
+occt_shape cells_builder(occt_shape* shapes, int num_shapes, int operation,
+                          int* selection, int sel_count);
+
 #ifdef __cplusplus
 }
 #endif

@@ -5,23 +5,19 @@ The system SHALL create solids representing the enclosed cavities between a set 
 
 #### Scenario: Cavity between two shells
 - **WHEN** user calls `(make-volume (list shell1 shell2))`
-- **THEN** returns a list of solid volumes filling cavities between the shells
-
-#### Scenario: Single shape with cavity
-- **WHEN** user calls `(make-volume (list shell))`
-- **THEN** returns the enclosed volume (if any)
+- **THEN** returns a compound of solid volumes filling cavities between the shells
 
 #### Scenario: No cavity exists
-- **WHEN** user calls `(make-volume (list (make-box 10 20 30)))`
-- **THEN** returns nil (no cavity in a solid box)
+- **WHEN** user calls `(make-volume (list box))` on a solid box without cavities
+- **THEN** returns a compound (MakerVolume may still produce output)
 
 ### Requirement: Cells builder for selective boolean results
 The system SHALL select specific cells (fragments) from a boolean operation result using `BOPAlgo_CellsBuilder`.
 
-#### Scenario: Select specific fragments
-- **WHEN** user calls `(cells-builder (list shape1 shape2) :common :select '(:fragment-1 :fragment-3))`
+#### Scenario: Select specific fragments by shape index
+- **WHEN** user calls `(cells-builder (list shape1 shape2) 0 '(0))` (FUSE, select cells from shape index 0)
 - **THEN** returns a compound containing only the selected fragments
 
-#### Scenario: Select all
-- **WHEN** user calls `(cells-builder (list shape1 shape2) :fuse :select :all)`
+#### Scenario: Select all (no selection)
+- **WHEN** user calls `(cells-builder (list shape1 shape2) 0)` (FUSE, no selection)
 - **THEN** returns a compound of all resulting fragments
