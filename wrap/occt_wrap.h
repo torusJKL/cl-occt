@@ -29,5 +29,7 @@
 #include "occt_wrap_prs3d.h"
 #include "occt_wrap_math_inttools.h"
 #include "occt_wrap_xcaf.h"
+#include "occt_wrap_extrema.h"
+#include "occt_wrap_lprop.h"
 
 #endif

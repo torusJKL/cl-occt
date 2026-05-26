@@ -319,8 +319,20 @@
                      make-volume-two-shells make-volume-nil-input
                      cells-builder-select-all cells-builder-with-selection cells-builder-nil-input
                      argument-analyzer-valid-shapes argument-analyzer-nil-input
-                     make-connected-two-boxes make-connected-nil-input
-                     make-periodic-box-along-x make-periodic-nil-shape))
+                      make-connected-two-boxes make-connected-nil-input
+                      make-periodic-box-along-x make-periodic-nil-shape
+                      ;; BRepExtrema + BRepLProp analysis tests
+                      brep-proximity-near-boxes brep-proximity-nil-input brep-proximity-far-shapes
+                      brep-overlap-overlapping brep-overlap-non-overlapping brep-overlap-nil-input
+                      brep-overlap-detail-overlapping brep-overlap-detail-non-overlapping brep-overlap-detail-nil-input
+                      brep-self-intersect-valid-box brep-self-intersect-nil-input
+                      brep-face-distance-parallel brep-face-distance-nil-input
+                      brep-curve-tangent-line brep-curve-tangent-nil-input
+                      brep-curve-curvature-circle brep-curve-curvature-nil-input
+                      brep-surface-normal-plane brep-surface-normal-nil-input
+                      brep-surface-curvature-sphere brep-surface-curvature-nil-input
+                      brep-face-normal-valid brep-face-normal-nil-input
+                      brep-face-curvature-valid brep-face-curvature-nil-input))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

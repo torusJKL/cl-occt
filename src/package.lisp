@@ -658,11 +658,29 @@
    :%math-frpr-minimize
    :%math-pso-minimize
    :%math-globoptmin-minimize
-   ;; IntTools
-   :%inttools-edge-edge
-   :%inttools-edge-face
-   :%inttools-face-face
-   :%inttools-free-curve
+    ;; IntTools
+    :%inttools-edge-edge
+    :%inttools-edge-face
+    :%inttools-face-face
+    :%inttools-free-curve
+    ;; BRepExtrema
+    :%shape-proximity
+    :%shape-overlap-p
+    :%shape-overlap-detail
+    :%shape-self-intersect
+    :%face-distance
+    ;; BRepLProp
+    :%curve-tangent-at
+    :%curve-curvature-at
+    :%surface-normal-at
+    :%surface-curvature-at
+    ;; Internal helpers
+    :%shape-proximity-internal
+    :%shape-self-intersect-internal
+    :%curve-tangent-at-internal
+    :%curve-curvature-at-internal
+    :%surface-normal-at-internal
+    :%surface-curvature-at-internal
 ))
 
 (defpackage :cl-occt
@@ -1353,9 +1371,26 @@
     :make-periodic
    ;; IntTools Intersection
    :intersect-edge-edge
-   :intersect-edge-face
-    :intersect-face-face
-    ;; Topology Navigation
+     :intersect-edge-face
+     :intersect-face-face
+     ;; Shape Analysis (BRepExtrema)
+     :proximity-zone
+     :proximity-distance
+     :proximity-subshape1
+     :proximity-subshape2
+     :shape-proximity
+     :shape-overlap-p
+     :shape-overlap
+     :shape-self-intersect-p
+     :face-distance
+     ;; Surface / Curve Local Properties
+     :curve-tangent-at
+     :curve-curvature-at
+     :surface-normal-at
+     :surface-curvature-at
+     :face-normal-at
+     :face-curvature-at
+     ;; Topology Navigation
     :face-edges
     :edge-vertices
     :vertex-edges

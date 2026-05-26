@@ -244,3 +244,180 @@
         (cffi:foreign-free points)
         (cffi:foreign-free params)
         (cffi:foreign-free faces)))))
+
+;; --- Proximity zone class ---
+
+(defclass proximity-zone ()
+  ((%distance :initarg :distance :reader proximity-distance)
+   (%subshape1 :initarg :subshape1 :reader proximity-subshape1)
+   (%subshape2 :initarg :subshape2 :reader proximity-subshape2)))
+
+(in-package :cl-occt.impl)
+
+(defun %shape-proximity-internal (shape1-ptr shape2-ptr tolerance)
+  (let ((max-results 256))
+    (cffi:with-foreign-objects ((prox-value :double)
+                                (subshapes1 :pointer max-results)
+                                (subshapes2 :pointer max-results))
+      (let ((count (%shape-proximity shape1-ptr shape2-ptr tolerance
+                                     prox-value subshapes1 subshapes2 max-results)))
+        (when (zerop count) (return-from %shape-proximity-internal nil))
+        (loop for i from 0 below count
+              collect (make-instance 'cl-occt:proximity-zone
+                        :distance (cffi:mem-ref prox-value :double)
+                        :subshape1 (let ((ptr (cffi:mem-aref subshapes1 :pointer i)))
+                                     (when (and ptr (not (cffi:null-pointer-p ptr)))
+                                       (make-shape ptr)))
+                        :subshape2 (let ((ptr (cffi:mem-aref subshapes2 :pointer i)))
+                                     (when (and ptr (not (cffi:null-pointer-p ptr)))
+                                       (make-shape ptr)))))))))
+
+(defun %shape-self-intersect-internal (shape-ptr tolerance)
+  (let ((max-results 256))
+    (cffi:with-foreign-object (faces :pointer max-results)
+      (let ((count (%shape-self-intersect shape-ptr tolerance faces max-results)))
+        (when (zerop count) (return-from %shape-self-intersect-internal nil))
+        (loop for i from 0 below count
+              collect (make-shape (cffi:mem-aref faces :pointer i)))))))
+
+(in-package :cl-occt)
+
+(defun shape-proximity (shape1 shape2 tolerance)
+  "Compute proximity zones between two shapes within a tolerance.
+
+  **shape1** **shape2** -- shape objects
+  **tolerance** -- maximum distance for proximity detection
+
+  **Returns:** a list of `proximity-zone` objects, each with readers:
+  - (`proximity-distance` `proximity-zone`) -- proximity value
+  - (`proximity-subshape1` `proximity-zone`) -- subshape from `shape1`
+  - (`proximity-subshape2` `proximity-zone`) -- subshape from `shape2`
+
+  Returns `nil` if no proximity zones found or on error.
+
+  **Example:**
+
+      (let ((a (make-box 10 10 10))
+            (b (translate (make-box 10 10 10) 12 0 0)))
+        (shape-proximity a b 5.0))
+
+  **See also:** `shape-distance`, `shape-overlap-p`"
+  (unless (and (shape-p shape1) (shape-p shape2))
+    (return-from shape-proximity nil))
+  (let ((p1 (%ptr shape1))
+        (p2 (%ptr shape2)))
+    (when (or (null p1) (cffi:null-pointer-p p1)
+              (null p2) (cffi:null-pointer-p p2))
+      (return-from shape-proximity nil))
+    (%shape-proximity-internal p1 p2 tolerance)))
+
+(defun shape-overlap-p (shape1 shape2 &optional (tolerance 0.0d0))
+  "Test whether two shapes overlap (interfere).
+
+  **shape1** **shape2** -- shape objects
+  **tolerance** -- overlap threshold (default 0.0)
+
+  **Returns:** `t` if shapes overlap, `nil` otherwise (or on error).
+
+  **Example:**
+
+      (let ((a (make-box 10 10 10))
+            (b (translate (make-box 10 10 10) 5 0 0)))
+        (shape-overlap-p a b))
+
+  **See also:** `shape-overlap`"
+  (unless (and (shape-p shape1) (shape-p shape2))
+    (return-from shape-overlap-p nil))
+  (let ((p1 (%ptr shape1))
+        (p2 (%ptr shape2)))
+    (when (or (null p1) (cffi:null-pointer-p p1)
+              (null p2) (cffi:null-pointer-p p2))
+      (return-from shape-overlap-p nil))
+    (not (zerop (%shape-overlap-p p1 p2 tolerance)))))
+
+(defun shape-overlap (shape1 shape2 &optional (tolerance 0.0d0))
+  "Return detailed overlap information between two shapes.
+
+  **shape1** **shape2** -- shape objects
+  **tolerance** -- overlap threshold (default 0.0)
+
+  **Returns:** a list of overlapping (subshape1 subshape2) pairs,
+  where each subshape is a `shape` object. Returns `nil` if no overlap
+  or on error.
+
+  **Example:**
+
+      (let ((a (make-box 10 10 10))
+            (b (translate (make-box 10 10 10) 5 0 0)))
+        (shape-overlap a b))
+
+  **See also:** `shape-overlap-p`"
+  (unless (and (shape-p shape1) (shape-p shape2))
+    (return-from shape-overlap nil))
+  (let ((p1 (%ptr shape1))
+        (p2 (%ptr shape2)))
+    (when (or (null p1) (cffi:null-pointer-p p1)
+              (null p2) (cffi:null-pointer-p p2))
+      (return-from shape-overlap nil))
+    (let ((max-results 256))
+      (cffi:with-foreign-objects ((out1 :pointer max-results)
+                                  (out2 :pointer max-results))
+        (let ((count (%shape-overlap-detail p1 p2 tolerance out1 out2 max-results)))
+          (when (zerop count) (return-from shape-overlap nil))
+          (loop for i from 0 below count
+                collect (list
+                         (let ((ptr (cffi:mem-aref out1 :pointer i)))
+                           (when (and ptr (not (cffi:null-pointer-p ptr)))
+                             (make-shape ptr)))
+                         (let ((ptr (cffi:mem-aref out2 :pointer i)))
+                           (when (and ptr (not (cffi:null-pointer-p ptr)))
+                             (make-shape ptr))))))))))
+
+(defun shape-self-intersect-p (shape &optional (tolerance 0.0d0))
+  "Detect self-intersections within a single shape.
+
+  **shape** -- a shape object
+  **tolerance** -- self-intersection tolerance (default 0.0)
+
+  **Returns:** a list of face shapes involved in self-intersections.
+  Returns `nil` if no self-intersections or on error.
+
+  **Example:**
+
+      (shape-self-intersect-p (make-box 10 20 30))
+
+  **See also:** `shape-valid-p`, `shape-check`"
+  (unless (shape-p shape)
+    (return-from shape-self-intersect-p nil))
+  (let ((ptr (%ptr shape)))
+    (when (or (null ptr) (cffi:null-pointer-p ptr))
+      (return-from shape-self-intersect-p nil))
+    (%shape-self-intersect-internal ptr tolerance)))
+
+(defun face-distance (face1 face2)
+  "Compute the minimum and maximum distance between two faces.
+
+  **face1** **face2** -- face shape objects
+
+  **Returns:** two values: minimum distance and maximum distance
+  as double-floats, or `nil` on error.
+
+  **Example:**
+
+      (let* ((box (make-box 10 20 30))
+             (faces (map-shape-subshapes box :face)))
+        (face-distance (first faces) (second faces)))
+
+  **See also:** `shape-distance`"
+  (unless (and (shape-p face1) (shape-p face2))
+    (return-from face-distance nil))
+  (let ((p1 (%ptr face1))
+        (p2 (%ptr face2)))
+    (when (or (null p1) (cffi:null-pointer-p p1)
+              (null p2) (cffi:null-pointer-p p2))
+      (return-from face-distance nil))
+    (cffi:with-foreign-objects ((min-dist :double) (max-dist :double))
+      (let ((ok (%face-distance p1 p2 min-dist max-dist)))
+        (when (zerop ok) (return-from face-distance nil))
+        (values (cffi:mem-ref min-dist :double)
+                (cffi:mem-ref max-dist :double))))))

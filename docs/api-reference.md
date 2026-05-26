@@ -809,6 +809,81 @@ Minimum distance, point-in-solid classification, validity checking, and curve-su
 
 The `shape-extrema` class has readers: `extrema-distance`, `extrema-point-on-shape1`, `extrema-point-on-shape2`.
 
+### Proximity & Overlap Analysis
+
+Detect proximity zones, overlaps, and self-intersections using BRepExtrema.
+
+| Function | Description |
+|----------|-------------|
+| `(shape-proximity shape1 shape2 tolerance)` | Compute proximity zones within tolerance. Returns list of `proximity-zone` or nil |
+| `(shape-overlap-p shape1 shape2)` | Test if shapes overlap. Returns t or nil |
+| `(shape-overlap shape1 shape2)` | Detailed overlap info. Returns list of `(subshape1 subshape2)` pairs |
+| `(shape-self-intersect-p shape)` | Detect self-intersections. Returns list of `(point face)` or nil |
+| `(face-distance face1 face2)` | Min/max distance between two faces. Returns two values or nil |
+
+The `proximity-zone` class has readers: `proximity-distance`, `proximity-subshape1`, `proximity-subshape2`.
+
+```lisp
+(shape-proximity box1 box2 5.0)                 ; → list of proximity-zone objects
+(shape-overlap-p box1 box2)                     ; → t
+(shape-self-intersect-p (make-box 10 20 30))    ; → nil
+(multiple-value-bind (min max) (face-distance f1 f2)
+  (list min max))
+```
+
+### Curve Local Properties
+
+Compute local geometric properties of 3D curves at a given parameter.
+
+| Function | Description |
+|----------|-------------|
+| `(curve-tangent-at curve param)` | Unit tangent vector at parameter. Returns three values `(tx ty tz)` or nil |
+| `(curve-curvature-at curve param)` | Curvature value at parameter. Returns double or nil |
+
+```lisp
+(let ((c (make-line-3d 0 0 0 1 0 0)))
+  (curve-tangent-at c 0.5))             ; → values: 1.0 0.0 0.0
+
+(let ((c (make-circle-3d 0 0 0 5)))
+  (curve-curvature-at c 0.0))           ; → 0.2 (1/radius)
+```
+
+### Surface Local Properties
+
+Compute local geometric properties of 3D surfaces at given UV parameters.
+
+| Function | Description |
+|----------|-------------|
+| `(surface-normal-at surface u v)` | Unit normal vector at UV. Returns three values `(nx ny nz)` or nil |
+| `(surface-curvature-at surface u v)` | Min/max curvature at UV. Returns two values or nil |
+
+```lisp
+(let ((s (make-plane 0 0 0 0 0 1)))
+  (surface-normal-at s 0.0 0.0))         ; → values: 0.0 0.0 1.0
+
+(let ((s (make-spherical-surface 0 0 0 5)))
+  (surface-curvature-at s 0.0 0.0))     ; → values: 0.2 0.2
+```
+
+### Face Local Properties
+
+Compute local properties (normal, curvature) on face shapes at UV coordinates.
+
+| Function | Description |
+|----------|-------------|
+| `(face-normal-at face u v)` | Unit normal at UV on face. Returns three values or nil |
+| `(face-curvature-at face u v)` | Min/max curvature at UV on face. Returns two values or nil |
+
+These extract the underlying surface from the face and delegate to the surface
+functions. The UV parameters are in the face's parametric space.
+
+```lisp
+(let* ((box (make-box 10 20 30))
+       (faces (map-shape-subshapes box :face)))
+  (face-normal-at (first faces) 0.5 0.5)
+  (face-curvature-at (first faces) 0.5 0.5))
+```
+
 ### Topology Navigation
 
 Walk, inspect, and construct topological entities.
