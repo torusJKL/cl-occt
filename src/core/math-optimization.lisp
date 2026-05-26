@@ -142,19 +142,81 @@
              (loop for i from 0 below n
                    do (setf (cffi:mem-aref low-arr :double i) (coerce (nth i lower) 'double-float)
                             (cffi:mem-aref upp-arr :double i) (coerce (nth i upper) 'double-float)))
-             (let ((*math-callback* fn))
-               (when (= 1 (%math-globoptmin-minimize
-                           (cffi:callback %math-obj-fn) n
-                           low-arr upp-arr
-                           (coerce tolerance 'double-float) max-iterations
-                           min-arr min-val iters))
-                 (list :converged t
-                       :iterations (cffi:mem-aref iters :int)
-                       :minimum-value (cffi:mem-aref min-val :double)
-                       :minimizer (loop for i from 0 below n
-                                        collect (cffi:mem-aref min-arr :double i))))))
+               (let ((*math-callback* fn))
+                (when (= 1 (%math-globoptmin-minimize
+                            (cffi:callback %math-obj-fn) n
+                            low-arr upp-arr
+                            (coerce tolerance 'double-float) max-iterations
+                            min-arr min-val iters))
+                  (list :converged t
+                        :iterations (cffi:mem-aref iters :int)
+                        :minimum-value (cffi:mem-aref min-val :double)
+                        :minimizer (loop for i from 0 below n
+                                         collect (cffi:mem-aref min-arr :double i))))))
         (cffi:foreign-free low-arr)
         (cffi:foreign-free upp-arr)
         (cffi:foreign-free min-arr)
         (cffi:foreign-free min-val)
         (cffi:foreign-free iters)))))
+
+;; --- 1D Math Solver Callback Helper ---
+
+(defvar *math-1d-callback* nil
+  "Internal storage for the current 1D math function callback.")
+
+(cffi:defcallback %math-1d-fn :double ((x :double))
+  (let ((fn *math-1d-callback*))
+    (if fn
+        (coerce (funcall fn x) 'double-float)
+        0.0d0)))
+
+;; --- function-root (BissecNewton) ---
+
+(defun function-root (fn x0 x1 &key (ftol 1.0d-7) (max-iterations 100))
+  "Find a root of a 1D function in the interval [X0, X1] using BissecNewton.
+
+  Returns a plist (:converged t :root double :iterations int) or nil on failure."
+  (when fn
+    (let ((out-root (cffi:foreign-alloc :double))
+          (out-iters (cffi:foreign-alloc :int)))
+      (unwind-protect
+           (let ((*math-1d-callback* fn))
+             (when (= 1 (%math-function-root
+                         (cffi:callback %math-1d-fn)
+                         (coerce x0 'double-float)
+                         (coerce x1 'double-float)
+                         (coerce ftol 'double-float)
+                         max-iterations
+                         out-root out-iters))
+               (list :converged t
+                     :root (cffi:mem-aref out-root :double)
+                     :iterations (cffi:mem-aref out-iters :int))))
+        (cffi:foreign-free out-root)
+        (cffi:foreign-free out-iters)))))
+
+;; --- newton-minimum (NewtonMinimum) ---
+
+(defun newton-minimum (fn x0 &key (tolerance 1.0d-7) (max-iterations 100))
+  "Find a minimum of a 1D function starting from X0 using NewtonMinimum.
+
+  Returns a plist (:converged t :min-x double :min-value double :iterations int)
+  or nil on failure."
+  (when fn
+    (let ((out-min-x (cffi:foreign-alloc :double))
+          (out-min-val (cffi:foreign-alloc :double))
+          (out-iters (cffi:foreign-alloc :int)))
+      (unwind-protect
+           (let ((*math-1d-callback* fn))
+             (when (= 1 (%math-newton-minimum
+                         (cffi:callback %math-1d-fn)
+                         (coerce x0 'double-float)
+                         (coerce tolerance 'double-float)
+                         max-iterations
+                         out-min-x out-min-val out-iters))
+               (list :converged t
+                     :min-x (cffi:mem-aref out-min-x :double)
+                     :min-value (cffi:mem-aref out-min-val :double)
+                     :iterations (cffi:mem-aref out-iters :int))))
+        (cffi:foreign-free out-min-x)
+        (cffi:foreign-free out-min-val)
+        (cffi:foreign-free out-iters)))))

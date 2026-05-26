@@ -41,3 +41,15 @@
 
 (defcfun (%inttools-free-curve "inttools_free_curve") :void
   (curve :pointer))
+
+;; --- math_FunctionRoot (1D) and math_NewtonMinimum ---
+
+(defcfun (%math-function-root "math_function_root") :int
+  (fn :pointer) (x0 :double) (x1 :double)
+  (ftol :double) (max-iter :int)
+  (out-root :pointer) (out-iterations :pointer))
+
+(defcfun (%math-newton-minimum "math_newton_minimum") :int
+  (fn :pointer) (x0 :double)
+  (tolerance :double) (max-iter :int)
+  (out-min-x :pointer) (out-min-value :pointer) (out-iterations :pointer))

@@ -6,7 +6,7 @@ LIBS := -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
         -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
         -lTKDEGLTF -lTKDEIGES -lTKDEVRML -lTKDEPLY -lTKDEOBJ -lTKRWMesh \
         -lTKV3d -lTKOpenGl -lTKService -lTKHelix -lTKFillet -lTKOffset -lTKFeat -lTKMeshVS -lTKBO \
-        -lTKGeomAlgo \
+        -lTKGeomAlgo -lTKExpress \
         -Wl,--enable-new-dtags -Wl,-rpath,$(OCCT_INSTALL)/lib
 
 SRCS := $(wildcard occt_wrap_*.cpp)

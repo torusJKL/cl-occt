@@ -399,3 +399,59 @@ Low-level STL file read/write via `RWStl`, providing direct access to the triang
 
 - **`(free-stl-triangulation triangulation)`** 
   Free a triangulation handle returned by `read-stl-triangulation`.
+
+---
+
+## Constrained 2D Geometry
+
+Compute analytical 2D geometry constraints via `GccAna` — circle tangent to two lines, line through two points.
+
+### Functions
+
+- **`(circle-tangent-two-lines line1-pt line1-dir line2-pt line2-dir radius)`** → list of plists or `nil`
+  Compute circles of `radius` tangent to two 2D lines. Each line is a point `(x y)` and direction `(dx dy)`. Returns a list of `(:center-x double :center-y double :radius double)` plists, or `nil` on invalid input.
+
+- **`(line-through-two-points p1 p2)`** → `(x y dx dy)` or `nil`
+  Compute a 2D line passing through two points `p1 (x1 y1)` and `p2 (x2 y2)`. Returns `(point-x point-y dir-x dir-y)` or `nil` on coincident points.
+
+---
+
+## Units API
+
+Convert numeric values between unit systems via `UnitsAPI`.
+
+### Functions
+
+- **`(convert-units value from-unit to-unit)`** → `double-float`
+  Convert `value` from `from-unit` to `to-unit`. Units are strings like `"mm"`, `"inch"`, `"kg"`, `"lbm"`.
+
+- **`(convert-to-si value unit)`** → `double-float`
+  Convert `value` from `unit` to SI base units.
+
+- **`(convert-from-si value unit)`** → `double-float`
+  Convert `value` from SI base units to `unit`.
+
+---
+
+## Expression Interpreter
+
+Parse and evaluate mathematical expression strings via `ExprIntrp`.
+
+### Functions
+
+- **`(evaluate-expression expr)`** → `double-float` or `nil`
+  Evaluate a mathematical expression string. Supports arithmetic (`+`, `-`, `*`, `/`), trigonometric functions (`sin`, `cos`, `tan`), constants (`PI`), and standard math functions. Returns `nil` on invalid expressions.
+
+---
+
+## Math Solvers (1D)
+
+Find roots and minima of 1D functions via `math_BissecNewton` and `math_NewtonMinimum`.
+
+### Functions
+
+- **`(function-root fn x0 x1 &key ftol max-iterations)`** → plist or `nil`
+  Find a root of a 1D function in the interval `[x0, x1]`. `fn` is a function of one argument returning a double. Returns `(:converged t :root double :iterations int)` or `nil` on failure.
+
+- **`(newton-minimum fn x0 &key tolerance max-iterations)`** → plist or `nil`
+  Find a local minimum of a 1D function starting from `x0`. Returns `(:converged t :min-x double :min-value double :iterations int)` or `nil` on failure.

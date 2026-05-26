@@ -405,27 +405,45 @@
                        set-shape-tolerance-null
                        rwstl-read-null-path
                        rwstl-write-null-input
-                       ;; OCAF tests
-                       ocaf-create-doc-valid
-                       ocaf-root-label-depth
-                       ocaf-find-label-creates-child
-                       ocaf-find-label-existing
-                       ocaf-label-children-returns-list
-                       ocaf-label-children-empty
-                       ocaf-label-tag-returns-tag
-                       ocaf-label-depth-returns-depth
-                       ocaf-begin-commit-transaction-works
-                       ocaf-undo-transaction-callable
-                       ocaf-integer-set-get-works
-                       ocaf-integer-has-p-works
-                       ocaf-real-set-get-works
-                       ocaf-real-has-p-works
-                       ocaf-string-set-get-works
-                       ocaf-string-has-p-works
-                       ocaf-name-set-get-works
-                       ocaf-name-shape-primitive-works
-                       ocaf-named-shape-not-deleted
-                       ocaf-add-function-valid-works))
+                        ;; OCAF tests
+                        ocaf-create-doc-valid
+                        ocaf-root-label-depth
+                        ocaf-find-label-creates-child
+                        ocaf-find-label-existing
+                        ocaf-label-children-returns-list
+                        ocaf-label-children-empty
+                        ocaf-label-tag-returns-tag
+                        ocaf-label-depth-returns-depth
+                        ocaf-begin-commit-transaction-works
+                        ocaf-undo-transaction-callable
+                        ocaf-integer-set-get-works
+                        ocaf-integer-has-p-works
+                        ocaf-real-set-get-works
+                        ocaf-real-has-p-works
+                        ocaf-string-set-get-works
+                        ocaf-string-has-p-works
+                        ocaf-name-set-get-works
+                        ocaf-name-shape-primitive-works
+                        ocaf-named-shape-not-deleted
+                        ocaf-add-function-valid-works
+                        ;; Misc CAD Utilities tests
+                        circle-tangent-two-intersecting-lines
+                        circle-tangent-parallel-lines-no-solution
+                        circle-tangent-nil-on-negative-radius
+                        line-through-two-distinct-points
+                        line-through-coincident-points
+                        line-through-nil-input
+                        units-convert-mm-to-inch
+                        units-convert-kg-to-lbm
+                        units-convert-si-to-mm
+                        units-convert-to-si-roundtrip
+                        evaluate-arithmetic
+                        evaluate-trig
+                        evaluate-invalid-expression
+                        function-root-linear
+                        function-root-nil-input
+                        newton-minimum-quadratic
+                        newton-minimum-nil-input))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

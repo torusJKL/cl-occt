@@ -286,8 +286,16 @@
 #include <math_FRPR.hxx>
 #include <math_PSO.hxx>
 #include <math_GlobOptMin.hxx>
+#include <math_Function.hxx>
+#include <math_FunctionWithDerivative.hxx>
+#include <math_FunctionRoot.hxx>
+#include <math_BissecNewton.hxx>
+#include <math_NewtonMinimum.hxx>
 #include <math_MultipleVarFunction.hxx>
+#include <math_MultipleVarFunctionWithGradient.hxx>
+#include <math_MultipleVarFunctionWithHessian.hxx>
 #include <math_Vector.hxx>
+#include <math_Matrix.hxx>
 #include <IntTools_EdgeEdge.hxx>
 #include <IntTools_EdgeFace.hxx>
 #include <IntTools_FaceFace.hxx>

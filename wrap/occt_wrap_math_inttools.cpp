@@ -263,3 +263,108 @@ void inttools_free_curve(void* curve) {
     delete static_cast<Handle(Geom_Curve)*>(curve);
 }
 
+// --- 1D Function Adapter ---
+namespace {
+    class MathFunc1D : public math_Function {
+    public:
+        MathFunc1D(double (*fn)(double)) : myFn(fn) {}
+        bool Value(const Standard_Real X, Standard_Real& F) override {
+            F = myFn(X);
+            return true;
+        }
+    private:
+        double (*myFn)(double);
+    };
+
+    // 1D function with derivative adapter (for math_BissecNewton)
+    class MathFuncWithGrad1D : public math_FunctionWithDerivative {
+    public:
+        MathFuncWithGrad1D(double (*fn)(double)) : myFn(fn) {}
+        bool Value(const double X, double& F) override {
+            F = myFn(X);
+            return true;
+        }
+        bool Derivative(const double X, double& D) override {
+            double h = (std::abs(X) > 1.0e-8) ? 1.0e-8 * std::abs(X) : 1.0e-8;
+            D = (myFn(X + h) - myFn(X - h)) / (2.0 * h);
+            return true;
+        }
+        bool Values(const double X, double& F, double& D) override {
+            Value(X, F);
+            Derivative(X, D);
+            return true;
+        }
+    private:
+        double (*myFn)(double);
+    };
+
+    // Multi-variable with Hessian adapter wrapping a 1D function pointer.
+    // Used by math_NewtonMinimum for 1D minimization.
+    class MathHessianObj1D : public math_MultipleVarFunctionWithHessian {
+    public:
+        MathHessianObj1D(double (*fn)(double)) : myFn(fn) {}
+        int NbVariables() const override { return 1; }
+        bool Value(const math_Vector& X, Standard_Real& F) override {
+            F = myFn(X(1));
+            return true;
+        }
+        bool Gradient(const math_Vector& X, math_Vector& G) override {
+            Standard_Real x = X(1);
+            Standard_Real h = (std::abs(x) > 1.0e-8) ? 1.0e-8 * std::abs(x) : 1.0e-8;
+            G(1) = (myFn(x + h) - myFn(x - h)) / (2.0 * h);
+            return true;
+        }
+        bool Values(const math_Vector& X, Standard_Real& F, math_Vector& G) override {
+            Value(X, F);
+            Gradient(X, G);
+            return true;
+        }
+        bool Values(const math_Vector& X, Standard_Real& F,
+                    math_Vector& G, math_Matrix& H) override {
+            Value(X, F);
+            Gradient(X, G);
+            Standard_Real x = X(1);
+            Standard_Real h = (std::abs(x) > 1.0e-8) ? 1.0e-8 * std::abs(x) : 1.0e-8;
+            H(1, 1) = (myFn(x + h) - 2.0 * myFn(x) + myFn(x - h)) / (h * h);
+            return true;
+        }
+    private:
+        double (*myFn)(double);
+    };
+}
+
+int math_function_root(double (*fn)(double), double x0, double x1,
+                        double ftol, int max_iter,
+                        double* out_root, int* out_iterations) {
+    clear_error();
+    if (!fn || !out_root) return 0;
+    try {
+        MathFuncWithGrad1D f(fn);
+        math_BissecNewton solver(ftol);
+        solver.Perform(f, x0, x1, max_iter);
+        if (!solver.IsDone()) return 0;
+        *out_root = solver.Root();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+
+int math_newton_minimum(double (*fn)(double), double x0,
+                         double tolerance, int max_iter,
+                         double* out_min_x, double* out_min_value,
+                         int* out_iterations) {
+    clear_error();
+    if (!fn || !out_min_x || !out_min_value) return 0;
+    try {
+        MathHessianObj1D obj(fn);
+        math_Vector start(1, 1);
+        start(1) = x0;
+        math_NewtonMinimum solver(obj, tolerance, max_iter);
+        solver.Perform(obj, start);
+        if (!solver.IsDone()) return 0;
+        *out_min_x = solver.Location()(1);
+        *out_min_value = solver.Minimum();
+        if (out_iterations) *out_iterations = solver.NbIterations();
+        return 1;
+    } catch (Standard_Failure& e) { set_error(e.what()); return 0; }
+}
+

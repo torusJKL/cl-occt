@@ -781,7 +781,19 @@
        :%xcaf-get-tolerances
        :%xcaf-get-datums
        :%xcaf-free-double-array
-       :%xcaf-free-string-array
+        :%xcaf-free-string-array
+        ;; GccAna 2D constrained geometry
+        :%gccana-circle-tangent-two-lines
+        :%gccana-line-through-two-points
+        ;; Units API
+        :%units-convert
+        :%units-convert-to-si
+        :%units-convert-from-si
+        ;; Expression interpreter
+        :%evaluate-expression
+        ;; Extended math solvers
+        :%math-function-root
+        :%math-newton-minimum
 ))
 
 (defpackage :cl-occt
@@ -1467,11 +1479,13 @@
    :prs3d-segments-edges
    :make-prs3d-bndbox
    :shape-bounding-box-display
-   ;; Math Optimization
-    :bfgs-minimize
-    :frpr-minimize
-    :pso-minimize
-    :globoptmin-minimize
+    ;; Math Optimization
+     :bfgs-minimize
+     :frpr-minimize
+     :pso-minimize
+     :globoptmin-minimize
+     :function-root
+     :newton-minimum
     ;; BOPAlgo wrappers
     :split-shape
     :make-volume
@@ -1608,8 +1622,17 @@
        :fix-small-faces
        ;; Shape Tolerance
        :set-shape-tolerance
-       ;; RWStl I/O
-       :read-stl-triangulation
-       :write-stl-triangulation
-       :free-stl-triangulation
-       ))
+        ;; RWStl I/O
+        :read-stl-triangulation
+        :write-stl-triangulation
+        :free-stl-triangulation
+        ;; Constrained 2D Geometry
+        :circle-tangent-two-lines
+        :line-through-two-points
+        ;; Units API
+        :convert-units
+        :convert-to-si
+        :convert-from-si
+        ;; Expression Interpreter
+        :evaluate-expression
+        ))

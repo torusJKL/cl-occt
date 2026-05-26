@@ -42,6 +42,17 @@ int  inttools_face_face(void* face1, void* face2,
                         int* out_curve_count);
 void inttools_free_curve(void* curve);
 
+// --- math_FunctionRoot (1D root finding via BissecNewton) and math_NewtonMinimum ---
+
+int math_function_root(double (*fn)(double), double x0, double x1,
+                        double ftol, int max_iter,
+                        double* out_root, int* out_iterations);
+
+int math_newton_minimum(double (*fn)(double), double x0,
+                         double tolerance, int max_iter,
+                         double* out_min_x, double* out_min_value,
+                         int* out_iterations);
+
 #ifdef __cplusplus
 }
 #endif
