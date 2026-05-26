@@ -1,65 +1,49 @@
 ## ADDED Requirements
 
-### Requirement: Distance between two shapes
-The system SHALL compute the minimum distance between two shapes using `BRepExtrema_DistShapeShape`.
+### Requirement: Shape proximity detection
+The system SHALL detect proximity zones between two shapes within a given tolerance using `BRepExtrema_ShapeProximity`.
 
-#### Scenario: Distance between two boxes
-- **WHEN** user calls `(shape-distance box1 box2)`
-- **THEN** returns the minimum distance as a double
+#### Scenario: Proximity between two near boxes
+- **WHEN** user calls `(shape-proximity box1 box2 tolerance)`
+- **THEN** returns a list of proximity zones, each containing the distance and involved subshapes
 
-#### Scenario: Distance with touching shapes
-- **WHEN** user calls `(shape-distance touching-boxes)`
-- **THEN** returns 0.0
+#### Scenario: Touching shapes
+- **WHEN** user calls `(shape-proximity touching-box1 touching-box2 0.1)`
+- **THEN** returns proximity zones at the contact region
 
-#### Scenario: Distance returns solution points
-- **WHEN** user calls `(shape-distance-extrema shape1 shape2)`
-- **THEN** returns the minimum distance and the closest point on each shape
+#### Scenario: Well-separated shapes
+- **WHEN** user calls `(shape-proximity far-box1 far-box2 0.1)`
+- **THEN** returns nil (no proximity within tolerance)
 
-#### Scenario: Nil shape returns nil
-- **WHEN** user calls `(shape-distance nil valid-shape)`
+### Requirement: Overlap detection
+The system SHALL detect overlapping regions between two shapes using `BRepExtrema_OverlapTool`.
+
+#### Scenario: Overlapping boxes
+- **WHEN** user calls `(shape-overlap-p box1 overlapping-box2)`
+- **THEN** returns t if shapes overlap
+
+#### Scenario: Non-overlapping boxes
+- **WHEN** user calls `(shape-overlap-p box1 far-box2)`
 - **THEN** returns nil
 
-### Requirement: Point-in-solid classification
-The system SHALL classify whether a 3D point lies inside, outside, or on the surface of a solid using `BRepClass3d_SolidClassifier`.
+#### Scenario: Detailed overlap result
+- **WHEN** user calls `(shape-overlap box1 box2)`
+- **THEN** returns the overlapping subshapes or nil
 
-#### Scenario: Point inside a box
-- **WHEN** user calls `(point-in-solid-p (make-pnt 5 10 15) (make-box 10 20 30))`
-- **THEN** returns `:inside`
+### Requirement: Self-intersection detection
+The system SHALL detect self-intersections within a single shape using `BRepExtrema_SelfIntersection`.
 
-#### Scenario: Point outside a box
-- **WHEN** user calls `(point-in-solid-p (make-pnt 100 100 100) (make-box 10 20 30))`
-- **THEN** returns `:outside`
-
-#### Scenario: Point on surface of a box
-- **WHEN** user calls `(point-in-solid-p (make-pnt 0 10 15) (make-box 10 20 30))`
-- **THEN** returns `:on`
-
-#### Scenario: Classify returns state and face
-- **WHEN** user calls `(classify-point-in-solid point shape)`
-- **THEN** returns `(:inside nil)` or `(:on face)` with the face if on surface
-
-### Requirement: Shape validity checking
-The system SHALL check a shape's topological validity using `BRepCheck_Analyzer`.
-
-#### Scenario: Valid box is valid
-- **WHEN** user calls `(shape-valid-p (make-box 10 20 30))`
-- **THEN** returns t
-
-#### Scenario: Invalid shape returns nil
-- **WHEN** user calls `(shape-valid-p degraded-shape)`
+#### Scenario: Valid shape has no self-intersection
+- **WHEN** user calls `(shape-self-intersect-p (make-box 10 20 30))`
 - **THEN** returns nil
 
-#### Scenario: Detailed validity report
-- **WHEN** user calls `(shape-check shape)`
-- **THEN** returns a list of validity issues, nil if valid
+#### Scenario: Self-intersecting shape
+- **WHEN** user calls `(shape-self-intersect-p folded-shape)`
+- **THEN** returns a list of self-intersection locations
 
-### Requirement: Curve-surface intersection on BRep shape
-The system SHALL intersect a 3D curve with a BRep shape (finding hit faces, points, and parameters) using `BRepIntCurveSurface_Inter`.
+### Requirement: Face-to-face distance extrema
+The system SHALL compute minimum and maximum distance between two specific faces.
 
-#### Scenario: Intersect line with box
-- **WHEN** user calls `(intersect-curve-shape line box)`
-- **THEN** returns a list of intersection results, each containing (point face u v parameter)
-
-#### Scenario: No intersection
-- **WHEN** user calls `(intersect-curve-shape non-intersecting-line box)`
-- **THEN** returns nil
+#### Scenario: Distance between parallel faces
+- **WHEN** user calls `(face-distance face1 face2)`
+- **THEN** returns the minimum distance between the two faces

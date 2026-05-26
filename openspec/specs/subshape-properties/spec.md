@@ -64,13 +64,6 @@ The system SHALL compute the center (UV midpoint mapped to 3D) of a face.
 - **WHEN** user calls `(face-center face)`
 - **THEN** returns three values (x y z)
 
-### Requirement: Face is planar predicate
-The system SHALL return t if the face's underlying surface is a plane.
-
-#### Scenario: Box face is planar
-- **WHEN** user calls `(face-planar-p box-face)`
-- **THEN** returns t
-
 ### Requirement: Face orientation query
 The system SHALL return the orientation (`:forward` or `:reversed`) of a face relative to its surface.
 
@@ -99,21 +92,4 @@ The system SHALL compute the extent (min/max projection) of a shape along a give
 - **WHEN** user calls `(shape-extent-along (make-box 10 20 30) 0 0 1)`
 - **THEN** returns two values (min-projection max-projection), e.g., 0.0d0 and 30.0d0
 
-### Requirement: Filter subshapes by property
-The system SHALL provide helpers to filter subshapes by geometric properties.
 
-#### Scenario: Find planar faces
-- **WHEN** user calls `(find-faces-by-type shape :plane)`
-- **THEN** returns only the planar faces of the shape
-
-#### Scenario: Find circular edges
-- **WHEN** user calls `(find-edges-by-type shape :circle)`
-- **THEN** returns only the circular edges of the shape
-
-#### Scenario: Find faces facing a direction
-- **WHEN** user calls `(find-faces-by-normal shape 0 0 1 :tolerance 0.01)`
-- **THEN** returns faces whose normal is within tolerance of (0,0,1)
-
-#### Scenario: Find faces with area in range
-- **WHEN** user calls `(find-faces-by-area shape :min 50 :max 200)`
-- **THEN** returns faces whose area is between 50 and 200

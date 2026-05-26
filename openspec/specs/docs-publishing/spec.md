@@ -1,53 +1,28 @@
 ## ADDED Requirements
 
-### Requirement: CI generates Staple HTML docs
-The system SHALL generate HTML documentation using Staple on every push to the `main` branch.
+### Requirement: api-reference.md updated with Graphic3d bindings
+The docs/api-reference.md SHALL be updated with function tables for all new Graphic3d capabilities.
 
-#### Scenario: Successful doc generation
-- **WHEN** a push is made to the `main` branch
-- **THEN** the CI workflow loads the `cl-occt` system and all dependencies
-- **THEN** the CI workflow calls Staple to generate HTML documentation
-- **THEN** the generated HTML files appear in the `docs/` output directory
+#### Scenario: Clip plane functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include a section for clip-plane with functions: `make-clip-plane`, `free-clip-plane`, `clip-plane-p`, `set-clip-plane-equation`, `clip-plane-equation`, `set-clip-plane-on`, `clip-plane-on-p`, `set-clip-plane-capping`, `set-clip-plane-cap-color`
 
-#### Scenario: Doc generation with missing Quicklisp dependency
-- **WHEN** Staple or its dependencies (`staple-markdown`, `3bmd`) are not available in Quicklisp
-- **THEN** the workflow SHALL fail with a clear error message
-- **THEN** no deployment SHALL occur
+#### Scenario: Shader program functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include a section for shader-program with functions: `make-shader-program`, `free-shader-program`, `shader-program-p`, `set-shader-vertex-source`, `set-shader-fragment-source`, `set-shader-header`
 
-### Requirement: CI deploys docs to GitHub Pages
-The system SHALL deploy the generated documentation to GitHub Pages.
+#### Scenario: Aspect functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include sections for aspect-fill-area, aspect-line, aspect-marker, and aspect-text with corresponding create, free, predicate, and accessor functions
 
-#### Scenario: Successful deployment
-- **WHEN** Staple has generated HTML docs into `docs/`
-- **THEN** the workflow deploys the `docs/` directory to the `gh-pages` branch
-- **THEN** the deployed site is accessible at the repository's GitHub Pages URL
+#### Scenario: Structure functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include a section for graphic-structure with functions: `make-graphic-structure`, `free-graphic-structure`, `graphic-structure-p`, `set-graphic-structure-visible`, `set-graphic-structure-transform`, `remove-graphic-structure-transform`, `graphic-structure-add-child`, `graphic-structure-remove-child`, `graphic-structure-display`, `graphic-structure-erase`
 
-#### Scenario: Deployment skipped on generation failure
-- **WHEN** the Staple generation step fails
-- **THEN** the workflow SHALL NOT run the deployment step
+#### Scenario: Group functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include a section for graphic-group with functions: `make-graphic-group`, `graphic-group-p`, `set-graphic-group-visible`, `graphic-group-add-triangles`, `graphic-group-add-lines`, `graphic-group-add-points`, `graphic-group-add-text`, `set-graphic-group-aspect`, `set-graphic-group-line-aspect`
 
-### Requirement: Local doc generation via justfile
-The system SHALL provide a `just docs` recipe for local documentation generation.
-
-#### Scenario: Local generation succeeds
-- **WHEN** a developer runs `just docs`
-- **THEN** SBCL loads the `cl-occt` system with Quicklisp
-- **THEN** Staple generates HTML docs into `docs/`
-- **THEN** the developer can open the generated HTML files locally
-
-#### Scenario: Local generation without Quicklisp
-- **WHEN** a developer runs `just docs` without Quicklisp installed
-- **THEN** the command SHALL fail with an error indicating Quicklisp is required
-
-### Requirement: OCCT build is cached between workflows
-The doc workflow SHALL reuse the OCCT build cache created by `pr-check.yml` to avoid redundant builds.
-
-#### Scenario: Cache hit
-- **WHEN** the OCCT build is cached from a previous workflow run
-- **THEN** the workflow restores `.local/` from cache
-- **THEN** the workflow skips the OCCT build step and proceeds directly to compiling the C wrapper
-
-#### Scenario: Cache miss
-- **WHEN** the OCCT build is not cached
-- **THEN** the workflow downloads and builds OCCT from source
-- **THEN** the workflow caches `.local/` for future runs
+#### Scenario: Rendering params functions documented
+- **WHEN** the api-reference.md is updated
+- **THEN** it SHALL include a section for rendering-params with functions: `viewer-rendering-params`, `rendering-params-p`, `set-rendering-method`, `rendering-method`, `set-ray-tracing-depth`, `set-ray-traced-shadows`, `set-ray-traced-reflections`, `set-rai-params-aa`, `set-rendering-gamma`, `rendering-gamma`

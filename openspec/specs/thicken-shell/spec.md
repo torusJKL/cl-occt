@@ -1,24 +1,21 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
-### Requirement: Hollow/shell a solid by removing faces
-The system SHALL remove specified faces from a solid and create a thin-walled shell with a given wall thickness using `BRepOffsetAPI_MakeThickSolid`.
+### Requirement: Shell / Thicken (Hollow)
 
-#### Scenario: Shell a box by removing top face
-- **WHEN** user calls `(shell-shape box '(top-face) :thickness 2.0)`
-- **THEN** returns a hollow shell with 2.0mm wall thickness and the top face removed (open)
+The system SHALL provide a function to create thin-walled shells by removing faces from a solid using `BRepOffsetAPI_MakeThickSolid`.
 
-#### Scenario: Shell a box by removing multiple faces
-- **WHEN** user calls `(shell-shape box '(top-face bottom-face) :thickness 1.5)`
-- **THEN** returns a hollow shell with 1.5mm walls and both ends open
+#### Scenario: Shell a box by removing one face
+- **WHEN** a user creates a box and calls `shell-shape` with one face and a thickness
+- **THEN** the system returns a hollowed shell shape
+
+#### Scenario: Shell with nil shape
+- **WHEN** a user calls `shell-shape` with nil
+- **THEN** the system returns nil
 
 #### Scenario: Shell with outward offset
-- **WHEN** user calls `(shell-shape box '(top-face) :thickness 2.0 :offset :outward)`
-- **THEN** returns a shell with walls offset outward from the original faces
+- **WHEN** a user calls `shell-shape` with `:offset :outward`
+- **THEN** the system creates the shell by adding material outward
 
-#### Scenario: Shell with nil shape returns nil
-- **WHEN** user calls `(shell-shape nil '(face) :thickness 2.0)`
-- **THEN** returns nil
-
-#### Scenario: Shell with thickness larger than feature returns nil
-- **WHEN** user calls `(shell-shape box '(face) :thickness 999.0)`
-- **THEN** returns nil (operation fails)
+#### Scenario: Shell with excessive thickness
+- **WHEN** a user calls `shell-shape` with thickness exceeding shape dimensions
+- **THEN** the system returns nil

@@ -1,72 +1,79 @@
 ## ADDED Requirements
 
-### Requirement: Topology explorer for sub-shapes
-The system SHALL walk sub-shapes of a given type using `TopExp_Explorer`, providing a Lisp-idiomatic iteration interface.
+### Requirement: Face-to-edge navigation
+The system SHALL return the bounding edges of a face using `TopExp_Explorer` with face→edge traversal.
 
-#### Scenario: Explore faces of a box
-- **WHEN** user calls `(map-shape-subshapes box :face)`
-- **THEN** returns a list of 6 face shapes
+#### Scenario: Box face has 4 edges
+- **WHEN** user calls `(face-edges box-face)`
+- **THEN** returns a list of 4 edge shapes
 
-#### Scenario: Explore edges of a box
-- **WHEN** user calls `(map-shape-subshapes box :edge)`
-- **THEN** returns a list of 12 edge shapes
-
-#### Scenario: Explore vertices of a box
-- **WHEN** user calls `(map-shape-subshapes box :vertex)`
-- **THEN** returns a list of 8 vertex shapes
-
-#### Scenario: Explore with compound type filter
-- **WHEN** user calls `(map-shape-subshapes shape :edge :stop-at :face)`
-- **THEN** explores edges but stops at faces (does not descend into sub-wires)
-
-#### Scenario: Count sub-shapes
-- **WHEN** user calls `(count-shape-subshapes box :face)`
-- **THEN** returns 6
-
-### Requirement: BRepTools shape dump and utilities
-The system SHALL provide BRepTools utilities: shape triangulation (triangle count, vertex/face access), wire ordering verification, and text shape dump.
-
-#### Scenario: Dump shape as text
-- **WHEN** user calls `(dump-shape box)`
-- **THEN** returns a string containing the topological structure of the shape
-
-#### Scenario: Shape triangulation
-- **WHEN** user calls `(shape-triangle-count box)`
-- **THEN** returns the number of triangles after meshing
-
-#### Scenario: Wire order check
-- **WHEN** user calls `(wire-order-check-p wire face)`
-- **THEN** returns t if the wire edges are in the correct order relative to the face
-
-### Requirement: BRepAdaptor geometric queries
-The system SHALL provide geometric access to BRep edges and faces via `BRepAdaptor_CompCurve`, `BRepAdaptor_Curve`, and `BRepAdaptor_Surface`, returning curves and surfaces from topological entities.
-
-#### Scenario: Get curve from edge
-- **WHEN** user calls `(edge->curve edge)`
-- **THEN** returns a `curve` instance representing the edge's 3D curve (requires curve type from geometry-foundation)
-
-#### Scenario: Get surface from face
-- **WHEN** user calls `(face->surface face)`
-- **THEN** returns a `surface` instance representing the face's underlying surface (requires surface type from geometry-foundation)
-
-### Requirement: Vertex construction
-The system SHALL construct a BRep vertex from a 3D point using `BRepBuilderAPI_MakeVertex`.
-
-#### Scenario: Make vertex from coordinates
-- **WHEN** user calls `(make-vertex 1.0 2.0 3.0)`
-- **THEN** returns a shape representing a vertex at (1, 2, 3)
-
-### Requirement: Polygon construction
-The system SHALL construct a polygonal shape (wire of edges) from a sequence of 3D points using `BRepBuilderAPI_MakePolygon`.
-
-#### Scenario: Make polygon from 4 points
-- **WHEN** user calls `(make-polygon '((0 0 0) (10 0 0) (10 10 0) (0 10 0)))`
-- **THEN** returns a shape (wire) containing 4 edges forming a closed rectangle
-
-#### Scenario: Make open polygon
-- **WHEN** user calls `(make-polygon '((0 0 0) (10 0 0) (10 10 0)) :closed nil)`
-- **THEN** returns an open wire with 3 edges
-
-#### Scenario: Invalid (too few points) returns nil
-- **WHEN** user calls `(make-polygon '((0 0 0)))`
+#### Scenario: Nil face returns nil
+- **WHEN** user calls `(face-edges nil)`
 - **THEN** returns nil
+
+### Requirement: Edge-to-vertex navigation
+The system SHALL return the two vertices bounding an edge using `TopExp::Vertices`.
+
+#### Scenario: Box edge has 2 vertices
+- **WHEN** user calls `(edge-vertices box-edge)`
+- **THEN** returns two values: the start vertex and end vertex shapes
+
+#### Scenario: Nil edge returns nil
+- **WHEN** user calls `(edge-vertices nil)`
+- **THEN** returns nil
+
+### Requirement: Vertex-to-edge navigation
+The system SHALL return all edges incident to a vertex using `TopExp_Explorer` with vertex context.
+
+#### Scenario: Box corner has 3 incident edges
+- **WHEN** user calls `(vertex-edges box-vertex)`
+- **THEN** returns a list of 3 edge shapes
+
+#### Scenario: Nil vertex returns nil
+- **WHEN** user calls `(vertex-edges nil)`
+- **THEN** returns nil
+
+### Requirement: Edge-to-face navigation
+The system SHALL return the one or two faces sharing an edge.
+
+#### Scenario: Interior edge has 2 faces
+- **WHEN** user calls `(edge-faces interior-edge)`
+- **THEN** returns a list of 2 face shapes
+
+#### Scenario: Boundary edge has 1 face
+- **WHEN** user calls `(edge-faces boundary-edge)`
+- **THEN** returns a list of 1 face shape
+
+### Requirement: Face-to-wire decomposition
+The system SHALL return the outer wire and any inner wires (holes) of a face using `BRepTools::OuterWire` and wire iteration.
+
+#### Scenario: Box face has one wire
+- **WHEN** user calls `(face-wires box-face)`
+- **THEN** returns a list with 1 wire (the outer wire)
+
+#### Scenario: Face with hole has two wires
+- **WHEN** user calls `(face-wires face-with-hole)`
+- **THEN** returns a list of 2 wires (outer wire + hole wire)
+
+### Requirement: Wire-to-edge decomposition
+The system SHALL return the ordered edges of a wire using `BRepTools_WireExplorer`.
+
+#### Scenario: Rectangular wire has 4 edges
+- **WHEN** user calls `(wire-edges rect-wire)`
+- **THEN** returns a list of 4 edge shapes in order
+
+### Requirement: Subshape orientation query
+The system SHALL return the orientation (`:forward`, `:reversed`, `:internal`, or `:external`) of any subshape.
+
+#### Scenario: Face orientation
+- **WHEN** user calls `(subshape-orientation box-face)`
+- **THEN** returns `:forward`
+
+### Requirement: Subshape type query
+The system SHALL return the type (`:face`, `:edge`, `:vertex`, `:wire`, `:shell`, `:solid`, `:compound`, `:compsolid`) of any shape.
+
+#### Scenario: Box top-level type
+- **WHEN** user calls `(shape-type (make-box 10 20 30))`
+- **THEN** returns `:solid`
+
+
