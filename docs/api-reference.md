@@ -1846,3 +1846,50 @@ All functions return nil or nil-values for invalid/nil inputs.
 (let ((box (make-box 10 20 30)))
   (shape-extent-along box 0 0 1))  ; → 0.0, 30.0
 
+### Fair Curve
+
+Energy-minimizing curves for aesthetic/industrial design (FairCurve_Batten and FairCurve_MinimalVariation).
+
+| Function | Description |
+|----------|-------------|
+| `(fair-curve-batten points &key free-end free-slide initial-tangent final-tangent)` | Physical spline through points minimizing strain energy |
+| `(fair-curve-minvar points &key free-end free-slide initial-slope final-slope)` | Curve minimizing curvature variation through points |
+
+Both functions accept 3D point coordinates (only xy used, z ignored) and return a `curve` object or `nil` on failure.
+
+```lisp
+;; Batten through three points
+(fair-curve-batten '((0 0 0) (5 5 0) (10 0 0)))
+
+;; Batten with tangency constraints
+(fair-curve-batten '((0 0 0) (5 5 0) (10 0 0))
+                   :initial-tangent '(1 0 0)
+                   :final-tangent '(-1 0 0))
+
+;; Minimal variation with slopes
+(fair-curve-minvar '((0 0 0) (5 5 0) (10 0 0))
+                   :initial-slope '(1 0 0)
+                   :final-slope '(1 0 0))
+```
+
+### Advanced Surface Filling
+
+Surface filling from boundary curves with continuity constraints using GeomPlate.
+
+| Function | Description |
+|----------|-------------|
+| `(fill-surface-from-curves curves &key continuity support-faces)` | Fill a surface bounded by curves with G0/G1/G2 continuity |
+
+Returns a `surface` object or `nil` on failure. Requires at least 3 curves.
+
+```lisp
+;; Fill from 4 boundary curves
+(fill-surface-from-curves (list curve1 curve2 curve3 curve4))
+
+;; Fill with G1 continuity
+(fill-surface-from-curves curves :continuity :g1)
+
+;; Fill with supporting faces
+(fill-surface-from-curves curves :support-faces faces :continuity :g1)
+```
+

@@ -332,7 +332,15 @@
                       brep-surface-normal-plane brep-surface-normal-nil-input
                       brep-surface-curvature-sphere brep-surface-curvature-nil-input
                       brep-face-normal-valid brep-face-normal-nil-input
-                      brep-face-curvature-valid brep-face-curvature-nil-input))
+                       brep-face-curvature-valid brep-face-curvature-nil-input
+                       ;; FairCurve + GeomPlate tests
+                       fair-curve-batten-3-points fair-curve-batten-with-tangents
+                       fair-curve-batten-free-ends fair-curve-batten-nil-input
+                       fair-curve-batten-too-few
+                       fair-curve-minvar-3-points fair-curve-minvar-with-slopes
+                       fair-curve-minvar-nil-input fair-curve-minvar-too-few
+                       fill-surface-from-4-curves fill-surface-from-curves-g1
+                       fill-surface-from-curves-too-few fill-surface-from-curves-nil-input))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

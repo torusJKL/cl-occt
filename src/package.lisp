@@ -680,7 +680,11 @@
     :%curve-tangent-at-internal
     :%curve-curvature-at-internal
     :%surface-normal-at-internal
-    :%surface-curvature-at-internal
+     :%surface-curvature-at-internal
+     ;; FairCurve + GeomPlate
+     :%fair-curve-batten
+     :%fair-curve-minvar
+     :%fill-surface-from-curves
 ))
 
 (defpackage :cl-occt
@@ -1409,5 +1413,9 @@
     :edge-bounding-box
     :subshape-bounding-box
     :face-center
-    :shape-extent-along
-                       ))
+     :shape-extent-along
+     ;; FairCurve + GeomPlate
+     :fair-curve-batten
+     :fair-curve-minvar
+     :fill-surface-from-curves
+                        ))

@@ -31,5 +31,7 @@
 #include "occt_wrap_xcaf.h"
 #include "occt_wrap_extrema.h"
 #include "occt_wrap_lprop.h"
+#include "occt_wrap_faircurve.h"
+#include "occt_wrap_geomplate.h"
 
 #endif
