@@ -1,0 +1,13 @@
+(in-package :cl-occt)
+
+(defun transfer-parameter (source-edge target-curve param)
+  (if (or (null source-edge) (null target-curve))
+      (values nil nil)
+      (cffi:with-foreign-object (out-param :double)
+        (let ((ok (%transfer-params (%ptr source-edge)
+                                    (%ptr target-curve)
+                                    (coerce param 'double-float)
+                                    out-param)))
+          (if (= ok 0)
+              (values nil nil)
+              (values (cffi:mem-ref out-param :double) t))))))

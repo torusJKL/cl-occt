@@ -28,6 +28,8 @@ typedef void* occt_bsdf;
 
 typedef void* occt_ais_animation;
 
+typedef void* occt_location;
+
 void free_shape(occt_shape shape);
 
 int get_error_code(void);

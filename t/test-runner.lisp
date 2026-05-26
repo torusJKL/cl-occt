@@ -375,6 +375,36 @@
                        fair-curve-minvar-nil-input fair-curve-minvar-too-few
                        fill-surface-from-4-curves fill-surface-from-curves-g1
                        fill-surface-from-curves-too-few                        fill-surface-from-curves-nil-input
+                       ;; Advanced geometry discovery tests
+                       uniform-abscissa-null-curve
+                       uniform-deflection-circle
+                       uniform-deflection-null-curve
+                       location-create-from-translation
+                       location-compose
+                       location-invert
+                       shape-get-location-identity
+                       shape-move-by-location
+                       find-edges-by-type-box-lines
+                       find-edges-by-type-cylinder-circles
+                       find-edges-by-radius-cylinder
+                       find-edges-by-radius-box-returns-nil
+                       normal-project-null-input
+                       normal-project-null-shape
+                       brep-io-roundtrip-box
+                       brep-read-nonexistent
+                       make-wedge-full-valid
+                       make-wedge-corner-valid
+                       make-wedge-zero-dim
+                       make-wedge-negative
+                       make-drafted-prism-nil-shape
+                       remove-features-null-shape
+                       remove-features-empty-faces
+                       fix-small-faces-clean-box
+                       fix-small-faces-null
+                       set-shape-tolerance-on-vertices
+                       set-shape-tolerance-null
+                       rwstl-read-null-path
+                       rwstl-write-null-input
                        ;; OCAF tests
                        ocaf-create-doc-valid
                        ocaf-root-label-depth

@@ -696,7 +696,42 @@
        ;; Precision
        :%precision-confusion
        :%precision-angular
-       :%precision-intersection
+        :%precision-intersection
+        ;; Uniform Point Distribution (GCPnts)
+        :%uniform-abscissa-points
+        :%uniform-deflection-points
+        ;; Assembly Location
+        :%location-from-translation
+        :%location-multiply
+        :%location-inverted
+        :%location-free
+        :%shape-get-location
+        :%shape-moved
+        ;; Edge Finding
+        :%find-edges-by-type
+        :%find-edges-by-radius
+        ;; Normal Projection
+        :%normal-project
+        ;; Transfer Parameters
+        :%transfer-params
+        ;; BREP I/O
+        :%brep-write-shape
+        :%brep-read-shape
+        ;; Wedge Primitive
+        :%make-wedge-full
+        :%make-wedge-corner
+        ;; Drafted Prism
+        :%make-drafted-prism
+        ;; Remove Features
+        :%remove-features
+        ;; Fix Small Faces
+        :%fix-small-faces
+        ;; Shape Tolerance
+        :%set-shape-tolerance
+        ;; RWStl
+        :%rwstl-read-file
+        :%rwstl-write-file
+        :%rwstl-free-triangulation
        ;; FairCurve + GeomPlate
        :%fair-curve-batten
        :%fair-curve-minvar
@@ -1543,5 +1578,38 @@
       :ocaf-set-function-input
       :ocaf-set-function-output
       :ocaf-recompute
-      :ocaf-recompute-function
-                        ))
+       :ocaf-recompute-function
+       ;; Uniform Point Distribution
+       :uniform-abscissa-points
+       :uniform-deflection-points
+       ;; Assembly Location
+       :make-location
+       :compose-locations
+       :invert-location
+       :shape-location
+       :move-shape
+       ;; Edge Finding
+       :find-edges-by-type
+       :find-edges-by-radius
+       ;; Normal Projection
+       :normal-project
+       ;; Transfer Parameters
+       :transfer-parameter
+       ;; BREP I/O
+       :write-brep
+       :read-brep
+       ;; Wedge Primitive
+       :make-wedge
+       ;; Drafted Prism
+       :make-drafted-prism
+       ;; Remove Features
+       :remove-features
+       ;; Fix Small Faces
+       :fix-small-faces
+       ;; Shape Tolerance
+       :set-shape-tolerance
+       ;; RWStl I/O
+       :read-stl-triangulation
+       :write-stl-triangulation
+       :free-stl-triangulation
+       ))

@@ -237,3 +237,165 @@ Deep copy of shapes with full independence.
 
 - **`(copy-shape shape)`** → shape or `nil`
   Create an independent deep copy of any shape via `BRepBuilderAPI_Copy`. The copy shares no data with the original — modifying or garbage-collecting the original does not affect the copy.
+
+---
+
+## Uniform Point Distribution
+
+Compute evenly-spaced points along a curve via `GCPnts_UniformAbscissa` (fixed count) or `GCPnts_UniformDeflection` (maximum chordal deviation).
+
+### Functions
+
+- **`(uniform-abscissa-points curve first last num-points)`** → list of (x y z) triples or `nil`
+  Compute `num-points` evenly-spaced points along `curve` between `first` and `last` parameter values. Returns a list of (x y z) coordinate triples.
+
+- **`(uniform-deflection-points curve first last deflection)`** → list of (x y z) triples or `nil`
+  Compute points along `curve` with maximum chordal deviation `deflection` between `first` and `last` parameter values.
+
+---
+
+## Assembly Location
+
+Query and manipulate shape locations (`TopLoc_Location`). Locations represent coordinate transformations.
+
+### Functions
+
+- **`(make-location dx dy dz)`** → location or `nil`
+  Create a location from a translation vector (dx, dy, dz).
+
+- **`(compose-locations loc1 loc2)`** → location or `nil`
+  Compose two locations: `loc1 · loc2`.
+
+- **`(invert-location loc)`** → location or `nil`
+  Return the inverse of a location.
+
+- **`(shape-location shape)`** → location or `nil`
+  Return the `TopLoc_Location` of a shape.
+
+- **`(move-shape shape location)`** → shape or `nil`
+  Return a new shape moved by `location` without mutating the original.
+
+---
+
+## Edge Finding
+
+Find edges in a shape by geometric criteria via `BRepLib_FindEdges`.
+
+### Functions
+
+- **`(find-edges-by-type shape curve-type)`** → list of shapes or `nil`
+  Find edges whose curve type matches `curve-type`. Use `6` for linear edges, `5` for circular, `4` for elliptical.
+
+- **`(find-edges-by-radius shape radius)`** → list of shapes or `nil`
+  Find circular edges with the given `radius`.
+
+---
+
+## Normal Projection
+
+Project a shape (wire or edge) onto a face along the face surface normal via `BRepAlgo_NormalProjection`.
+
+### Functions
+
+- **`(normal-project shape face)`** → shape or `nil`
+  Project `shape` onto `face` along the surface normal. Returns the projected shape.
+
+---
+
+## Transfer Parameters
+
+Map a parameter from an edge to a target curve via `ShapeAnalysis_TransferParameters`.
+
+### Functions
+
+- **`(transfer-parameter source-edge target-curve param)`** → `double-float` or `nil`, `boolean`
+  Transfer parameter `param` from `source-edge` to `target-curve`. Returns the mapped parameter and a success flag.
+
+---
+
+## BREP Native I/O
+
+Read and write the OCCT-native `.brep` format via `BRepTools::Write` and `BRepTools::Read`.
+
+### Functions
+
+- **`(write-brep shape filename)`** → `boolean`
+  Write `shape` to a `.brep` file. Returns `t` on success.
+
+- **`(read-brep filename)`** → shape or `nil`
+  Read a shape from a `.brep` file.
+
+---
+
+## Wedge Primitive
+
+Create a wedge (tapered box) via `BRepPrimAPI_MakeWedge`.
+
+### Functions
+
+- **`(make-wedge dx dy dz ltx)`** → shape or `nil`
+  Create a full wedge with dimensions dx × dy × dz and front-face taper `ltx` along X.
+
+- **`(make-wedge dx dy dz xmin zmin xmax zmax)`** → shape or `nil`
+  Create a corner wedge with the given corner coordinates.
+
+---
+
+## Drafted Prism
+
+Create a drafted prismatic feature (additive or subtractive) via `BRepFeat_MakeDPrism`.
+
+### Functions
+
+- **`(make-drafted-prism shape face profile height angle operation)`** → shape or `nil`
+  Create a drafted prism on `shape`. `face` is the base face, `profile` is the profile shape, `height` is extrusion distance, `angle` is the draft angle in degrees, and `operation` is `0` for subtractive or `1` for additive.
+
+---
+
+## Remove Features
+
+Remove specified features (holes, protrusions) from a shape via `BRepAlgoAPI_RemoveFeatures`.
+
+### Functions
+
+- **`(remove-features shape faces)`** → shape or `nil`
+  Remove the list of `faces` (features) from `shape`. Returns the shape without the specified features.
+
+---
+
+## Fix Small Faces
+
+Fix (remove) small faces on a shape via `ShapeFix_FixSmallFace`.
+
+### Functions
+
+- **`(fix-small-faces shape)`** → shape or `nil`
+  Detect and remove small faces from `shape`.
+
+---
+
+## Shape Tolerance Tools
+
+Set tolerance on subshapes by type via `ShapeFix_ShapeTolerance`.
+
+### Functions
+
+- **`(set-shape-tolerance shape tolerance shape-type)`** → `boolean`
+  Set `tolerance` on all subshapes of `shape-type` (e.g., `6` for edges, `7` for vertices, `4` for faces).
+
+---
+
+## RWStl I/O
+
+Low-level STL file read/write via `RWStl`, providing direct access to the triangulation data.
+
+### Functions
+
+- **`(read-stl-triangulation filename)`** → triangulation handle or `nil`
+  Read an STL file and return a triangulation handle.
+
+- **`(write-stl-triangulation triangulation filename)`** → `boolean`
+  Write a triangulation handle to an STL file.
+
+- **`(free-stl-triangulation triangulation)`** 
+  Free a triangulation handle returned by `read-stl-triangulation`.
