@@ -715,11 +715,22 @@
       :%ocaf-get-named-shape
       :%ocaf-named-shape-is-deleted
       ;; OCAF Function
-      :%ocaf-add-function
-      :%ocaf-set-function-input
-      :%ocaf-set-function-output
-      :%ocaf-recompute-doc
-      :%ocaf-recompute-function
+       :%ocaf-add-function
+       :%ocaf-set-function-input
+       :%ocaf-set-function-output
+       :%ocaf-recompute-doc
+       :%ocaf-recompute-function
+       :%xcaf-add-linear-dimension
+       :%xcaf-add-angular-dimension
+       :%xcaf-add-diameter-dimension
+       :%xcaf-add-tolerance
+       :%xcaf-add-datum
+       :%xcaf-add-geometric-tolerance
+       :%xcaf-get-dimensions
+       :%xcaf-get-tolerances
+       :%xcaf-get-datums
+       :%xcaf-free-double-array
+       :%xcaf-free-string-array
 ))
 
 (defpackage :cl-occt
@@ -1214,8 +1225,17 @@
    :xcaf-get-views
    :xcaf-get-visual-material
    :xcaf-get-clipping-planes
-   :xcaf-expand-assembly
-   ;; Image / Texture / Material public API
+    :xcaf-expand-assembly
+    :xcaf-add-linear-dimension
+    :xcaf-add-angular-dimension
+    :xcaf-add-diameter-dimension
+    :xcaf-add-tolerance
+    :xcaf-add-datum
+    :xcaf-add-geometric-tolerance
+    :xcaf-get-dimensions
+    :xcaf-get-tolerances
+    :xcaf-get-datums
+    ;; Image / Texture / Material public API
    :image
    :image-p
    :image-from-file

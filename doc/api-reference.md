@@ -122,3 +122,42 @@ Define parametric function drivers and trigger recomputation.
   Recomputed all dirty functions in the document and returns the count.
 - **`(ocaf-recompute-function func-label)`** → `boolean`
   Recompute a single function by its label.
+
+---
+
+## XCAF GD&T (Dimensions, Tolerances, Datums)
+
+Geometric Dimensioning & Tolerancing via `XCAFDimTolObjects` and `XCAFDoc_DimTolTool`. All GD&T is attached to shapes within an XCAF document and persists through STEP round-trips.
+
+### Dimensions
+
+- **`(xcaf-add-linear-dimension doc shape points &key value)`** → `boolean`
+  Create a linear dimension between two 3D points. `points` is a list of two `(x y z)` coordinates. Example: `(xcaf-add-linear-dimension doc box (list p1 p2) :value 50.0)`.
+- **`(xcaf-add-angular-dimension doc shape edges &key value)`** → `boolean`
+  Create an angular dimension between two edges. `edges` is a list of two `shape` objects.
+- **`(xcaf-add-diameter-dimension doc shape subshape &key value)`** → `boolean`
+  Create a diameter dimension on a cylindrical face or circular edge.
+
+### Tolerances
+
+- **`(xcaf-add-tolerance doc shape type &key value modifiers)`** → `boolean`
+  Create a tolerance (manufacturing tolerance). `type` is a keyword: `:flatness`, `:position`, `:parallelism`, `:perpendicularity`, `:concentricity`, `:circular-runout`, `:total-runout`, `:circularity`, `:cylindricity`, `:profile-of-line`, `:profile-of-surface`, `:angularity`, `:symmetry`, `:straightness`. Optional `modifiers` is a list like `'(:mmc :rfs)`.
+
+### Datums
+
+- **`(xcaf-add-datum doc shape &key label)`** → `boolean`
+  Create a datum reference. `label` is a string like `"A"` or `"A-B"` for compound datums.
+
+### Geometric Tolerances
+
+- **`(xcaf-add-geometric-tolerance doc shape type value &key datums)`** → `boolean`
+  Create a geometric tolerance with optional datum references. `type` uses the same keywords as `xcaf-add-tolerance`. `datums` is a list of datum label strings, e.g., `'("A")`.
+
+### Query Functions
+
+- **`(xcaf-get-dimensions doc shape)`** → list of plists or `nil`
+  Return all dimensions on the shape. Each plist has `:type` (integer code), `:value`, `:nb-points`, `:points`.
+- **`(xcaf-get-tolerances doc shape)`** → list of plists or `nil`
+  Return all tolerances on the shape. Each plist has `:type`, `:value`, `:geom-tolerance-p`.
+- **`(xcaf-get-datums doc shape)`** → list of strings or `nil`
+  Return datum labels attached to the shape.

@@ -36,5 +36,6 @@
 #include "occt_wrap_ocaf_core.h"
 #include "occt_wrap_ocaf_naming.h"
 #include "occt_wrap_ocaf_function.h"
+#include "occt_wrap_xcaf_dimtol.h"
 
 #endif

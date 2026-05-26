@@ -266,8 +266,28 @@
                  make-xcaf-doc-valid xcaf-add-shape-t xcaf-add-shape-to-layer-t
                  xcaf-add-view-t xcaf-nil-doc-nil xcaf-remove-shape-from-layer-t
                  xcaf-get-visual-material-t xcaf-get-clipping-planes-t
-                  xcaf-expand-assembly-t
-                   ;; Animation (core)
+                   xcaf-expand-assembly-t
+                   ;; XCAF DimTol tests
+                   xcaf-dimtol-linear-dimension-on-box-face
+                   xcaf-dimtol-linear-dimension-nil-doc
+                   xcaf-dimtol-linear-dimension-nil-shape
+                   xcaf-dimtol-linear-dimension-too-few-points
+                   xcaf-dimtol-angular-dimension-on-edges
+                   xcaf-dimtol-angular-dimension-nil-input
+                   xcaf-dimtol-diameter-dimension-on-cylinder
+                   xcaf-dimtol-diameter-dimension-nil-input
+                   xcaf-dimtol-tolerance-flatness
+                   xcaf-dimtol-tolerance-position-with-modifiers
+                   xcaf-dimtol-tolerance-nil-input
+                   xcaf-dimtol-datum-single
+                   xcaf-dimtol-datum-compound
+                   xcaf-dimtol-datum-nil-input
+                   xcaf-dimtol-geometric-tolerance-position-with-datum
+                   xcaf-dimtol-geometric-tolerance-nil-input
+                   xcaf-dimtol-step-roundtrip
+                   xcaf-dimtol-get-dimensions-after-add
+                   xcaf-dimtol-get-dimensions-nil-input
+                    ;; Animation (core)
                    animation-make-valid animation-make-nil-name
                    animation-free-nil-safe animation-free-double-safe
                    animation-duration-set-get animation-progress-set-get
