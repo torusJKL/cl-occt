@@ -5,7 +5,8 @@
    (%name     :initarg :name     :initform nil :accessor assembly-name)
    (%color    :initarg :color    :initform nil :accessor assembly-color)
    (%location :initarg :location :initform nil :reader assembly-location)
-   (%children :initarg :children :initform nil :accessor assembly-children)))
+   (%children :initarg :children :initform nil :accessor assembly-children))
+  (:documentation "Represents a tree node in an assembly hierarchy (part or sub-assembly)."))
 
 (defun make-part (shape &key name color location)
   "Create a leaf-level assembly part from a **shape**.

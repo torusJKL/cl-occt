@@ -4,7 +4,8 @@
   ((%r :initarg :r :reader color-r)
    (%g :initarg :g :reader color-g)
    (%b :initarg :b :reader color-b)
-   (%name :initarg :name :initform nil :reader color-name)))
+   (%name :initarg :name :initform nil :reader color-name))
+  (:documentation "Represents an RGB color with an optional keyword name."))
 
 (defun viewer-color-p (obj)
   "Returns `t` if **obj** is a `viewer-color` instance."

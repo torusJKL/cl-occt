@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defclass geom2d ()
-  ((%ptr :initarg :ptr :reader %ptr)))
+  ((%ptr :initarg :ptr :reader %ptr))
+  (:documentation "Wraps a Geom2d_Curve handle from OCCT with GC via tg:finalize."))
 
 (defun geom2d-p (obj)
   "**Returns:** `t` if `obj` is a 2D geometry object, `nil` otherwise."
@@ -10,6 +11,9 @@
 (in-package :cl-occt.impl)
 
 (defun make-geom2d (ptr)
+  "Wrap a raw Geom2d_Curve C pointer in a `geom2d` CLOS instance with finalization.
+
+  Returns a `geom2d` object, or nil if **ptr** is null."
   (if (or (null ptr) (cffi:null-pointer-p ptr))
       nil
       (let ((g (make-instance 'cl-occt:geom2d :ptr ptr)))

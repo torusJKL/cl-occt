@@ -49,10 +49,12 @@
         view))))
 
 (defun set-transparency-method (view method)
-  "Sets the transparency rendering method.
+  "Sets the transparency rendering method for **view**.
 
-  **method** is one of `:blend-unordered`, `:blend-oit`, or
-  `:depth-peeling-oit`.
+  - **view** — a viewer object
+  - **method** — one of `:blend-unordered`, `:blend-oit`, or `:depth-peeling-oit`
+
+  **Returns:** **view** on success, `nil` on error.
 
   **Example:**
     (with-viewer (v)
@@ -106,6 +108,11 @@
 
 (defun set-transparent-shading (view method)
   "Alias for `set-transparency-method`.
+
+  - **view** — a viewer object
+  - **method** — a transparency method keyword (same as `set-transparency-method`)
+
+  **Returns:** **view** on success, `nil` on error.
 
   **Example:**
     (with-viewer (v)

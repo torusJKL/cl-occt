@@ -6,7 +6,8 @@
    (%center-of-mass :initarg :center-of-mass :reader gprops-center-of-mass)
    (%inertia-matrix :initarg :inertia-matrix :reader gprops-inertia-matrix)
    (%principal-moments :initarg :principal-moments :reader gprops-principal-moments)
-   (%principal-axes :initarg :principal-axes :reader gprops-principal-axes)))
+   (%principal-axes :initarg :principal-axes :reader gprops-principal-axes))
+  (:documentation "Holds global properties (volume, area, center of mass, inertia) of a shape."))
 
 (in-package :cl-occt.impl)
 

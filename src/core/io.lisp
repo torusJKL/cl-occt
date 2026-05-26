@@ -41,10 +41,12 @@
   **See also:** `write-step`, `read-stl`, `read-step-assembly`"
   (make-shape (%read-step filename)))
 
-(defun write-stl (shape filename &key (deflection 0.1d0))
+(defun write-stl (shape filename &key (deflection 0.1d0) (angle 0.5d0) (relative nil))
   "Write **shape** to an STL file at **filename**.
 
   **deflection** controls the tessellation quality (smaller = finer).
+  **angle** controls the angular deviation in radians (default 0.5).
+  **relative** when non-nil uses relative deflection mode.
   Returns `t` on success, signals an OCCT error on failure, or
   returns `nil` if **shape** is null or not a valid shape.
 
@@ -52,8 +54,9 @@
 
     (write-stl (make-box 10 20 30) \"/tmp/clocct-test-box.stl\")
     (write-stl (make-sphere 10) \"/tmp/clocct-test-sphere.stl\" :deflection 0.05)
+    (write-stl (make-box 10 20 30) \"/tmp/clocct-test-box.stl\" :angle 0.2 :relative t)
 
-  **See also:** `read-stl`, `write-step`"
+  **See also:** `read-stl`, `write-step`, `mesh-shape`"
   (cond
     ((null shape)
      (warn "write-stl: nil shape, nothing written")
@@ -62,7 +65,10 @@
      (warn "write-stl: not a shape object, nothing written")
      nil)
     (t
-     (let ((result (%write-stl (%ptr shape) filename (coerce deflection 'double-float))))
+     (let ((result (%write-stl (%ptr shape) filename
+                               (coerce deflection 'double-float)
+                               (coerce angle 'double-float)
+                               (if relative 1 0))))
        (if (zerop result)
            (error 'occt-error
                   :code (%get-error-code)
@@ -249,5 +255,261 @@
                         :message (%get-error-message))
                  t)))
       (%xde-free-doc doc))))
+
+;; --- Mesh I/O Utility Helpers ---
+
+(defun %coordinate-system->int (cs)
+  (case cs
+    (:zup 0)
+    (:yup 1)
+    (otherwise (error 'occt-error :code -1
+                      :message (format nil "Unknown coordinate system: ~S (expected :zup or :yup)" cs)))))
+
+(defun %name-format->int (nf)
+  (case nf
+    (:auto 0)
+    (:short 1)
+    (:full 2)
+    (otherwise (error 'occt-error :code -1
+                      :message (format nil "Unknown name format: ~S (expected :auto, :short, or :full)" nf)))))
+
+;; --- IGES I/O ---
+
+(defun write-iges (shape filename)
+  "Write **shape** to an IGES file at **filename**.
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-iges (make-box 10 20 30) \"/tmp/box.igs\")
+
+  **See also:** `read-iges`, `write-iges-assembly`"
+  (cond
+    ((null shape)
+     (warn "write-iges: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-iges: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-iges (%ptr shape) filename)))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-iges (filename)
+  "Read a shape from an IGES file at **filename**.
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **Example:**
+
+      (let ((shape (read-iges \"/tmp/box.igs\")))
+        (when shape (shape-type shape)))
+
+  **See also:** `write-iges`, `read-step`"
+  (make-shape (%read-iges filename)))
+
+(defun write-iges-assembly (root filename)
+  "Write an assembly tree to an IGES file using XDE.
+
+  **root** is an assembly instance (from `make-part` or `make-assembly`).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **root** is null.
+
+  **See also:** `read-iges-assembly`, `write-iges`"
+  (when (null root)
+    (warn "write-iges-assembly: nil assembly, nothing written")
+    (return-from write-iges-assembly nil))
+  (let ((doc (%xde-new-doc)))
+    (unwind-protect
+         (progn
+           (%write-node doc "" root)
+           (let ((result (%xde-write-iges doc filename)))
+             (if (zerop result)
+                 (error 'occt-error
+                        :code (%get-error-code)
+                        :message (%get-error-message))
+                 t)))
+      (%xde-free-doc doc))))
+
+(defun read-iges-assembly (filename)
+  "Read an assembly tree from an IGES file using XDE.
+
+  Returns an assembly hierarchy, or `nil` if the file cannot be read.
+
+  **See also:** `write-iges-assembly`, `read-step-assembly`"
+  (let ((doc (%xde-read-iges filename)))
+    (if (cffi:null-pointer-p doc)
+        nil
+        (unwind-protect
+             (let ((root-paths (%xde-get-root-paths doc)))
+               (if (null root-paths)
+                   nil
+                   (make-instance 'assembly
+                     :children (loop for path in root-paths
+                                     collect (%read-node doc path)))))
+          (%xde-free-doc doc)))))
+
+;; --- OBJ Mesh I/O ---
+
+(defun write-obj (shape filename
+                  &key (coordinate-system :zup)
+                    (name-format :auto)
+                    (per-vertex-colors nil))
+  "Write **shape** to an OBJ file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **name-format** :auto, :short, or :full (default :auto)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-obj (make-box 10 20 30) \"/tmp/box.obj\")
+
+  **See also:** `read-obj`, `write-stl`"
+  (cond
+    ((null shape)
+     (warn "write-obj: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-obj: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-obj (%ptr shape) filename
+                               (%coordinate-system->int coordinate-system)
+                               (%name-format->int name-format)
+                               (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-obj (filename &key (coordinate-system :zup))
+  "Read a shape from an OBJ file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **See also:** `write-obj`, `read-step`"
+  (make-shape (%read-obj filename (%coordinate-system->int coordinate-system))))
+
+;; --- VRML Export ---
+
+(defun write-vrml (shape filename &key (deflection 0.1d0))
+  "Write **shape** to a VRML file at **filename**.
+
+  **deflection** controls the tessellation quality (smaller = finer).
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-vrml (make-box 10 20 30) \"/tmp/box.wrl\")
+
+  **See also:** `write-stl`, `write-obj`"
+  (cond
+    ((null shape)
+     (warn "write-vrml: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-vrml: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-vrml (%ptr shape) filename (coerce deflection 'double-float))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+;; --- glTF I/O ---
+
+(defun write-gltf (shape filename
+                   &key (coordinate-system :zup)
+                     (per-vertex-colors nil))
+  "Write **shape** to a glTF file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-gltf (make-box 10 20 30) \"/tmp/box.gltf\")
+
+  **See also:** `read-gltf`, `write-obj`"
+  (cond
+    ((null shape)
+     (warn "write-gltf: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-gltf: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-gltf (%ptr shape) filename
+                                (%coordinate-system->int coordinate-system)
+                                (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
+
+(defun read-gltf (filename &key (coordinate-system :zup))
+  "Read a shape from a glTF file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+
+  Returns a shape object, or `nil` if the file cannot be read.
+
+  **See also:** `write-gltf`, `read-obj`"
+  (make-shape (%read-gltf filename (%coordinate-system->int coordinate-system))))
+
+;; --- PLY Export ---
+
+(defun write-ply (shape filename
+                  &key (coordinate-system :zup)
+                    (per-vertex-colors nil))
+  "Write **shape** to a PLY file at **filename**.
+
+  - **coordinate-system** :zup or :yup (default :zup)
+  - **per-vertex-colors** when non-nil writes vertex colors
+
+  Returns `t` on success, signals an OCCT error on failure, or
+  returns `nil` if **shape** is null or not a valid shape.
+
+  **Example:**
+
+      (write-ply (make-box 10 20 30) \"/tmp/box.ply\")
+
+  **See also:** `write-stl`, `write-obj`"
+  (cond
+    ((null shape)
+     (warn "write-ply: nil shape, nothing written")
+     nil)
+    ((not (shape-p shape))
+     (warn "write-ply: not a shape object, nothing written")
+     nil)
+    (t
+     (let ((result (%write-ply (%ptr shape) filename
+                               (%coordinate-system->int coordinate-system)
+                               (if per-vertex-colors 1 0))))
+       (if (zerop result)
+           (error 'occt-error
+                  :code (%get-error-code)
+                  :message (%get-error-message))
+           t)))))
 
 

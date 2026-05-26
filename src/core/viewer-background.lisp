@@ -1,7 +1,8 @@
 (in-package :cl-occt)
 
 (defparameter *gradient-style-map*
-  '((:x-pos . 0) (:x-neg . 1) (:y-pos . 2) (:y-neg . 3) (:z-pos . 4) (:z-neg . 5)))
+  '((:x-pos . 0) (:x-neg . 1) (:y-pos . 2) (:y-neg . 3) (:z-pos . 4) (:z-neg . 5))
+  "Maps gradient direction keywords to AspectGradientFillMethod integer codes.")
 
 (defun set-gradient-background (view &key color1 color2 (style :y-pos))
   "Sets a gradient background from **color1** to **color2**.

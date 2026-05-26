@@ -4,3 +4,5 @@ lib/
 *.fasl
 *.fas
 docs/index.html
+wrap/*.o
+wrap/*.d
