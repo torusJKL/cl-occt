@@ -90,20 +90,8 @@ int xcaf_get_layer_count(xde_doc doc, occt_shape shape) {
     try {
         Handle(TDocStd_Document)& hDoc = *static_cast<Handle(TDocStd_Document)*>(doc);
         Handle(XCAFDoc_LayerTool) tool = XCAFDoc_DocumentTool::LayerTool(hDoc->Main());
-        TDF_Label label = xcaf_find_shape_label(hDoc, *to_shape(shape));
-        if (label.IsNull()) return 0;
-        NCollection_Sequence<TDF_Label> layerLabels;
-        tool->GetLayerLabels(layerLabels);
-        int count = 0;
-        for (int i = 1; i <= layerLabels.Size(); i++) {
-            TDF_Label ll = layerLabels.Value(i);
-            Handle(TDataStd_Name) nameAttr;
-            if (ll.FindAttribute(TDataStd_Name::GetID(), nameAttr)) {
-                (void)nameAttr; // layer label with a name
-            }
-            count++;
-        }
-        return count;
+        auto layers = tool->GetLayers(*to_shape(shape));
+        return layers.IsNull() ? 0 : layers->Size();
     } catch (Standard_Failure& e) {
         set_error(e.what());
         return 0;
@@ -116,10 +104,13 @@ void xcaf_get_layer_name(xde_doc doc, occt_shape shape, int index, char* buf, in
     try {
         Handle(TDocStd_Document)& hDoc = *static_cast<Handle(TDocStd_Document)*>(doc);
         Handle(XCAFDoc_LayerTool) tool = XCAFDoc_DocumentTool::LayerTool(hDoc->Main());
-        TDF_Label label = xcaf_find_shape_label(hDoc, *to_shape(shape));
-        if (label.IsNull()) { buf[0] = '\0'; return; }
-        // Get layers via layer labels approach - simplified
-        buf[0] = '\0';
+        auto layers = tool->GetLayers(*to_shape(shape));
+        if (layers.IsNull() || index < 1 || index > layers->Size()) { buf[0] = '\0'; return; }
+        TCollection_ExtendedString name = layers->Value(index);
+        TCollection_AsciiString ascii(name);
+        const char* str = ascii.ToCString();
+        strncpy(buf, str, buf_size - 1);
+        buf[buf_size - 1] = '\0';
     } catch (Standard_Failure& e) {
         set_error(e.what());
         buf[0] = '\0';

@@ -30,6 +30,13 @@
   (doc :pointer)
   (shape :pointer))
 
+(defcfun (%xcaf-get-layer-name "xcaf_get_layer_name") :void
+  (doc :pointer)
+  (shape :pointer)
+  (index :int)
+  (buf :pointer)
+  (buf-size :int))
+
 (defcfun (%xcaf-has-material "xcaf_has_material") :int
   (doc :pointer)
   (shape :pointer))

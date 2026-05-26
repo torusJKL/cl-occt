@@ -1145,8 +1145,7 @@ Predicates: `entity-owner-p`, `brep-owner-p`. When iterating over selected AIS s
 | `(computed-mode-p view)` | Return `t` if ray-tracing is enabled. |
 | `(set-back-face-model view model)` | Set back-face model (`:auto`, `:force`, `:disable`). |
 | `(set-frustum-culling view bool)` | Enable/disable frustum culling. |
-| `(set-transparency-method view method)` | Set transparency sorting method (`:blend-unordered`, `:blend-oit`, `:depth-peeling-oit`). |
-| `(set-transparent-shading view method)` | Alias for `set-transparency-method`. |
+| `(set-transparency-method view method)` | Set transparency sorting method (`:blend-unordered`, `:blend-oit`, `:depth-peeling-oit`). `set-transparent-shading` is an alias. |
 | `(redraw-view view)` | Force immediate redraw of main and overlay content. |
 | `(set-immediate-update view bool)` | Control immediate flush of display changes. |
 

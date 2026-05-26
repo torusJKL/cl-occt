@@ -85,7 +85,6 @@ void  free_cubemap(void* cubemap);
 
 // --- Rendering ---
 
-void v3d_view_set_transparent_shading(void* view, int on);
 void v3d_view_get_camera_handle(void* view, void** out_camera);
 void v3d_view_set_camera(void* view, void* camera);
 
@@ -98,7 +97,6 @@ void v3d_view_set_computed_mode(void* view, int on);
 int  v3d_view_computed_mode(void* view);
 void v3d_view_set_back_face_model(void* view, int mode);
 void v3d_view_set_frustum_culling(void* view, int on);
-void v3d_view_set_transparent_shading(void* view, int on);
 void v3d_view_redraw(void* view);
 void v3d_view_set_immediate_update(void* view, int on);
 

@@ -496,6 +496,7 @@
    :%xcaf-unset-one-layer
    :%xcaf-unset-all-layers
    :%xcaf-get-layer-count
+   :%xcaf-get-layer-name
    :%xcaf-has-material
    :%xcaf-add-view
    :%xcaf-get-view-count

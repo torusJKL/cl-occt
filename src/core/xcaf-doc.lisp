@@ -85,11 +85,35 @@
        (if (zerop result) nil t)))))
 
 (defun xcaf-get-shape-layers (doc shape)
-  "Get the layers associated with a **shape** in the XCAF **doc**.
-  **Note:** Not yet implemented."
-  (declare (ignore doc shape))
-  (warn "xcaf-get-shape-layers: not yet implemented")
-  nil)
+  "Retrieve the layer names assigned to a **shape** in an XCAF **doc**.
+
+  - **doc** — an `xcaf-doc` instance
+  - **shape** — a `shape` instance
+
+  **Returns:** a list of layer name strings, or `nil` if no layers or on error.
+
+  **Example:**
+    (let ((doc (make-xcaf-doc)))
+      (xcaf-add-shape doc my-box)
+      (xcaf-add-shape-to-layer doc my-box \"Design\")
+      (xcaf-get-shape-layers doc my-box))
+    ;; => (\"Design\")
+
+  **See also:** `xcaf-add-shape-to-layer`, `xcaf-remove-shape-from-layer`"
+  (when (or (null doc) (null shape))
+    (return-from xcaf-get-shape-layers nil))
+  (let* ((doc-ptr (%ptr doc))
+         (shape-ptr (%ptr shape))
+         (count (%xcaf-get-layer-count doc-ptr shape-ptr)))
+    (when (zerop count)
+      (return-from xcaf-get-shape-layers nil))
+    (loop for i from 1 to count
+          collect (let ((buf (cffi:foreign-alloc :char :count 256)))
+                    (unwind-protect
+                         (progn
+                           (%xcaf-get-layer-name doc-ptr shape-ptr i buf 256)
+                           (cffi:foreign-string-to-lisp buf))
+                      (cffi:foreign-free buf))))))
 
 (defun xcaf-has-material (doc shape)
   "Check if a **shape** has an associated material in the XCAF **doc**.
