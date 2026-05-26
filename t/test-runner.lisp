@@ -340,7 +340,28 @@
                        fair-curve-minvar-3-points fair-curve-minvar-with-slopes
                        fair-curve-minvar-nil-input fair-curve-minvar-too-few
                        fill-surface-from-4-curves fill-surface-from-curves-g1
-                       fill-surface-from-curves-too-few fill-surface-from-curves-nil-input))
+                       fill-surface-from-curves-too-few                        fill-surface-from-curves-nil-input
+                       ;; OCAF tests
+                       ocaf-create-doc-valid
+                       ocaf-root-label-depth
+                       ocaf-find-label-creates-child
+                       ocaf-find-label-existing
+                       ocaf-label-children-returns-list
+                       ocaf-label-children-empty
+                       ocaf-label-tag-returns-tag
+                       ocaf-label-depth-returns-depth
+                       ocaf-begin-commit-transaction-works
+                       ocaf-undo-transaction-callable
+                       ocaf-integer-set-get-works
+                       ocaf-integer-has-p-works
+                       ocaf-real-set-get-works
+                       ocaf-real-has-p-works
+                       ocaf-string-set-get-works
+                       ocaf-string-has-p-works
+                       ocaf-name-set-get-works
+                       ocaf-name-shape-primitive-works
+                       ocaf-named-shape-not-deleted
+                       ocaf-add-function-valid-works))
       (funcall test-sym))
     (format t "~2&=== Core results: ~D pass, ~D fail, ~D errors ===~%"
             (test-result-pass *test-result*)

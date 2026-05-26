@@ -11,6 +11,7 @@ typedef void* occt_geom2d;
 typedef void* occt_brep_font;
 
 typedef void* xde_doc;
+typedef void* ocaf_label;
 
 typedef void* occt_curve;
 

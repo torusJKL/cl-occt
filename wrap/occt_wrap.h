@@ -33,5 +33,8 @@
 #include "occt_wrap_lprop.h"
 #include "occt_wrap_faircurve.h"
 #include "occt_wrap_geomplate.h"
+#include "occt_wrap_ocaf_core.h"
+#include "occt_wrap_ocaf_naming.h"
+#include "occt_wrap_ocaf_function.h"
 
 #endif

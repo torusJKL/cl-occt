@@ -681,10 +681,45 @@
     :%curve-curvature-at-internal
     :%surface-normal-at-internal
      :%surface-curvature-at-internal
-     ;; FairCurve + GeomPlate
-     :%fair-curve-batten
-     :%fair-curve-minvar
-     :%fill-surface-from-curves
+      ;; FairCurve + GeomPlate
+      :%fair-curve-batten
+      :%fair-curve-minvar
+      :%fill-surface-from-curves
+      ;; OCAF Core
+      :%ocaf-new-doc
+      :%ocaf-free-doc
+      :%ocaf-root-label
+      :%ocaf-find-label
+      :%ocaf-label-tag
+      :%ocaf-label-depth
+      :%ocaf-label-children
+      :%ocaf-begin-transaction
+      :%ocaf-commit-transaction
+      :%ocaf-undo-transaction
+      :%ocaf-set-integer
+      :%ocaf-get-integer
+      :%ocaf-has-integer
+      :%ocaf-set-real
+      :%ocaf-get-real
+      :%ocaf-has-real
+      :%ocaf-set-string
+      :%ocaf-get-string
+      :%ocaf-has-string
+      :%ocaf-set-name
+      :%ocaf-get-name
+      :%ocaf-free-label
+      :%ocaf-free-label-array
+      :%ocaf-free-string
+      ;; OCAF Naming
+      :%ocaf-name-shape
+      :%ocaf-get-named-shape
+      :%ocaf-named-shape-is-deleted
+      ;; OCAF Function
+      :%ocaf-add-function
+      :%ocaf-set-function-input
+      :%ocaf-set-function-output
+      :%ocaf-recompute-doc
+      :%ocaf-recompute-function
 ))
 
 (defpackage :cl-occt
@@ -1414,8 +1449,45 @@
     :subshape-bounding-box
     :face-center
      :shape-extent-along
-     ;; FairCurve + GeomPlate
-     :fair-curve-batten
-     :fair-curve-minvar
-     :fill-surface-from-curves
+      ;; FairCurve + GeomPlate
+      :fair-curve-batten
+      :fair-curve-minvar
+      :fill-surface-from-curves
+      ;; OCAF Framework
+      :ocaf-doc
+      :ocaf-doc-p
+      :make-ocaf-doc
+      :ocaf-free-doc
+      :ocaf-label
+      :ocaf-label-p
+      :ocaf-free-label
+      :ocaf-root-label
+      :ocaf-find-label
+      :ocaf-label-children
+      :ocaf-label-tag
+      :ocaf-label-depth
+      :ocaf-begin-transaction
+      :ocaf-commit-transaction
+      :ocaf-undo-transaction
+      :ocaf-set-integer
+      :ocaf-get-integer
+      :ocaf-has-integer-p
+      :ocaf-set-real
+      :ocaf-get-real
+      :ocaf-has-real-p
+      :ocaf-set-string
+      :ocaf-get-string
+      :ocaf-has-string-p
+      :ocaf-set-name
+      :ocaf-get-name
+      :ocaf-name-shape
+      :ocaf-get-named-shape
+      :ocaf-shape-deleted-p
+      :*ocaf-evolution-map*
+      :ocaf-evolution-code
+      :ocaf-add-function
+      :ocaf-set-function-input
+      :ocaf-set-function-output
+      :ocaf-recompute
+      :ocaf-recompute-function
                         ))
