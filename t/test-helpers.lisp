@@ -33,6 +33,9 @@
 (defun assert-geom2d (val &optional msg)
   (assert-true (geom2d-p val) (or msg "expected geom2d")))
 
+(defun approx (a b &optional (eps 1e-6))
+  (< (abs (- a b)) eps))
+
 (defparameter *test-image-dir*
   (namestring (merge-pathnames "t/images/"
                                 (asdf:system-source-directory :cl-occt/tests))))

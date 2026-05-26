@@ -681,10 +681,26 @@
     :%curve-curvature-at-internal
     :%surface-normal-at-internal
      :%surface-curvature-at-internal
-      ;; FairCurve + GeomPlate
-      :%fair-curve-batten
-      :%fair-curve-minvar
-      :%fill-surface-from-curves
+       ;; Topology Data Access
+       :%vertex-point
+       :%edge-get-curve
+       :%face-get-surface
+       :%shape-tolerance
+       :%face-natural-restriction
+       :%shape-reversed
+       ;; Geometry Evaluation
+       :%curve-value
+       :%surface-value
+       ;; Shape Copy
+       :%shape-copy
+       ;; Precision
+       :%precision-confusion
+       :%precision-angular
+       :%precision-intersection
+       ;; FairCurve + GeomPlate
+       :%fair-curve-batten
+       :%fair-curve-minvar
+       :%fill-surface-from-curves
       ;; OCAF Core
       :%ocaf-new-doc
       :%ocaf-free-doc
@@ -1449,15 +1465,33 @@
      :surface-curvature-at
      :face-normal-at
      :face-curvature-at
-     ;; Topology Navigation
-    :face-edges
-    :edge-vertices
-    :vertex-edges
-    :edge-faces
-    :face-wires
-    :wire-edges
-    :shape-type
-    :subshape-orientation
+      ;; Topology Data Access
+      :vertex-point
+      :edge-curve-range
+      :edge-curve
+      :face-surface-uv-bounds
+      :face-surface
+      :shape-tolerance
+      :face-natural-restriction-p
+      :reverse-orientation
+      :shape-orientation
+      ;; Geometry Evaluation
+      :curve-value
+      :surface-value
+      :+precision-confusion+
+      :+precision-angular+
+      :+precision-intersection+
+      ;; Shape Copy
+      :copy-shape
+      ;; Topology Navigation
+     :face-edges
+     :edge-vertices
+     :vertex-edges
+     :edge-faces
+     :face-wires
+     :wire-edges
+     :shape-type
+     :subshape-orientation
     ;; Subshape Properties
     :face-area
     :edge-length

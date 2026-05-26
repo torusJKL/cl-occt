@@ -37,5 +37,9 @@
 #include "occt_wrap_ocaf_naming.h"
 #include "occt_wrap_ocaf_function.h"
 #include "occt_wrap_xcaf_dimtol.h"
+#include "occt_wrap_brep_tool.h"
+#include "occt_wrap_geom_eval.h"
+#include "occt_wrap_shape_copy.h"
+#include "occt_wrap_precision.h"
 
 #endif

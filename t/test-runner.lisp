@@ -167,7 +167,21 @@
                 topology-edge-faces-box topology-edge-faces-nil
                 topology-face-wires-box topology-face-wires-nil
                 topology-wire-edges-box topology-wire-edges-nil
-                topology-shape-type-box topology-shape-type-wire topology-shape-type-nil
+                       vertex-point-box-corner vertex-point-null
+                       edge-curve-range-box edge-curve-range-circle edge-curve-range-null
+                       edge-curve-convenience
+                       face-surface-uv-bounds-box face-surface-uv-bounds-cylinder face-surface-uv-bounds-null
+                       face-surface-convenience
+                       shape-tolerance-edge shape-tolerance-face shape-tolerance-null
+                       face-natural-restriction-returns-boolean face-natural-restriction-null
+                       reverse-orientation-flips reverse-orientation-null
+                       shape-orientation-forward shape-orientation-null
+                       curve-value-line curve-value-circle curve-value-null
+                       surface-value-plane surface-value-cylinder surface-value-null
+                       copy-shape-independence copy-shape-preserves-geometry copy-shape-null
+                       precision-confusion-positive precision-angular-positive precision-intersection-positive
+                       precision-confusion-magnitude precision-angular-magnitude precision-intersection-magnitude
+                       topology-shape-type-box topology-shape-type-wire topology-shape-type-nil
                 topology-orientation-face topology-orientation-nil
                 topology-face-area-box topology-face-area-known topology-face-area-nil
                 topology-edge-length-box topology-edge-length-nil

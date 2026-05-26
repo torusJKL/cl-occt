@@ -161,3 +161,79 @@ Geometric Dimensioning & Tolerancing via `XCAFDimTolObjects` and `XCAFDoc_DimTol
   Return all tolerances on the shape. Each plist has `:type`, `:value`, `:geom-tolerance-p`.
 - **`(xcaf-get-datums doc shape)`** → list of strings or `nil`
   Return datum labels attached to the shape.
+
+---
+
+## Topology Data Access
+
+Low-level queries on shape topology via OCCT's `BRep_Tool`.
+
+### Vertex Point
+
+- **`(vertex-point vertex)`** → x, y, z or `nil` (three values)
+  Return the 3D coordinates of a `vertex` via `BRep_Tool::Pnt`.
+
+### Edge Curve & Range
+
+- **`(edge-curve-range edge)`** → curve, first, last or `nil` (three values)
+  Return the `Geom_Curve` and its parameter range `(first, last)` for an `edge` via `BRep_Tool::Curve`.
+- **`(edge-curve edge)`** → curve or `nil`
+  Convenience alias returning only the curve.
+
+### Face Surface & UV Bounds
+
+- **`(face-surface-uv-bounds face)`** → surface, u-min, u-max, v-min, v-max or `nil` (five values)
+  Return the `Geom_Surface` and its UV domain bounds for a `face` via `BRep_Tool::Surface` + `BRepAdaptor_Surface`.
+- **`(face-surface face)`** → surface or `nil`
+  Convenience alias returning only the surface.
+
+### Tolerance
+
+- **`(shape-tolerance shape)`** → double-float or `nil`
+  Return the tolerance of a shape (edge, face, or vertex) via `BRep_Tool::Tolerance`.
+
+### Natural Restriction
+
+- **`(face-natural-restriction-p face)`** → `boolean`
+  Return whether the face has natural restriction (its UV bounds match the full surface parameterization) via `BRep_Tool::NaturalRestriction`.
+
+### Orientation
+
+- **`(reverse-orientation shape)`** → shape or `nil`
+  Return a new shape with reversed orientation via `TopoDS::Reversed`.
+- **`(shape-orientation shape)`** → `:forward`, `:reversed`, `:internal`, `:external` or `nil`
+  Return the orientation keyword of any shape.
+
+---
+
+## Geometry Evaluation
+
+Curve and surface evaluation at parameter/UV, plus OCCT precision constants.
+
+### Curve Evaluation
+
+- **`(curve-value curve t)`** → x, y, z or `nil` (three values)
+  Evaluate a `curve` at parameter `t` and return the 3D point via `Geom_Curve::Value`.
+
+### Surface Evaluation
+
+- **`(surface-value surface u v)`** → x, y, z or `nil` (three values)
+  Evaluate a `surface` at parameters `(u, v)` and return the 3D point via `Geom_Surface::Value`.
+
+### Precision Constants
+
+- **`+precision-confusion+`** — double-float constant (typical `1e-7`)
+  `Precision::Confusion()` — default tolerance for shape coincidence checks.
+- **`+precision-angular+`** — double-float constant (typical `1e-12`)
+  `Precision::Angular()` — default angular tolerance.
+- **`+precision-intersection+`** — double-float constant (typical `1e-9`)
+  `Precision::Intersection()` — default intersection tolerance.
+
+---
+
+## Shape Copy
+
+Deep copy of shapes with full independence.
+
+- **`(copy-shape shape)`** → shape or `nil`
+  Create an independent deep copy of any shape via `BRepBuilderAPI_Copy`. The copy shares no data with the original — modifying or garbage-collecting the original does not affect the copy.
