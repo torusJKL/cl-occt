@@ -49,15 +49,7 @@ setup:
 
 wrap:
     mkdir -p lib
-    g++ -shared -fPIC -std=c++17 -o lib/libocctwrap.so \
-        wrap/occt_wrap.cpp \
-        -I{{occt-install}}/include/opencascade \
-        -L{{occt-install}}/lib \
-        -lTKernel -lTKMath -lTKG2d -lTKG3d -lTKBRep -lTKPrim -lTKBool \
-        -lTKDESTEP -lTKXSBase -lTKDESTL -lTKMesh -lTKXCAF -lTKCAF \
-        -lTKDEGLTF -lTKDEIGES -lTKDEVRML -lTKDEPLY -lTKDEOBJ -lTKRWMesh \
-        -lTKV3d -lTKOpenGl -lTKService -lTKHelix -lTKFillet -lTKOffset -lTKFeat -lTKMeshVS \
-        -Wl,--enable-new-dtags -Wl,-rpath,{{occt-install}}/lib
+    make -j -C wrap
 
 start:
     LD_LIBRARY_PATH={{root-dir}}/lib:{{occt-install}}/lib \
