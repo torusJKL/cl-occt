@@ -111,7 +111,7 @@
       (graphic-group-add-lines gg '(0.0 0.0 0.0 1.0 0.0 0.0))
       (graphic-group-add-text gg "test" '(0 0 0))
       (free-graphic-structure gs))))
-(deftest graphic-group-add-triangles
+(deftest graphic-group-add-triangles-valid
   (with-viewer (v)
     (let* ((gs (make-graphic-structure v))
            (gg (make-graphic-group gs)))

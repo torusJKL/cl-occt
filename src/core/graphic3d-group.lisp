@@ -17,6 +17,14 @@
         (tg:finalize obj (lambda () (%graphic3d-group-free (%handle obj)))))
       obj)))
 
+(defun free-graphic-group (gg)
+  (when (graphic-group-p gg)
+    (let ((ptr (%handle gg)))
+      (when (and ptr (not (cffi:null-pointer-p ptr)))
+        (tg:cancel-finalization gg)
+        (%graphic3d-group-free ptr)
+        (setf (slot-value gg '%handle) (cffi:null-pointer))))))
+
 (defun set-graphic-group-visible (gg visible)
   (when (graphic-group-p gg)
     (let ((ptr (%handle gg)))
@@ -31,14 +39,15 @@
         (let* ((v-count (length vertices))
                (verts (cffi:foreign-alloc :float :initial-contents
                          (mapcar (lambda (v) (coerce v 'single-float)) vertices)))
-               (norms (when normals
-                        (cffi:foreign-alloc :float :initial-contents
-                          (mapcar (lambda (n) (coerce n 'single-float)) normals))))
+               (norms (if normals
+                         (cffi:foreign-alloc :float :initial-contents
+                           (mapcar (lambda (n) (coerce n 'single-float)) normals))
+                         (cffi:null-pointer)))
                (tri-count (truncate v-count 3)))
-          (unwind-protect
-               (%graphic3d-group-add-triangles ptr verts norms tri-count)
-            (cffi:foreign-free verts)
-            (when norms (cffi:foreign-free norms))))
+           (unwind-protect
+                (%graphic3d-group-add-triangles ptr verts norms tri-count)
+             (cffi:foreign-free verts)
+             (when normals (cffi:foreign-free norms))))
         gg))))
 
 (defun graphic-group-add-lines (gg vertices)

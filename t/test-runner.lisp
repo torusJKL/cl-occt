@@ -420,7 +420,7 @@
                  graphic-structure-display-erase graphic-structure-add-remove-child
                  ;; Graphic3d Group (needs viewer)
                  graphic-group-make-valid graphic-group-set-visible
-                 graphic-group-add-primitives graphic-group-add-triangles
+                 graphic-group-add-primitives graphic-group-add-triangles-valid
                  graphic-group-set-aspect
                  ;; Graphic3d RenderingParams (needs viewer)
                  viewer-rendering-params-valid rendering-params-method-roundtrip

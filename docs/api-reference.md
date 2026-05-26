@@ -1522,6 +1522,7 @@ All accept nil inputs and return nil gracefully.
 |----------|-------------|
 | `(make-graphic-group structure)` | Create a `Graphic3d_Group` inside a graphic structure. Returns `graphic-group` or nil. |
 | `(graphic-group-p obj)` | Predicate for `graphic-group` instances. |
+| `(free-graphic-group gg)` | Explicitly free a group's C resource and cancel its finalizer. Must be called before freeing the parent structure. |
 | `(set-graphic-group-visible gg bool)` | Show/hide the group. |
 | `(graphic-group-add-triangles gg vertices &key normals)` | Add triangle primitives. `vertices` is a flat list of `(x y z x y z ...)` float triples. `normals` is an optional flat list of normal vectors. |
 | `(graphic-group-add-lines gg vertices)` | Add line primitives from a flat list of `(x y z ...)` float triples. |

@@ -1259,6 +1259,7 @@
    :graphic-group
    :graphic-group-p
    :make-graphic-group
+   :free-graphic-group
    :set-graphic-group-visible
    :graphic-group-add-triangles
    :graphic-group-add-lines
