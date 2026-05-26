@@ -12,7 +12,8 @@
                      (loop for i below n
                            for ptr = (cffi:mem-aref arr :pointer i)
                            collect (make-shape ptr))
-                  (%free-shape-array arr n))))))))
+                  (when (not (cffi:null-pointer-p arr))
+                     (%free-shape-array arr)))))))))
 
 (defun find-edges-by-radius (shape radius)
   (if (null shape)
@@ -28,4 +29,5 @@
                      (loop for i below n
                            for ptr = (cffi:mem-aref arr :pointer i)
                            collect (make-shape ptr))
-                  (%free-shape-array arr n))))))))
+                  (when (not (cffi:null-pointer-p arr))
+                     (%free-shape-array arr)))))))))

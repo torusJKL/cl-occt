@@ -11,5 +11,4 @@
   (out-count :pointer))
 
 (defcfun (%free-shape-array "free_shape_array") :void
-  (arr :pointer)
-  (count :int))
+  (arr :pointer))
