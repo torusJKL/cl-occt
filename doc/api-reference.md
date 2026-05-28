@@ -455,3 +455,122 @@ Find roots and minima of 1D functions via `math_BissecNewton` and `math_NewtonMi
 
 - **`(newton-minimum fn x0 &key tolerance max-iterations)`** → plist or `nil`
   Find a local minimum of a 1D function starting from `x0`. Returns `(:converged t :min-x double :min-value double :iterations int)` or `nil` on failure.
+
+---
+
+## 3D Text
+
+Font loading and text shape creation via OCCT's `Font_BRepFont`. All font and text functions are in the `cl-occt` package.
+
+### Font Lifecycle
+
+- **`(make-brep-font-from-file path size &optional face-id)`** → `brep-font` or `nil`
+  Load a TrueType/OpenType font from a file path. Returns a BREP font object or `nil`.
+- **`(make-brep-font-from-name name size &key aspect)`** → `brep-font` or `nil`
+  Look up a system font by name. `aspect` is `:regular`, `:bold`, `:italic`, or `:bold-italic` (default `:regular`).
+- **`(brep-font-p obj)`** → `boolean`
+  Predicate: returns `t` for `brep-font` objects, `nil` otherwise.
+
+### Flat & 3D Text Shapes
+
+- **`(make-text-shape font text &key h-align v-align position normal x-direction)`** → `shape` or `nil`
+  Render text as a flat BRep shape. Supports optional `:position` `(x y z)`, `:normal` `(dx dy dz)`, and `:x-direction` `(dx dy dz)` for arbitrary plane placement. When `:x-direction` is provided, controls the text baseline direction on the plane (OCCT auto-computes when omitted). Returns a `shape` or `nil`.
+
+- **`(make-text-shape-3d font text depth &key h-align v-align position normal x-direction)`** → `shape` or `nil`
+  Render and extrude text. Extrusion follows the plane normal when `:normal` is provided; otherwise extrusion is along Z. Same position/normal/x-direction args as `make-text-shape`.
+
+- **`(make-text-shape-on-plane font text &key h-align v-align position normal x-direction)`** → `shape` or `nil`
+  Convenience — explicit position/normal defaults for plane placement. Also accepts `:x-direction`.
+
+- **`(text-bounding-box font text &key h-align v-align)`** → values `width`, `height` or `nil`
+  Query text extent without rendering.
+
+### Font & Glyph Queries
+
+- **`(list-available-fonts)`** → list of strings
+  Return a list of available system font name strings.
+- **`(font-info name)`** → plist
+  Query font information (`:name`, `:key` plist) by name.
+- **`(text-glyph-as-shape font codepoint)`** → `shape` or `nil`
+  Render a single glyph by Unicode codepoint as a shape.
+- **`(text-glyph-as-shape-3d font codepoint depth)`** → `shape` or `nil`
+  Render and extrude a single glyph.
+- **`(text-font-ascender font)`** → double-float or `nil`
+  Font ascender height above baseline.
+- **`(text-font-descender font)`** → double-float or `nil`
+  Font descender depth below baseline.
+- **`(text-font-line-spacing font)`** → double-float or `nil`
+  Default line spacing (baseline to baseline).
+- **`(text-font-advance-x font c1 c2)`** → double-float or `nil`
+  Horizontal advance between two glyph codepoints (with kerning).
+- **`(text-font-advance-y font c1 c2)`** → double-float or `nil`
+  Vertical advance between two glyph codepoints.
+
+### Font Rendering Controls
+
+- **`(text-font-set-width-scaling font scale)`** → double-float or `nil`
+  Set glyph width scaling factor for subsequent rendering.
+- **`(text-font-set-composite-curve-mode font bool)`** → `boolean` or `nil`
+  Toggle composite BSpline curves for glyph contours.
+
+### Multi-line Text
+
+- **`(make-multi-line-text font text &key h-align v-align position normal x-direction line-spacing)`** → `shape` or `nil`
+  Render multi-line text (split on `#\Newline`), lines stacked vertically by `line-spacing`. Accepts `:x-direction` for each line.
+- **`(make-formatted-text font text &key h-align v-align position normal x-direction line-spacing)`** → `shape` or `nil`
+  Alias for `make-multi-line-text`.
+
+### AIS Text Labels
+
+- **`(make-ais-text-label text &key position color font height)`** → `ais-text-label` or `nil`
+  Create an interactive 3D text label (`AIS_TextLabel`) for viewer display. Not exported to STL/STEP.
+- **`(ais-text-label-p obj)`** → `boolean`
+  Predicate for `ais-text-label` objects.
+- **`(ais-free-text-label label)`** 
+  Free an `ais-text-label`'s C handle.
+
+Font size is in **model units** (e.g., millimeters). To convert from typographic points: `sizeInMeters = 0.0254 * pt / 72.0`.
+
+```lisp
+;; From a font file — create flat text
+(let* ((font (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
+       (flat (make-text-shape font "Hello 3D!")))
+  (write-step flat "flat-text.step"))
+
+;; From a font file — create 3D text (one step)
+(let* ((font   (make-brep-font-from-file "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 10.0))
+       (text3d (make-text-shape-3d font "Hello 3D!" 2.0)))
+  (write-step text3d "hello-3d.step")
+  (write-stl text3d "hello-3d.stl" :deflection 0.05))
+
+;; System font with bold style
+(let* ((font   (make-brep-font-from-name "Arial" 12.0 :aspect :bold))
+       (text3d (make-text-shape-3d font "Centered" 1.5
+                                    :h-align :center :v-align :center)))
+  (write-step text3d "centered.step"))
+
+;; Text on a rotated plane (YZ plane in this example)
+(let* ((font   (make-brep-font-from-name "Arial" 10.0))
+       (rotated (make-text-shape font "Angled" :position '(0 0 0) :normal '(1 0 0))))
+  (write-step rotated "angled-text.step"))
+
+;; Text on XZ plane with explicit X-direction (text reads rightward along +X)
+(let* ((font   (make-brep-font-from-name "Arial" 10.0))
+       (shaped (make-text-shape font "Hello"
+                                :position '(0 0 0) :normal '(0 1 0)
+                                :x-direction '(1 0 0))))
+  (write-step shaped "xdir-text.step"))
+
+;; Multi-line text (lines stacked vertically)
+(let* ((font (make-brep-font-from-name "Arial" 10.0))
+       (multi (make-multi-line-text font "Line1\nLine2\nLine3")))
+  (write-step multi "multiline-text.step"))
+
+;; Bounding box query (useful for layout)
+(let* ((font (make-brep-font-from-name "Arial" 10.0)))
+  (multiple-value-bind (w h) (text-bounding-box font "Hello")
+    (format t "Text is ~,1f × ~,1f model units~%" w h)))
+
+;; List available system fonts
+(list-available-fonts)
+```
