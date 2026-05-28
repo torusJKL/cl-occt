@@ -1242,7 +1242,7 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | `(make-brep-font-from-name name size &key aspect)` | Look up a system font by name. `aspect` is `:regular`, `:bold`, `:italic`, or `:bold-italic` (default `:regular`). Returns `brep-font` or nil. |
 | `(brep-font-p obj)` | Predicate: returns t for `brep-font` objects, nil otherwise |
 | `(make-text-shape font text &key h-align v-align position normal x-direction)` | Render text as a flat BRep shape. Supports optional `:position` `(x y z)`, `:normal` `(dx dy dz)`, and `:x-direction` `(dx dy dz)` for arbitrary plane placement. When `:x-direction` is provided, controls the text baseline direction on the plane (OCCT auto-computes when omitted). Returns a `shape` or nil. |
-| `(make-text-shape-3d font text depth &key h-align v-align position normal x-direction)` | Render and extrude text. Same position/normal/x-direction args as `make-text-shape`. |
+| `(make-text-shape-3d font text depth &key h-align v-align position normal x-direction)` | Render and extrude text. Extrusion follows the plane normal when `:normal` is provided; otherwise extrusion is along Z. Same position/normal/x-direction args as `make-text-shape`. |
 | `(make-text-shape-on-plane font text &key h-align v-align position normal x-direction)` | Convenience — explicit position/normal defaults for plane placement. Also accepts `:x-direction`. |
 | `(text-bounding-box font text &key h-align v-align)` | Query text extent without rendering. Returns `(values width height)` or nil. |
 | `(list-available-fonts)` | Return a list of available system font name strings. |
