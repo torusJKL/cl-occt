@@ -62,7 +62,7 @@ The system SHALL render a text string as a flat BRep shape on the XY plane using
 - **THEN** system returns nil
 
 ### Requirement: Render 3D text
-The system SHALL provide a convenience function that renders text and extrudes it in one step. The extrusion depth SHALL be in the Z direction. The function SHALL accept the same alignment keyword arguments as `make-text-shape`.
+The system SHALL provide a convenience function that renders text and extrudes it in one step. When `:normal` is not specified, the extrusion SHALL be in the Z direction. When `:normal` is specified, extrusion SHALL follow the plane normal direction. The function SHALL accept the same alignment keyword arguments as `make-text-shape`.
 
 #### Scenario: Create 3D text with default alignment
 - **WHEN** user calls `(make-text-shape-3d <font> "Hello 3D!" 2.0)`
@@ -79,6 +79,10 @@ The system SHALL provide a convenience function that renders text and extrudes i
 #### Scenario: Create 3D text with zero depth
 - **WHEN** user calls `(make-text-shape-3d <font> "Hello" 0.0)`
 - **THEN** system returns nil
+
+#### Scenario: Extrude along non-default normal
+- **WHEN** user calls `(make-text-shape-3d <font> "Normal" 3.0 :normal '(0 1 0))`
+- **THEN** system returns a shape whose extent along Y is approximately 3.0 and extent along Z is approximately 0.0
 
 ### Requirement: Font lifecycle management
 The system SHALL automatically release font resources when a `brep-font` object is garbage collected. The user MAY also free a font explicitly.
