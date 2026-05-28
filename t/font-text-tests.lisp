@@ -54,7 +54,11 @@
 (deftest text-shape-3d-on-rotated-plane
   (let* ((font (make-brep-font-from-file *test-font-path* 10.0))
          (text (make-text-shape-3d font "Deep" 3.0 :position '(0 0 0) :normal '(0 1 0))))
-    (assert-shape text "extruded text on rotated plane should return shape")))
+    (assert-shape text "extruded text on rotated plane should return shape")
+    (multiple-value-bind (min max) (shape-extent-along text 0 1 0)
+      (assert-true (and min max) "extent along normal should return values")
+      (assert-true (>= (- max min) 2.5)
+                   "extrusion depth along normal should be ~3.0"))))
 (deftest text-bounding-box-valid
   (let* ((font (make-brep-font-from-file *test-font-path* 10.0)))
     (multiple-value-bind (w h) (text-bounding-box font "Hello")

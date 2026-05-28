@@ -29,3 +29,26 @@ The system SHALL add an "IntTools Intersection" section to `docs/api-reference.m
 #### Scenario: Section with 3 intersection functions
 - **WHEN** the section is added to api-reference.md
 - **THEN** it SHALL document each function's parameters, return plist format, and provide usage examples
+
+### Requirement: Document xcaf-get-shape-layers in api-reference.md
+The system SHALL document `xcaf-get-shape-layers` in the "XCAF Document Tools" section of `docs/api-reference.md`.
+
+#### Scenario: Layer retrieval entry exists
+- **WHEN** user inspects `docs/api-reference.md`
+- **THEN** the XCAF section includes `xcaf-get-shape-layers` with its signature, description, and usage example
+
+### Requirement: Remove stale set-transparent-shading entry from api-reference.md
+The system SHALL remove any reference to `set-transparent-shading` as a distinct function in `docs/api-reference.md`, keeping only the `set-transparency-method` entry (which is the real implementation).
+
+#### Scenario: No separate transparent shading entry
+- **WHEN** user inspects `docs/api-reference.md`
+- **THEN** there is no distinct entry for `set-transparent-shading` (it is only documented as an alias of `set-transparency-method`)
+
+### Requirement: Docstrings for set-transparency-method follow convention
+The `set-transparency-method` docstring SHALL be checked and updated to conform to the `docstring-markdown-convention` spec.
+
+#### Scenario: Docstring reformatted
+- **WHEN** user inspects `(describe 'set-transparency-method)`
+- **THEN** the docstring uses `- **view**` and `- **method**` parameter format
+- **AND** uses `**Returns:**` for the return value
+- **AND** the existing `**Example:**` section uses 4-space-indented code

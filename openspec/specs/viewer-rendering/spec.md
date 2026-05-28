@@ -41,17 +41,6 @@ The system SHALL toggle frustum culling for performance optimization.
 - **WHEN** user calls `(set-frustum-culling view nil)`
 - **THEN** all objects are rendered regardless of frustum position
 
-### Requirement: Enable/disable transparent shading sorting
-The system SHALL toggle proper transparency sorting for correct alpha blending.
-
-#### Scenario: Enable transparent sorting
-- **WHEN** user calls `(set-transparent-shading view t)`
-- **THEN** transparent objects are sorted for correct blending
-
-#### Scenario: Disable transparent sorting
-- **WHEN** user calls `(set-transparent-shading view nil)`
-- **THEN** transparency uses simpler (potentially incorrect) blending
-
 ### Requirement: Force redraw
 The system SHALL immediately redraw both the main and overlay content.
 
