@@ -1241,9 +1241,9 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | `(make-brep-font-from-file path size &optional face-id)` | Load a TrueType/OpenType font from a file path. Returns `brep-font` or nil. |
 | `(make-brep-font-from-name name size &key aspect)` | Look up a system font by name. `aspect` is `:regular`, `:bold`, `:italic`, or `:bold-italic` (default `:regular`). Returns `brep-font` or nil. |
 | `(brep-font-p obj)` | Predicate: returns t for `brep-font` objects, nil otherwise |
-| `(make-text-shape font text &key h-align v-align position normal)` | Render text as a flat BRep shape. Supports optional `:position` `(x y z)` and `:normal` `(dx dy dz)` for arbitrary plane placement. Returns a `shape` or nil. |
-| `(make-text-shape-3d font text depth &key h-align v-align position normal)` | Render and extrude text. Same position/normal args as `make-text-shape`. |
-| `(make-text-shape-on-plane font text &key h-align v-align position normal)` | Convenience — explicit position/normal defaults for plane placement. |
+| `(make-text-shape font text &key h-align v-align position normal x-direction)` | Render text as a flat BRep shape. Supports optional `:position` `(x y z)`, `:normal` `(dx dy dz)`, and `:x-direction` `(dx dy dz)` for arbitrary plane placement. When `:x-direction` is provided, controls the text baseline direction on the plane (OCCT auto-computes when omitted). Returns a `shape` or nil. |
+| `(make-text-shape-3d font text depth &key h-align v-align position normal x-direction)` | Render and extrude text. Same position/normal/x-direction args as `make-text-shape`. |
+| `(make-text-shape-on-plane font text &key h-align v-align position normal x-direction)` | Convenience — explicit position/normal defaults for plane placement. Also accepts `:x-direction`. |
 | `(text-bounding-box font text &key h-align v-align)` | Query text extent without rendering. Returns `(values width height)` or nil. |
 | `(list-available-fonts)` | Return a list of available system font name strings. |
 | `(font-info name)` | Query font information (`:name`, `:key` plist) by name. |
@@ -1256,8 +1256,8 @@ Dimensions are `ais-object` instances displayed with `ais-display`:
 | `(text-font-advance-y font c1 c2)` | Vertical advance between two glyph codepoints. |
 | `(text-font-set-width-scaling font scale)` | Set glyph width scaling factor for subsequent rendering. |
 | `(text-font-set-composite-curve-mode font bool)` | Toggle composite BSpline curves for glyph contours. |
-| `(make-multi-line-text font text &key h-align v-align position normal line-spacing)` | Render multi-line text (split on `#\Newline`), lines stacked vertically by `line-spacing`. |
-| `(make-formatted-text font text &key h-align v-align position normal line-spacing)` | Alias for `make-multi-line-text`. |
+| `(make-multi-line-text font text &key h-align v-align position normal x-direction line-spacing)` | Render multi-line text (split on `#\Newline`), lines stacked vertically by `line-spacing`. Accepts `:x-direction` for each line. |
+| `(make-formatted-text font text &key h-align v-align position normal x-direction line-spacing)` | Alias for `make-multi-line-text`. |
 | `(make-ais-text-label text &key position color font height)` | Create an interactive 3D text label (`AIS_TextLabel`) for viewer display. Not exported to STL/STEP. |
 | `(ais-text-label-p obj)` | Predicate for ais-text-label objects. |
 | `(ais-free-text-label label)` | Free an ais-text-label's C handle. |
@@ -1286,6 +1286,13 @@ Font size is in **model units** (e.g., millimeters). To convert from typographic
 (let* ((font   (make-brep-font-from-name "Arial" 10.0))
        (rotated (make-text-shape font "Angled" :position '(0 0 0) :normal '(1 0 0))))
   (write-step rotated "angled-text.step"))
+
+;; Text on XZ plane with explicit X-direction (text reads rightward along +X)
+(let* ((font   (make-brep-font-from-name "Arial" 10.0))
+       (shaped (make-text-shape font "Hello"
+                                :position '(0 0 0) :normal '(0 1 0)
+                                :x-direction '(1 0 0))))
+  (write-step shaped "xdir-text.step"))
 
 ;; Multi-line text (lines stacked vertically)
 (let* ((font (make-brep-font-from-name "Arial" 10.0))

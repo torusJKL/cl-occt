@@ -63,15 +63,25 @@
 
 (in-package :cl-occt)
 
-(defun %compute-gp-ax3 (position normal)
+(defun %compute-gp-ax3 (position normal &optional x-direction)
   (let ((p (or position '(0 0 0)))
         (n (or normal '(0 0 1))))
-    (values (coerce (first p) 'double-float)
-            (coerce (second p) 'double-float)
-            (coerce (third p) 'double-float)
-            (coerce (first n) 'double-float)
-            (coerce (second n) 'double-float)
-            (coerce (third n) 'double-float))))
+    (if x-direction
+        (values (coerce (first p) 'double-float)
+                (coerce (second p) 'double-float)
+                (coerce (third p) 'double-float)
+                (coerce (first n) 'double-float)
+                (coerce (second n) 'double-float)
+                (coerce (third n) 'double-float)
+                (coerce (first x-direction) 'double-float)
+                (coerce (second x-direction) 'double-float)
+                (coerce (third x-direction) 'double-float))
+        (values (coerce (first p) 'double-float)
+                (coerce (second p) 'double-float)
+                (coerce (third p) 'double-float)
+                (coerce (first n) 'double-float)
+                (coerce (second n) 'double-float)
+                (coerce (third n) 'double-float)))))
 
 (defun make-brep-font-from-file (path size &optional (face-id 0))
   "Load a TrueType or OpenType font from a file path.
@@ -112,15 +122,17 @@
                                               (coerce size 'double-float))))
 
 (defun make-text-shape (font text &key (h-align :left) (v-align :bottom)
-                                              position normal)
+                                              position normal x-direction)
   "Create a flat 2D text shape from **font** and **text** string.
 
   Returns a shape containing the outline of the rendered text.
   **h-align** controls horizontal alignment (`:left`, `:center`, `:right`).
   **v-align** controls vertical alignment (`:bottom`, `:center`, `:top`,
   `:top-first-line`).  **position** is a 3-element list (X Y Z); **normal**
-  is a 3-element list specifying the plane normal.  Returns `nil` if
-  **font** is null.
+  is a 3-element list specifying the plane normal.  **x-direction** is an
+  optional 3-element list specifying the text baseline (\"rightward\")
+  direction on the plane; when omitted (nil), OCCT auto-computes the
+  X direction from the normal.  Returns `nil` if **font** is null.
 
   **Example:**
 
@@ -129,31 +141,33 @@
 
   **See also:** `make-text-shape-3d`, `make-text-shape-on-plane`, `make-brep-font-from-name`"
   (when font
-    (if (or position normal)
-        (multiple-value-bind (px py pz nx ny nz)
-            (%compute-gp-ax3 (or position '(0 0 0)) (or normal '(0 0 1)))
-          (let ((ptr (%make-text-shape-on-plane (%ptr font) text
-                                                (%h-align-value h-align)
-                                                (%v-align-value v-align)
-                                                (coerce px 'double-float)
-                                                (coerce py 'double-float)
-                                                (coerce pz 'double-float)
-                                                (coerce nx 'double-float)
-                                                (coerce ny 'double-float)
-                                                (coerce nz 'double-float))))
-            (make-shape ptr)))
-        (let ((ptr (%make-text-shape (%ptr font) text
-                                     (%h-align-value h-align)
-                                     (%v-align-value v-align))))
-          (make-shape ptr)))))
+    (multiple-value-bind (px py pz nx ny nz xx xy xz)
+        (%compute-gp-ax3 (or position '(0 0 0))
+                         (or normal '(0 0 1))
+                         x-direction)
+      (let ((ptr (if x-direction
+                     (%make-text-shape-on-plane-full
+                      (%ptr font) text
+                      (%h-align-value h-align)
+                      (%v-align-value v-align)
+                      px py pz nx ny nz
+                      xx xy xz)
+                     (%make-text-shape-on-plane
+                      (%ptr font) text
+                      (%h-align-value h-align)
+                      (%v-align-value v-align)
+                      px py pz nx ny nz))))
+        (make-shape ptr)))))
 
 (defun make-text-shape-3d (font text depth &key (h-align :left) (v-align :bottom)
-                                                    position normal)
+                                                     position normal x-direction)
   "Create an extruded 3D text shape from **font** and **text**.
 
-  Extrudes the flat text outline by **depth** along Z to create a solid.
-  Returns `nil` if **font** is null or **depth** is not positive.  All keyword
-  arguments are forwarded to `make-text-shape`.
+  Extrudes the flat text outline by **depth** to create a solid.
+  When `:normal` is provided, extrusion follows the plane normal;
+  otherwise extrusion is along Z.  Returns `nil` if **font** is null
+  or **depth** is not positive.  All keyword arguments (including
+  `:x-direction`) are forwarded to `make-text-shape`.
 
   **Example:**
 
@@ -165,17 +179,24 @@
     (return-from make-text-shape-3d nil))
   (let ((flat (make-text-shape font text
                                :h-align h-align :v-align v-align
-                               :position position :normal normal)))
+                               :position position :normal normal
+                               :x-direction x-direction)))
     (when flat
-      (make-prism flat 0 0 (coerce depth 'double-float)))))
+      (let ((n (or normal '(0 0 1))))
+        (make-prism flat
+                    (* (coerce depth 'double-float) (first n))
+                    (* (coerce depth 'double-float) (second n))
+                    (* (coerce depth 'double-float) (third n)))))))
 
 (defun make-text-shape-on-plane (font text &key (h-align :left) (v-align :bottom)
-                                                   (position '(0 0 0)) (normal '(0 0 1)))
+                                                   (position '(0 0 0)) (normal '(0 0 1))
+                                                   x-direction)
   "Create a flat text shape positioned on a plane.
 
   Convenience wrapper around `make-text-shape` that specifies both
   **position** and **normal** explicitly, defaulting to the XY plane at
-  the origin.  Returns `nil` if **font** is null.
+  the origin.  **x-direction** is an optional 3-element list specifying
+  the text baseline direction.  Returns `nil` if **font** is null.
 
   **Example:**
 
@@ -186,7 +207,8 @@
   **See also:** `make-text-shape`, `make-text-shape-3d`"
   (make-text-shape font text
                    :h-align h-align :v-align v-align
-                   :position position :normal normal))
+                   :position position :normal normal
+                   :x-direction x-direction))
 
 (defun text-bounding-box (font text &key (h-align :left) (v-align :bottom))
   "Compute the bounding box width and height of **text** in **font**.
@@ -549,13 +571,14 @@
         do (setf start (1+ pos))))
 
 (defun make-multi-line-text (font text &key (h-align :left) (v-align :bottom)
-                                              position normal
+                                              position normal x-direction
                                               (line-spacing (text-font-line-spacing font)))
   "Create a multi-line text shape by splitting **text** on newlines.
 
   Each line is rendered as a separate shape and arranged vertically
   with **line-spacing** between baselines (defaulting to the font's
-  recommended line spacing).  Returns a compound shape, a single
+  recommended line spacing).  **x-direction** is forwarded to
+  `make-text-shape` for each line.  Returns a compound shape, a single
   shape for one-line text, or `nil` if **font** is null.
 
   **Example:**
@@ -575,7 +598,8 @@
                                                            :h-align h-align
                                                            :v-align v-align
                                                            :position position
-                                                           :normal normal)
+                                                           :normal normal
+                                                           :x-direction x-direction)
                          when line-shape
                          collect (if (zerop y-off)
                                      line-shape
@@ -586,7 +610,7 @@
             (make-compound shapes))))))
 
 (defun make-formatted-text (font text &key (h-align :left) (v-align :bottom)
-                                              position normal
+                                              position normal x-direction
                                               (line-spacing (text-font-line-spacing font)))
   "Create a formatted multi-line text shape.
 
@@ -603,4 +627,5 @@
   (make-multi-line-text font text
                         :h-align h-align :v-align v-align
                         :position position :normal normal
+                        :x-direction x-direction
                         :line-spacing (or line-spacing (text-font-line-spacing font) 1.0d0)))
